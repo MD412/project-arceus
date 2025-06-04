@@ -37,11 +37,13 @@ export default function HomePage() {
     console.log('🔄 Loading cards from database...');
     
     try {
+      console.log('👤 Getting current user...');
       const { data: { user } } = await supabase.auth.getUser();
       const userId = user?.id || '00000000-0000-0000-0000-000000000001';
       
       console.log('👤 Loading cards for user:', userId);
       
+      console.log('🔍 Executing Supabase query...');
       const { data, error } = await supabase
         .from('user_cards')
         .select(`
@@ -62,6 +64,7 @@ export default function HomePage() {
       
       if (error) {
         console.error('❌ Database error loading cards:', error);
+        console.error('❌ Error details:', JSON.stringify(error, null, 2));
         throw error;
       }
       
@@ -69,15 +72,21 @@ export default function HomePage() {
       console.log('📊 Card data (raw):', data);
       
       // Transform returned rows so `cards` is a single object (first element)
+      console.log('🔄 Processing card data...');
       const processed: UserCard[] = (data as RawUserCard[] ?? []).map((row) => ({
         ...row,
         cards: Array.isArray(row.cards) ? row.cards[0] : (row.cards as unknown as CardDetail),
       }));
+      console.log('✅ Processed card data:', processed);
 
       setUserCards(processed);
+      console.log('🎉 Cards loaded successfully!');
     } catch (err: unknown) {
       console.error('💥 Error loading cards:', err);
+      console.error('💥 Error type:', typeof err);
+      console.error('💥 Error stack:', err instanceof Error ? err.stack : 'No stack trace');
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      console.error('💥 Final error message:', errorMessage);
       alert(`Error loading cards: ${errorMessage}`);
     }
   }
