@@ -1,7 +1,4 @@
-import Image from 'next/image';
-import { useState } from 'react';
-import { clsx } from 'clsx';
-import { EmptyState } from '@/components/ui';
+import { EmptyState, TradingCard } from '@/components/ui';
 
 // Define the structure for the nested card details
 interface CardDetail {
@@ -26,15 +23,6 @@ interface SimpleCardGridProps {
 }
 
 export function SimpleCardGrid({ cards, onDelete }: SimpleCardGridProps) {
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [hoveredButton, setHoveredButton] = useState<string | null>(null);
-
-  const formatCondition = (condition: string) => {
-    return condition.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
-  };
-
   const handleDelete = async (entry: CardEntry) => {
     if (!entry.cards) {
       console.error('Cannot delete card: missing card data', entry);
@@ -70,49 +58,18 @@ export function SimpleCardGrid({ cards, onDelete }: SimpleCardGridProps) {
       {validCards.map((entry) => {
         const cardDetail = entry.cards;
         const imgUrl = entry.image_url ?? cardDetail.image_url;
-        const isHovered = hoveredCard === entry.id;
-        const isButtonHovered = hoveredButton === entry.id;
         
         return (
-          <div
+          <TradingCard
             key={entry.id}
-            className={clsx('card-item', isHovered && 'card-item-hovered')}
-            onMouseEnter={() => setHoveredCard(entry.id)}
-            onMouseLeave={() => setHoveredCard(null)}
-          >
-            {onDelete && (
-              <button
-                className={clsx(
-                  'delete-button',
-                  isButtonHovered && 'delete-button-hovered'
-                )}
-                onClick={() => handleDelete(entry)}
-                onMouseEnter={() => setHoveredButton(entry.id)}
-                onMouseLeave={() => setHoveredButton(null)}
-                title={`Delete ${cardDetail.name}`}
-              >
-                ×
-              </button>
-            )}
-            <Image
-              src={imgUrl}
-              alt={cardDetail.name}
-              width={300}
-              height={420}
-              className="card-image"
-            />
-            <div className="card-name">
-              {cardDetail.name}
-            </div>
-            <div className="card-details">
-              Base — {cardDetail.number}
-            </div>
-            <div className="card-stats">
-              <span className="card-stats-quantity">{entry.quantity}×</span>
-              <span className="card-stats-separator">•</span>
-              <span className="card-stats-condition">{formatCondition(entry.condition)}</span>
-            </div>
-          </div>
+            name={cardDetail.name}
+            imageUrl={imgUrl}
+            quantity={entry.quantity}
+            condition={entry.condition}
+            number={cardDetail.number}
+            setCode={cardDetail.set_code}
+            onDelete={onDelete ? () => handleDelete(entry) : undefined}
+          />
         );
       })}
     </div>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { SimpleCardGrid } from '@/components/simple-card-grid';
 import UploadCardForm from '@/components/UploadCardForm';
-import { Button, Card, StatsCard, EmptyState } from '@/components/ui';
+import { Button, Card, StatsCard, EmptyState, MetricCard } from '@/components/ui';
 
 // Define the structure for the nested card details
 interface CardDetail {
@@ -22,6 +22,11 @@ interface UserCard {
   condition: string;
   image_url?: string; // Optional: image_url from the user_cards table itself
   cards: CardDetail; // The joined card details, a single object due to !inner join
+}
+
+interface RawUserCard extends Omit<UserCard, 'cards'> {
+  // Supabase join returns an array; we'll coerce to single object later
+  cards: CardDetail[];
 }
 
 export default function HomePage() {
@@ -61,9 +66,15 @@ export default function HomePage() {
       }
       
       console.log('✅ Loaded cards from database:', data?.length || 0, 'cards');
-      console.log('📊 Card data:', data);
+      console.log('📊 Card data (raw):', data);
       
-      setUserCards(data as UserCard[] ?? []);
+      // Transform returned rows so `cards` is a single object (first element)
+      const processed: UserCard[] = (data as RawUserCard[] ?? []).map((row) => ({
+        ...row,
+        cards: Array.isArray(row.cards) ? row.cards[0] : (row.cards as unknown as CardDetail),
+      }));
+
+      setUserCards(processed);
     } catch (err: unknown) {
       console.error('💥 Error loading cards:', err);
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
@@ -114,9 +125,9 @@ export default function HomePage() {
       <section className="stats-section">
         <Card>
           <div className="stats-grid">
-            <StatsCard label="Collected" value={userCards.length} />
-            <StatsCard label="Missing" value={27} />
-            <StatsCard label="Trading" value={3} />
+            <MetricCard title="Collected" value={userCards.length} />
+            <MetricCard title="Missing" value={27} />
+            <MetricCard title="Trading" value={3} />
           </div>
         </Card>
       </section>

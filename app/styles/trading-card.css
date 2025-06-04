@@ -1,0 +1,85 @@
+/* Trading Card (TCGCard) styles */
+
+.circuit-trading-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-background);
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-200);
+  padding: var(--sds-size-space-200);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.circuit-trading-card:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+.circuit-trading-card-image-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: var(--sds-size-space-200);
+}
+
+.circuit-trading-card-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--sds-size-radius-100);
+}
+
+.circuit-trading-card-quantity-pill {
+  position: absolute;
+  top: var(--sds-size-space-100);
+  left: var(--sds-size-space-100);
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
+  padding: 0 var(--sds-size-space-100);
+  border-radius: var(--sds-size-radius-full);
+  font: var(--font-body-small-strong-single);
+}
+
+.circuit-trading-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-050);
+}
+
+.circuit-trading-card-name {
+  font: var(--font-body-strong);
+  color: var(--text-primary);
+}
+
+.circuit-trading-card-meta {
+  font: var(--font-body-small);
+  color: var(--text-tertiary);
+}
+
+.circuit-trading-card-delete {
+  position: absolute;
+  top: var(--sds-size-space-100);
+  right: var(--sds-size-space-100);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  background: var(--surface-background);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.circuit-trading-card-delete:hover {
+  background: var(--surface-background-hover);
+  border-color: var(--border-hover);
+}
+
+/* Grid utility override */
+.card-grid {
+  display: grid;
+  gap: var(--sds-size-space-400);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+} 

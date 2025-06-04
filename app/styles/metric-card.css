@@ -1,0 +1,56 @@
+/* Metric Card Styles */
+
+.circuit-metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sds-size-space-050);
+  padding: var(--sds-size-space-300);
+  background: var(--surface-background);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--sds-size-radius-200);
+  min-width: 140px;
+}
+
+.circuit-metric-card-highlighted {
+  background: var(--surface-background-emphasis);
+  border-color: var(--border-hover);
+}
+
+.circuit-metric-icon {
+  color: var(--text-brand);
+}
+
+.circuit-metric-value {
+  font: var(--font-heading);
+  color: var(--text-primary);
+}
+
+.circuit-metric-title {
+  font: var(--font-body-small-strong);
+  color: var(--text-tertiary);
+}
+
+.circuit-metric-subtitle {
+  font: var(--font-body-small);
+  color: var(--text-secondary);
+}
+
+.circuit-metric-change {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-050);
+  font: var(--font-body-small-strong);
+}
+
+.change-positive {
+  color: var(--status-success);
+}
+
+.change-negative {
+  color: var(--status-error);
+}
+
+.change-neutral {
+  color: var(--text-primary);
+} 

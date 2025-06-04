@@ -1,0 +1,67 @@
+/******** Navigation & Layout Styles ********/
+
+:root {
+  --sidebar-width: 280px;
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Sidebar */
+.circuit-sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-400);
+  padding: var(--sds-size-space-400);
+  background: var(--surface-background);
+  border-right: 1px solid var(--border-default);
+}
+
+.circuit-sidebar-header {
+  padding-bottom: var(--sds-size-space-200);
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* Nav list */
+.circuit-nav-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-100);
+}
+
+.circuit-nav-link {
+  display: block;
+  padding: 8px 12px; /* --sds-size-space-200 horizontally */
+  border-radius: var(--sds-size-radius-100);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.circuit-nav-link:hover {
+  background: var(--surface-background-hover);
+}
+
+.circuit-nav-link-active,
+.circuit-nav-link:focus {
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
+}
+
+/* Main content area */
+.app-content {
+  flex: 1;
+  padding: var(--sds-size-space-400) var(--sds-size-space-600);
+  overflow-x: hidden;
+  margin-left: var(--sidebar-width); /* account for fixed sidebar width */
+} 
