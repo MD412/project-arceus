@@ -15,6 +15,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning={true}
       className={`${inter.variable} ${robotoMono.variable} ${monda.variable}`}
     >
       <body className="antialiased">
