@@ -3,18 +3,21 @@ import { useState } from 'react';
 import { clsx } from 'clsx';
 import { EmptyState } from '@/components/ui';
 
+// Define the structure for the nested card details
+interface CardDetail {
+  id: string;
+  name: string;
+  number: string;
+  set_code: string;
+  image_url: string;
+}
+
 interface CardEntry {
   id: string;
   quantity: number;
   condition: string;
-  image_url?: string;
-  cards: {
-    id: string;
-    name: string;
-    number: string;
-    set_code: string;
-    image_url: string;
-  };
+  image_url?: string; // Optional: image_url from the user_cards table itself
+  cards: CardDetail; // The joined card details from !inner join
 }
 
 interface SimpleCardGridProps {
@@ -50,6 +53,7 @@ export function SimpleCardGrid({ cards, onDelete }: SimpleCardGridProps) {
     }
   };
 
+  // Filter for entries that have card details with a name
   const validCards = cards.filter(entry => entry.cards && entry.cards.name);
 
   if (validCards.length === 0) {
@@ -64,8 +68,8 @@ export function SimpleCardGrid({ cards, onDelete }: SimpleCardGridProps) {
   return (
     <div className="card-grid">
       {validCards.map((entry) => {
-        const card = entry.cards;
-        const imgUrl = entry.image_url ?? card.image_url;
+        const cardDetail = entry.cards;
+        const imgUrl = entry.image_url ?? cardDetail.image_url;
         const isHovered = hoveredCard === entry.id;
         const isButtonHovered = hoveredButton === entry.id;
         
@@ -85,23 +89,23 @@ export function SimpleCardGrid({ cards, onDelete }: SimpleCardGridProps) {
                 onClick={() => handleDelete(entry)}
                 onMouseEnter={() => setHoveredButton(entry.id)}
                 onMouseLeave={() => setHoveredButton(null)}
-                title={`Delete ${card.name}`}
+                title={`Delete ${cardDetail.name}`}
               >
                 ×
               </button>
             )}
             <Image
               src={imgUrl}
-              alt={card.name}
+              alt={cardDetail.name}
               width={300}
               height={420}
               className="card-image"
             />
             <div className="card-name">
-              {card.name}
+              {cardDetail.name}
             </div>
             <div className="card-details">
-              Base — {card.number}
+              Base — {cardDetail.number}
             </div>
             <div className="card-stats">
               <span className="card-stats-quantity">{entry.quantity}×</span>

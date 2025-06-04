@@ -40,7 +40,7 @@ export default function UploadCardForm({ close, onAdded }: Props) {
       const imageUrl = await uploadCardImage(file);
 
       // 2) ensure card exists in reference table (cards)
-      let { data: existing } = await supabase
+      const { data: existing } = await supabase
         .from('cards')
         .select('id')
         .eq('name', name)
@@ -64,9 +64,8 @@ export default function UploadCardForm({ close, onAdded }: Props) {
       }
 
       // 3) insert into user_cards
-      // Get the current user from auth (or fallback to hardcoded for testing)
       const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || '00000000-0000-0000-0000-000000000001'; // fallback for testing
+      const userId = user?.id || '00000000-0000-0000-0000-000000000001';
       
       const { error: userErr } = await supabase.from('user_cards').insert({
         user_id: userId,
@@ -80,8 +79,9 @@ export default function UploadCardForm({ close, onAdded }: Props) {
       // 4) done!
       onAdded?.();
       close();
-    } catch (e: any) {
-      setErr(e.message ?? 'Upload failed');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Upload failed';
+      setErr(message);
     } finally {
       setSubmitting(false);
     }

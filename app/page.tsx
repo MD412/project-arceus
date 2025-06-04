@@ -6,17 +6,34 @@ import { SimpleCardGrid } from '@/components/simple-card-grid';
 import UploadCardForm from '@/components/UploadCardForm';
 import { Button, Card, StatsCard, EmptyState } from '@/components/ui';
 
+// Define the structure for the nested card details
+interface CardDetail {
+  id: string;
+  name: string;
+  number: string;
+  set_code: string;
+  image_url: string;
+}
+
+// Define the structure for a user's card entry
+interface UserCard {
+  id: string;
+  quantity: number;
+  condition: string;
+  image_url?: string; // Optional: image_url from the user_cards table itself
+  cards: CardDetail; // The joined card details, a single object due to !inner join
+}
+
 export default function HomePage() {
-  const [userCards, setUserCards] = useState<any[]>([]);
+  const [userCards, setUserCards] = useState<UserCard[]>([]);
   const [showForm, setShowForm] = useState(false);
 
   async function loadCards() {
     console.log('🔄 Loading cards from database...');
     
     try {
-      // Get the current user from auth (or fallback to hardcoded for testing)
       const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || '00000000-0000-0000-0000-000000000001'; // fallback for testing
+      const userId = user?.id || '00000000-0000-0000-0000-000000000001';
       
       console.log('👤 Loading cards for user:', userId);
       
@@ -46,10 +63,11 @@ export default function HomePage() {
       console.log('✅ Loaded cards from database:', data?.length || 0, 'cards');
       console.log('📊 Card data:', data);
       
-      setUserCards(data ?? []);
-    } catch (err: any) {
+      setUserCards(data as UserCard[] ?? []);
+    } catch (err: unknown) {
       console.error('💥 Error loading cards:', err);
-      alert(`Error loading cards: ${err.message}`);
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      alert(`Error loading cards: ${errorMessage}`);
     }
   }
 
@@ -70,13 +88,13 @@ export default function HomePage() {
       
       console.log(`✅ Successfully deleted ${cardName} from Supabase`);
       
-      // Remove from local state immediately for better UX
       setUserCards(prev => prev.filter(card => card.id !== cardId));
       
       console.log(`🔄 Updated local state, removed card from UI`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('💥 Unexpected error:', err);
-      alert(`Error deleting card: ${err.message}`);
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      alert(`Error deleting card: ${errorMessage}`);
     }
   }
 
