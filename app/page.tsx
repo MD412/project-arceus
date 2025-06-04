@@ -44,6 +44,12 @@ export default function HomePage() {
       console.log('👤 Loading cards for user:', userId);
       
       console.log('🔍 Executing Supabase query...');
+      
+      // TEMPORARY: Check if we can query without RLS constraints
+      console.log('🔧 Testing basic query capabilities...');
+      const testQuery = await supabase.from('user_cards').select('count');
+      console.log('🧪 Test query result:', testQuery);
+      
       const { data, error } = await supabase
         .from('user_cards')
         .select(`
