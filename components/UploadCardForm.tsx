@@ -93,13 +93,13 @@ export default function UploadCardForm({ close, onAdded }: Props) {
         <h2 className="circuit-modal-title">Add Card</h2>
 
         <div className="circuit-form">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            required
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          required
             className="circuit-input"
-          />
+        />
 
           <input 
             name="name" 
@@ -123,39 +123,39 @@ export default function UploadCardForm({ close, onAdded }: Props) {
           />
 
           <div className="circuit-form-row">
-            <input
-              name="qty"
-              type="number"
-              defaultValue={1}
-              min={1}
+          <input
+            name="qty"
+            type="number"
+            defaultValue={1}
+            min={1}
               className="circuit-input"
-              placeholder="Qty"
-            />
-            <input
-              name="condition"
-              placeholder="Condition (e.g. NM)"
+            placeholder="Qty"
+          />
+          <input
+            name="condition"
+            placeholder="Condition (e.g. NM)"
               className="circuit-input"
-            />
-          </div>
+          />
+        </div>
 
           {err && <p className="circuit-error-text">{err}</p>}
 
           <div className="circuit-form-actions">
             <Button
-              type="button"
-              onClick={close}
+            type="button"
+            onClick={close}
               variant="secondary"
               size="sm"
-            >
-              Cancel
+          >
+            Cancel
             </Button>
             <Button
-              type="submit"
-              disabled={submitting}
+            type="submit"
+            disabled={submitting}
               variant="primary"
               size="sm"
-            >
-              {submitting ? 'Uploading…' : 'Add'}
+          >
+            {submitting ? 'Uploading…' : 'Add'}
             </Button>
           </div>
         </div>
