@@ -36,10 +36,15 @@ export default function UploadCardForm({ close, onAdded }: Props) {
     if (!file) { setErr('Please select an image'); setSubmitting(false); return; }
 
     try {
+      console.log('🔵 Starting card upload process...');
+      
       // 1) upload image
+      console.log('📤 Uploading image to storage...');
       const imageUrl = await uploadCardImage(file);
+      console.log('✅ Image uploaded successfully:', imageUrl);
 
       // 2) ensure card exists in reference table (cards)
+      console.log('🔍 Checking if card exists in reference table...');
       const { data: existing } = await supabase
         .from('cards')
         .select('id')
@@ -49,11 +54,15 @@ export default function UploadCardForm({ close, onAdded }: Props) {
         .limit(1)
         .single();
 
+      console.log('🔍 Existing card found:', existing);
+      
       let cardId: string;
 
       if (existing) {
         cardId = existing.id;
+        console.log('✅ Using existing card ID:', cardId);
       } else {
+        console.log('➕ Creating new card in reference table...');
         const { data: insertedCard, error } = await supabase
           .from('cards')
           .insert({ name, number, set_code, image_url: imageUrl })
@@ -61,12 +70,16 @@ export default function UploadCardForm({ close, onAdded }: Props) {
           .single();
         if (error) throw error;
         cardId = insertedCard!.id;
+        console.log('✅ Created new card with ID:', cardId);
       }
 
       // 3) insert into user_cards
+      console.log('👤 Getting current user...');
       const { data: { user } } = await supabase.auth.getUser();
       const userId = user?.id || '00000000-0000-0000-0000-000000000001';
+      console.log('👤 User ID:', userId);
       
+      console.log('📝 Inserting into user_cards table...');
       const { error: userErr } = await supabase.from('user_cards').insert({
         user_id: userId,
         card_id: cardId,
@@ -75,11 +88,13 @@ export default function UploadCardForm({ close, onAdded }: Props) {
         image_url: imageUrl,
       });
       if (userErr) throw userErr;
+      console.log('✅ Successfully added card to user collection!');
 
       // 4) done!
       onAdded?.();
       close();
     } catch (e: unknown) {
+      console.error('💥 Upload error:', e);
       const message = e instanceof Error ? e.message : 'Upload failed';
       setErr(message);
     } finally {
