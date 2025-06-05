@@ -9,7 +9,7 @@
   background: var(--surface-background);
   border: 1px solid var(--border-subtle);
   border-radius: var(--sds-size-radius-200);
-  min-width: 140px;
+  min-width: var(--sds-size-width-metric-card);
 }
 
 .circuit-metric-card-highlighted {

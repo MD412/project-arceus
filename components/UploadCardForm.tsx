@@ -1,9 +1,21 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { uploadCardImage } from '@/lib/uploadCardImage';
-import { Button } from '@/components/ui';
+// import { Input } from '@/components/ui/Input'; // Path alias import commented out
+// import { MyTestInput } from './ui/MyTestInput'; // Old import commented out
+// import { Input } from './ui/Input'; // This line will be removed as components/ui/Input.tsx was deleted
+import { Input } from '@/components/forms'; // New import using path alias and barrel file
+import React, { useRef, useState } from 'react'; // Restored useState
+import { supabase } from '@/lib/supabase'; // Restored supabase
+import { uploadCardImage } from '@/lib/uploadCardImage'; // Restored uploadCardImage
+import { Button } from '@/components/ui/Button'; // Restored Button
+import { Modal } from '@/components/ui/Modal'; // Restored Modal import
+
+// All other imports and most of the component logic will be commented out
+// import { useRef, useState } from 'react';
+// import { supabase } from '@/lib/supabase';
+// import { uploadCardImage } from '@/lib/uploadCardImage';
+// import { Button } from '@/components/ui/Button';
+// import { Modal } from '@/components/ui/Modal';
 
 interface Props {
   /** close() will be called after successful submit or when user clicks cancel  */
@@ -13,11 +25,17 @@ interface Props {
 }
 
 export default function UploadCardForm({ close, onAdded }: Props) {
-  const fileRef       = useRef<HTMLInputElement>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null); // Added refs for other inputs if needed for focus or direct manipulation
+  const numberRef = useRef<HTMLInputElement>(null);
+  const setCodeRef = useRef<HTMLInputElement>(null);
+  const qtyRef = useRef<HTMLInputElement>(null);
+  const conditionRef = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  const [submitting, setSubmitting] = useState(false); // Restored state
+  const [err, setErr] = useState<string | null>(null); // Restored state
+
+  async function handleSubmit(e: React.FormEvent) { // Restored handleSubmit
     e.preventDefault();
     setErr(null);
     setSubmitting(true);
@@ -25,26 +43,24 @@ export default function UploadCardForm({ close, onAdded }: Props) {
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData(form);
 
-    // -------- grab values ----------
-    const file       = fileRef.current?.files?.[0];
-    const name       = formData.get('name')       as string;
-    const number     = formData.get('number')     as string;
-    const set_code   = formData.get('set_code')   as string;
-    const quantity   = Number(formData.get('qty'));
-    const condition  = formData.get('condition')  as string;
+    const file = fileRef.current?.files?.[0];
+    const name = formData.get('name') as string;
+    const number = formData.get('number') as string;
+    const set_code = formData.get('set_code') as string;
+    const quantity = Number(formData.get('qty'));
+    const condition = formData.get('condition') as string;
 
-    if (!file) { setErr('Please select an image'); setSubmitting(false); return; }
+    if (!file) {
+      setErr('Please select an image');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       console.log('🔵 Starting card upload process...');
-      
-      // 1) upload image
-      console.log('📤 Uploading image to storage...');
       const imageUrl = await uploadCardImage(file);
       console.log('✅ Image uploaded successfully:', imageUrl);
 
-      // 2) ensure card exists in reference table (cards)
-      console.log('🔍 Checking if card exists in reference table...');
       const { data: existing } = await supabase
         .from('cards')
         .select('id')
@@ -54,15 +70,10 @@ export default function UploadCardForm({ close, onAdded }: Props) {
         .limit(1)
         .single();
 
-      console.log('🔍 Existing card found:', existing);
-      
       let cardId: string;
-
       if (existing) {
         cardId = existing.id;
-        console.log('✅ Using existing card ID:', cardId);
       } else {
-        console.log('➕ Creating new card in reference table...');
         const { data: insertedCard, error } = await supabase
           .from('cards')
           .insert({ name, number, set_code, image_url: imageUrl })
@@ -70,27 +81,21 @@ export default function UploadCardForm({ close, onAdded }: Props) {
           .single();
         if (error) throw error;
         cardId = insertedCard!.id;
-        console.log('✅ Created new card with ID:', cardId);
       }
 
-      // 3) insert into user_cards
-      console.log('👤 Getting current user...');
       const { data: { user } } = await supabase.auth.getUser();
       const userId = user?.id || '00000000-0000-0000-0000-000000000001';
-      console.log('👤 User ID:', userId);
-      
-      console.log('📝 Inserting into user_cards table...');
+
       const { error: userErr } = await supabase.from('user_cards').insert({
         user_id: userId,
         card_id: cardId,
         quantity,
         condition,
-        image_url: imageUrl,
+        image_url: imageUrl, // Use the same image URL for user_cards for now
       });
       if (userErr) throw userErr;
       console.log('✅ Successfully added card to user collection!');
 
-      // 4) done!
       onAdded?.();
       close();
     } catch (e: unknown) {
@@ -102,79 +107,171 @@ export default function UploadCardForm({ close, onAdded }: Props) {
     }
   }
 
+  // Restore Modal usage, removing the temporary inline div wrapper
   return (
-    <div className="circuit-modal-overlay">
-      <form onSubmit={handleSubmit} className="circuit-modal">
-        <h2 className="circuit-modal-title">Add Card</h2>
-
-        <div className="circuit-form">
-        <input
+    <Modal open={true} onClose={close} title="Add Card">
+      {/* The Modal component now handles the title via its 'title' prop */}
+      <form onSubmit={handleSubmit} className="circuit-form">
+        <Input
           ref={fileRef}
           type="file"
           accept="image/*"
           required
-            className="circuit-input"
+          label="Card Image"
+          name="cardImage"
         />
 
-          <input 
-            name="name" 
-            placeholder="Name" 
-            required 
-            className="circuit-input" 
-          />
-          
-          <input 
-            name="number" 
-            placeholder="Number" 
-            required 
-            className="circuit-input" 
-          />
-          
-          <input 
-            name="set_code" 
-            placeholder="Set Code" 
-            required 
-            className="circuit-input" 
-          />
+        <Input
+          ref={nameRef}
+          name="name"
+          placeholder="Enter card name"
+          required
+          label="Name"
+        />
 
-          <div className="circuit-form-row">
-          <input
+        <Input
+          ref={numberRef}
+          name="number"
+          placeholder="Enter card number"
+          required
+          label="Number"
+        />
+
+        <Input
+          ref={setCodeRef}
+          name="set_code"
+          placeholder="Enter set code"
+          required
+          label="Set Code"
+        />
+
+        <div className="circuit-form-row"> {/* Assuming this class helps with layout */}
+          <Input
+            ref={qtyRef}
             name="qty"
             type="number"
             defaultValue={1}
             min={1}
-              className="circuit-input"
-            placeholder="Qty"
+            placeholder="Quantity"
+            label="Quantity"
+            style={{ flex: 1 }} // Example for layout within a row
           />
-          <input
+          <Input
+            ref={conditionRef}
             name="condition"
-            placeholder="Condition (e.g. NM)"
-              className="circuit-input"
+            placeholder="e.g. NM, LP, MP"
+            label="Condition"
+            style={{ flex: 1 }} // Example for layout within a row
           />
         </div>
 
-          {err && <p className="circuit-error-text">{err}</p>}
+        {err && <p className="circuit-error-text" style={{ color: 'var(--text-error, red)' }}>{err}</p>}
 
-          <div className="circuit-form-actions">
-            <Button
+        <div className="circuit-form-actions">
+          <Button
             type="button"
             onClick={close}
-              variant="secondary"
-              size="sm"
+            variant="secondary"
+            size="sm"
           >
             Cancel
-            </Button>
-            <Button
+          </Button>
+          <Button
             type="submit"
             disabled={submitting}
-              variant="primary"
-              size="sm"
+            variant="primary"
+            size="sm"
           >
-            {submitting ? 'Uploading…' : 'Add'}
-            </Button>
-          </div>
+            {submitting ? 'Uploading…' : 'Add Card'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+
+  /* Original return statement commented out
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      backgroundColor: 'var(--surface-background)', // Use CSS variable
+      padding: '2rem',
+      borderRadius: '8px',
+      zIndex: 1001, // Ensure it's above other content
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)', // Add some shadow
+      color: 'var(--text-primary)' // Ensure text is visible
+    }}>
+      <h2>Add Card (Simplified)</h2>
+      <form onSubmit={handleSubmit} className="circuit-form">
+        <Input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          required
+          label="Card Image"
+        />
+
+        <Input
+          name="name"
+          placeholder="Enter card name"
+          required
+          label="Name"
+        />
+
+        <Input
+          name="number"
+          placeholder="Enter card number"
+          required
+          label="Number"
+        />
+
+        <Input
+          name="set_code"
+          placeholder="Enter set code"
+          required
+          label="Set Code"
+        />
+
+        <div className="circuit-form-row">
+          <Input
+            name="qty"
+            type="number"
+            defaultValue={1}
+            min={1}
+            placeholder="Quantity"
+            label="Quantity"
+          />
+          <Input
+            name="condition"
+            placeholder="e.g. NM, LP, MP"
+            label="Condition"
+          />
+        </div>
+
+        {err && <p className="circuit-error-text" style={{ color: 'var(--text-error)' }}>{err}</p>}
+
+        <div className="circuit-form-actions">
+          <Button
+            type="button"
+            onClick={close}
+            variant="secondary"
+            size="sm"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={submitting}
+            variant="primary"
+            size="sm"
+          >
+            {submitting ? 'Uploading…' : 'Add Card'}
+          </Button>
         </div>
       </form>
     </div>
   );
+  */
 }

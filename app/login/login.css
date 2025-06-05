@@ -1,0 +1,113 @@
+/* === Login Page Styles === */
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background); /* Reverted to original background */
+  padding: var(--sds-size-space-400);
+  /* position: relative; /* REMOVED */
+  /* z-index: 1; /* REMOVED */
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px; /* Slightly wider for better spacing with new tokens */
+  background: var(--surface-background); /* Changed to standard surface background */
+  border-radius: var(--sds-size-radius-400); /* Softer radius */
+  box-shadow: 0 var(--sds-size-depth-100) var(--sds-size-depth-200) var(--color-black-300); /* Subtle shadow using primitives */
+  padding: var(--sds-size-space-600) var(--sds-size-space-800); /* More padding horizontal */
+  margin-left: auto; /* Explicitly center the card */
+  margin-right: auto; /* Explicitly center the card */
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: var(--sds-size-space-600); /* Reduced from 800 for tighter header */
+}
+
+.login-header h1 {
+  font: var(--font-subtitle); /* Using Monda, 28px/1.2 */
+  font-weight: 700; /* Override weight from token for more emphasis */
+  color: var(--text-heading-strong); /* Changed for contrast on dark card */
+  margin-bottom: var(--sds-size-space-100); /* Tighter margin */
+}
+
+.login-header p {
+  font: var(--font-body-small);
+  color: var(--text-primary); /* Changed for contrast on dark card */
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-400);
+  /* text-align: center; /* Removed */
+}
+
+/* 
+  Styles for .form-group, .form-label, .form-input, .form-input:focus, .form-input.error 
+  are now largely handled by the Input component (components/forms/Input.tsx and its CSS form.css).
+  These can be removed or significantly simplified.
+  The Input component uses .circuit-field as a wrapper.
+*/
+
+.login-form .circuit-field {
+  /* If specific adjustments needed for margin/padding around Input components in this form */
+  margin-bottom: var(--sds-size-space-100); /* Example: small gap between fields */
+}
+.login-form .circuit-field:last-of-type {
+  margin-bottom: var(--sds-size-space-300); /* More space before button */
+}
+
+.login-form .circuit-field .circuit-label.required::after {
+  display: none; /* Hide the asterisk for required fields in the login form */
+}
+
+/* Styles for .login-button are handled by the Button component */
+.login-form-button { /* Class added to Button component in page.tsx */
+  /* width: 100%; /* Removed */
+  max-width: 240px; /* Keep a max-width for aesthetics */
+  /* margin-left: auto; /* Removed */
+  /* margin-right: auto; /* Removed */
+  align-self: center; /* Center the button within the column flex container (the form) */
+  /* The Button component should handle its internal text alignment */
+}
+
+.login-footer {
+  margin-top: var(--sds-size-space-600);
+  text-align: center;
+  font: var(--font-body-small);
+  color: var(--text-primary); /* Changed for contrast on dark card */
+}
+
+.login-footer p {
+  margin-bottom: var(--sds-size-space-300); /* Increased space */
+}
+
+.auth-link {
+  color: var(--text-brand); /* Changed for visibility on dark card */
+  font-weight: 600; /* Increased weight for more prominence */
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+  color: var(--eva-light-yellow); /* Adjusted hover color */
+}
+
+/* General error messages (not field-specific, which Input component handles) */
+.general-error {
+  background-color: var(--color-red-100); /* Light opaque red background for error box */
+  color: var(--color-red-600); /* Darker red text for contrast on light error bg */
+  padding: var(--sds-size-space-300);
+  border-radius: var(--sds-size-radius-150);
+  border: var(--sds-size-stroke-border) solid var(--color-red-300); /* Light red border for error box */
+  margin-bottom: var(--sds-size-space-400);
+  text-align: center;
+  font: var(--font-body-small-strong); /* Bolder text for error messages */
+}
+
+/* Remove previously defined .error-message as Input component handles field errors */
+/* .error-message { ... } */ 

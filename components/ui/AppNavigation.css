@@ -1,0 +1,108 @@
+/* === AppNavigation: Generic Sidebar Navigation Styles === */
+
+/* Base Nav Container */
+.sidebar-nav {
+  background-color: var(--surface-background);
+  padding: var(--sds-size-space-400); /* 16px */
+  border-right: var(--sds-size-stroke-border) solid var(--border-subtle);
+  /* width is best controlled by parent or instance-specific class */
+}
+
+/* Header within the navigation */
+.sidebar-nav-header {
+  /* padding-bottom: var(--sds-size-space-300); */ /* Removed, space now handled by title's padding-bottom */
+  border-bottom: var(--sds-size-stroke-border) solid var(--border-subtle);
+  margin-bottom: var(--sds-size-space-200); /* Was 300 (12px), now 200 (8px) for tighter spacing */
+}
+
+/* Title in the header */
+.sidebar-nav-title {
+  font-family: var(--font-family-display); /* Monda */
+  font-size: var(--font-size-300); /* 20px */
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+  color: var(--text-primary);
+  padding-bottom: var(--sds-size-space-200); /* 8px - Space between text and header border */
+  margin-bottom: 0; /* Ensure no extra margin on title itself */
+}
+
+/* Main navigation list */
+.sidebar-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-100); /* 4px */
+}
+
+/* General list items - usually no specific style needed if links are padded */
+.sidebar-nav-item {
+  /* No default styles needed here */
+}
+
+/* Navigation links */
+.sidebar-nav-link {
+  display: block;
+  padding: var(--sds-size-space-200) var(--sds-size-space-300); /* 8px vertical, 12px horizontal */
+  border-radius: var(--sds-size-radius-150); /* Changed from 100 (4px) to 150 (6px) to match reference */
+  
+  font-family: var(--font-family-display); /* Changed from sans to display (Monda) */
+  font-size: var(--font-size-75); /* 14px */
+  font-weight: 500;
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--text-primary);
+  
+  text-decoration: none;
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.sidebar-nav-link:hover {
+  background-color: var(--surface-background-hover);
+  color: var(--text-primary); /* Or var(--text-brand) for more emphasis */
+}
+
+/* Active and Focus states for navigation links */
+.sidebar-nav-link-active,
+.sidebar-nav-link:focus {
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse); /* For contrast with yellow */
+  font-weight: 600; /* Bolder than default link */
+}
+
+/* Group headings within the navigation */
+.sidebar-nav-group-heading {
+  font-family: var(--font-family-display); /* Changed from sans to display (Monda) */
+  font-size: var(--font-size-50); /* 12px */
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide); /* 0.05em */
+  
+  padding: var(--sds-size-space-100) var(--sds-size-space-300); /* 4px vertical, 12px horizontal */
+  margin-top: var(--sds-size-space-300);    /* 12px, was 400 */
+  margin-bottom: var(--sds-size-space-100); /* 4px, was 150 */
+}
+
+/* Sub-list under a group heading */
+.sidebar-nav-sublist {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--sds-size-space-200) var(--sds-size-space-400); /* Indent 16px, bottom margin 8px */
+  padding-top: var(--sds-size-space-100); /* Space from heading */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-050); /* 2px, tighter for sub-items */
+}
+
+/* Icon styling */
+.sidebar-nav-icon {
+  margin-right: var(--sds-size-space-200); /* 8px */
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+/* Ensure the root layout imports this CSS file. */
+/* Example: import './components/ui/AppNavigation.css'; (adjust path as needed) */ 

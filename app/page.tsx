@@ -1,10 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, signOut, getCurrentUser } from '@/lib/supabase';
 import { SimpleCardGrid } from '@/components/simple-card-grid';
 import UploadCardForm from '@/components/UploadCardForm';
-import { Button, Card, StatsCard, EmptyState, MetricCard } from '@/components/ui';
+// import { Button, Card, StatsCard, EmptyState, MetricCard } from '@/components/ui'; // Old barrel import
+import { Button } from '@/components/ui/Button';
+import { Card, StatsCard } from '@/components/ui/Card';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { MetricCard } from '@/components/ui/MetricCard';
+import { useRouter } from 'next/navigation';
 
 // Define the structure for the nested card details
 interface CardDetail {
@@ -32,6 +37,56 @@ interface RawUserCard extends Omit<UserCard, 'cards'> {
 export default function HomePage() {
   const [userCards, setUserCards] = useState<UserCard[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  // Check authentication status
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  async function checkUser() {
+    try {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      
+      if (!currentUser) {
+        // User is not logged in, redirect to login
+        router.push('/login');
+        return;
+      }
+      
+      // User is logged in, load their cards
+      loadCards();
+    } catch (error) {
+      console.error('Error checking user:', error);
+      router.push('/login');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      const { error } = await signOut();
+      if (error) {
+        console.error('Logout error:', error);
+        alert('Error logging out. Please try again.');
+        return;
+      }
+      
+      // Clear local state
+      setUser(null);
+      setUserCards([]);
+      
+      // Redirect to login page
+      router.push('/login');
+    } catch (error) {
+      console.error('Unexpected logout error:', error);
+      alert('Error logging out. Please try again.');
+    }
+  }
 
   async function loadCards() {
     console.log('🔄 Loading cards from database...');
@@ -124,16 +179,45 @@ export default function HomePage() {
     }
   }
 
-  useEffect(() => { loadCards(); }, []);
+  // Show loading state
+  if (isLoading) {
+    return (
+      <main className="container">
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <p>Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // If no user, the useEffect will redirect to login
+  if (!user) {
+    return null;
+  }
 
   return (
     <main className="container">
       {/* Header Section */}
       <header className="header">
-        <h1>Project Arceus Collection</h1>
-        <Button onClick={() => setShowForm(true)}>
-          + Add Card
-        </Button>
+        <div className="header-left">
+          <h1>Project Arceus Collection</h1>
+          <p className="user-info">Welcome back, {user.email}!</p>
+        </div>
+        <div className="header-right">
+          <Button onClick={() => setShowForm(true)}>
+            + Add Card
+          </Button>
+          <Button 
+            onClick={handleLogout}
+            style={{ 
+              background: '#ef4444', 
+              marginLeft: '0.5rem',
+              border: '1px solid #dc2626'
+            }}
+          >
+            Logout
+          </Button>
+        </div>
       </header>
 
       {/* Stats Section */}
@@ -167,6 +251,46 @@ export default function HomePage() {
           onAdded={loadCards}
         />
       )}
+      
+      <style jsx>{`
+        .header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: var(--spacing-8);
+          flex-wrap: wrap;
+          gap: var(--spacing-4);
+        }
+        
+        .header-left h1 {
+          margin: 0;
+          margin-bottom: var(--spacing-1);
+        }
+        
+        .user-info {
+          color: #666;
+          font-size: 0.875rem;
+          margin: 0;
+        }
+        
+        .header-right {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-2);
+        }
+        
+        @media (max-width: 768px) {
+          .header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .header-right {
+            width: 100%;
+            justify-content: flex-start;
+          }
+        }
+      `}</style>
     </main>
   );
 }

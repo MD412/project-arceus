@@ -1,3 +1,10 @@
+@import './styles/typography.css';
+@import './styles/page-layout.css';
+@import './styles/content-section.css';
+@import './styles/example-showcase.css';
+@import './styles/circuitds-layout.css';
+@import './styles/spacing-page.css';
+
 /* Reset */
 * {
   margin: 0;
@@ -63,7 +70,7 @@ body {
 .card-grid {
   display: grid;
   gap: var(--spacing-4);
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--sds-size-width-card-min), 1fr));
 }
 
 .card-item {
@@ -101,8 +108,8 @@ body {
   position: absolute;
   top: var(--spacing-2);
   right: var(--spacing-2);
-  width: 24px;
-  height: 24px;
+  width: var(--sds-size-icon-small);
+  height: var(--sds-size-icon-small);
   display: flex;
   align-items: center;
   justify-content: center;

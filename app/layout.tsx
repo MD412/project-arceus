@@ -2,10 +2,14 @@ import type { Metadata } from "next";
 import { inter, robotoMono, monda } from "./fonts";
 import "./globals.css";
 import './styles/circuit.css';
+import './styles/button.css';
+import './styles/form.css';
 import './styles/trading-card.css';
 import './styles/navigation.css';
 import './styles/metric-card.css';
-import Navigation from '@/components/Navigation';
+import '../components/ui/AppNavigation.css';
+// import Navigation from '@/components/Navigation'; // Replaced by GlobalNavigationWrapper
+import GlobalNavigationWrapper from "@/components/layout/GlobalNavigationWrapper";
 
 export const metadata: Metadata = {
   title: "Project Arceus",
@@ -25,11 +29,12 @@ export default function RootLayout({
     >
       <body className="antialiased">
         <div className="app-layout">
-          <Navigation />
+          <GlobalNavigationWrapper />
           <main id="main-content" className="app-content">
             {children}
           </main>
         </div>
+        <div id="modal-root" />
       </body>
     </html>
   );

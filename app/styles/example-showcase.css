@@ -1,0 +1,107 @@
+/* === ExampleShowcase Styles === */
+
+.example-showcase {
+  /* Spacing below each example, as per DocsExample in the guide */
+  /* margin-bottom: var(--sds-size-space-600); */ /* Removed, now handled by ContentSection gap */
+  border: var(--sds-size-stroke-border) solid var(--border-default);
+  border-radius: var(--sds-size-radius-200); /* Consistent with guide */
+  /* Changed background to be slightly offset from the main page background */
+  background-color: var(--surface-container-level-1, var(--surface-background-subtle)); 
+  overflow: hidden; /* To contain border-radius for child elements */
+}
+
+.example-showcase-header {
+  /* Top 16px | Left/Right 20px | Bottom 8px */
+  padding: var(--sds-size-space-400) var(--sds-size-space-500) var(--sds-size-space-200);
+  display: flex; 
+  flex-direction: column;
+  gap: var(--sds-size-space-200); /* 8px gap between title and description if both are present */
+}
+
+.example-showcase-title {
+  /* Typography for h3, h4... will be inherited or use classes like heading-3, heading-4 */
+  /* Defaulting to a slightly smaller heading style if not otherwise specified */
+  font-size: var(--font-size-300); /* 1.25rem / 20px - Default for example titles */
+  line-height: var(--line-height-tight);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0; /* Comprehensive margin reset */
+  margin-block-start: 0; /* Explicit reset for block start margin */
+  margin-block-end: 0;   /* Explicit reset for block end margin */
+  margin-inline-start: 0;/* Explicit reset for inline start margin */
+  margin-inline-end: 0;  /* Explicit reset for inline end margin */
+}
+
+.example-showcase-description {
+  font-size: var(--font-size-75); /* 0.875rem / 14px */
+  line-height: var(--line-height-normal);
+  color: var(--text-secondary);
+  margin: 0; /* Comprehensive margin reset */
+  margin-block-start: 0; /* Explicit reset for block start margin */
+  margin-block-end: 0;   /* Explicit reset for block end margin */
+  margin-inline-start: 0;/* Explicit reset for inline start margin */
+  margin-inline-end: 0;  /* Explicit reset for inline end margin */
+}
+
+.example-showcase-preview {
+  /* Left/Right/Bottom 16px, Top 8px for tighter vertical rhythm */
+  padding: var(--sds-size-space-200) var(--sds-size-space-400) var(--sds-size-space-400);
+  /* Changed background to contrast with the showcase block, potentially matching page bg */
+  background-color: var(--surface-preview-background, var(--surface-background-subtle)); 
+  overflow: auto; 
+  /* Add a subtle top/bottom border if header/code exists, to match design intent */
+}
+
+.example-showcase-preview:not(:first-child) {
+  /* Add border if there's a header above it */
+  /* border-top: var(--sds-size-stroke-border) solid var(--border-default); */
+}
+.example-showcase-preview:not(:last-child) {
+  /* Add border if there's a code block below it */
+  /* border-bottom: var(--sds-size-stroke-border) solid var(--border-default); */
+}
+
+.example-showcase-code-block {
+  padding: var(--sds-size-space-500); /* 20px padding */
+  border-top: var(--sds-size-stroke-border) solid var(--border-default);
+  background-color: var(--surface-code-background, var(--surface-background-muted));
+  color: var(--text-code, var(--text-secondary));
+  overflow-x: auto;
+}
+
+.example-showcase-code-block pre {
+  margin: 0; /* Reset pre margin */
+  white-space: pre-wrap; /* Wrap long lines of code */
+  word-wrap: break-word;
+}
+
+.example-showcase-code-block code {
+  /* Typography for code (font-family, size) comes from global .code-medium or similar */
+  /* color: var(--code-text-color, var(--text-primary)); */ /* Ensure code text color is set */
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-75); /* 14px - Consistent with code style */
+  line-height: var(--line-height-relaxed);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .example-showcase-header {
+    padding-top: var(--sds-size-space-500); /* Explicitly keep base vertical padding */
+    padding-bottom: var(--sds-size-space-500); /* Explicitly keep base vertical padding */
+    padding-left: var(--sds-size-space-400);  /* Adjust horizontal padding */
+    padding-right: var(--sds-size-space-400); /* Adjust horizontal padding */
+    /* Gap (var(--sds-size-space-200)) remains from base rule */
+  }
+
+  .example-showcase-preview {
+    /* Base padding is var(--sds-size-space-600) */
+    /* Reduce overall padding on mobile */
+    padding: var(--sds-size-space-500); 
+  }
+
+  .example-showcase-code-block {
+    /* Base padding is var(--sds-size-space-500) */
+    /* Reduce overall padding on mobile */
+    padding: var(--sds-size-space-400);
+  }
+} 

@@ -1,42 +1,36 @@
 'use client';
-import Link from 'next/link';
-import { clsx } from 'clsx';
-import { usePathname } from 'next/navigation';
 
-interface NavItem {
-  label: string;
-  href: string;
-}
+import AppNavigation, { type NavigationConfigItem, type NavLinkItem } from '@/components/ui/AppNavigation';
 
-const navItems: NavItem[] = [
-  { label: 'Collection', href: '/' },
-  { label: 'Add Card', href: '#' },
+// Original NavItem structure (can be removed or kept for reference if needed)
+// interface NavItem {
+//   label: string;
+//   href: string;
+// }
+
+const appNavItems: NavLinkItem[] = [
+  { type: 'link', label: 'Collection', href: '/' },
+  { type: 'link', label: 'Add Card', href: '#' }, // Assuming this is a placeholder or future feature
+  { type: 'link', label: 'CircuitDS', href: '/circuitds' }, // Added link to CircuitDS
 ];
 
-export default function Navigation() {
-  const pathname = usePathname();
+// Transform to NavigationConfigItem[] if your AppNavigation expects the union type directly
+// For this simple case, an array of NavLinkItem will also work if AppNavigation's items prop is typed as (NavLinkItem | NavGroupItem)[]
+const navigationConfig: NavigationConfigItem[] = appNavItems.map(item => ({ ...item, type: 'link' }));
 
+export default function Navigation() {
   return (
-    <nav className="circuit-sidebar" aria-label="Main">
-      <div className="circuit-sidebar-header">
-        <h2 className="subtitle">Project Arceus</h2>
-      </div>
-      <ul className="circuit-nav-list">
-        {navItems.map((item) => (
-          <li key={item.href} className="circuit-nav-item">
-            <Link
-              href={item.href}
-              className={clsx(
-                'circuit-nav-link',
-                pathname === item.href && 'circuit-nav-link-active'
-              )}
-              aria-current={pathname === item.href ? 'page' : undefined}
-            >
-              {item.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <AppNavigation
+      navTitle="Project Arceus"
+      items={navigationConfig}
+      baseNavClass="circuit-sidebar"
+      // Rely on AppNavigation.css defaults for these:
+      // headerClass="circuit-sidebar-header"
+      // titleClass="subtitle"
+      // navListClass="circuit-nav-list"
+      // navItemClass="circuit-nav-item"
+      // navLinkClass="circuit-nav-link"
+      // navLinkActiveClass="circuit-nav-link-active"
+    />
   );
 } 

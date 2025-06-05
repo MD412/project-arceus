@@ -1,20 +1,22 @@
+'use client';
 import { clsx } from 'clsx';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
-  'circuit-button', // Base circuit button class from the design system
+  'button_button_uCVc', // Base button class
   {
     variants: {
       variant: {
-        primary: 'circuit-button-primary',
-        secondary: 'circuit-button-secondary', 
-        destructive: 'circuit-button-destructive',
+        primary: 'button_button_primary_uCVc',
+        secondary: 'button_button_secondary_uCVc',
+        ghost: 'button_button_ghost_uCVc',
+        destructive: 'button_button_destructive_uCVc',
       },
       size: {
         sm: 'circuit-button-sm',
-        md: '', // Default size
+        md: '',
         lg: 'circuit-button-lg',
-      },
+      }
     },
     defaultVariants: {
       variant: 'secondary',
@@ -29,8 +31,8 @@ interface ButtonProps
 
 export function Button({ 
   className, 
-  variant, 
-  size, 
+  variant,
+  size,
   ...props 
 }: ButtonProps) {
   return (

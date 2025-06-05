@@ -1,0 +1,81 @@
+/* === Spacing Page Specific Styles === */
+
+.spacing-scale-grid {
+  display: grid;
+  gap: var(--sds-size-space-600); /* 24px gap between items */
+  /* Consider a 2-column layout on larger screens if desired */
+  /* @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  } */
+}
+
+.spacing-item {
+  display: flex;
+  flex-direction: column; /* Stack preview and details vertically by default */
+  gap: var(--sds-size-space-300); /* 12px gap between preview and details */
+  padding: var(--sds-size-space-400); /* 16px padding */
+  background-color: var(--surface-background); /* Use a subtle background for each item */
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--sds-size-radius-200);
+}
+
+@media (min-width: 600px) { /* Adjust breakpoint as needed */
+  .spacing-item {
+    flex-direction: row; /* Preview and details side-by-side on larger screens */
+    align-items: flex-start; /* Align items to the start */
+    gap: var(--sds-size-space-400); /* 16px gap */
+  }
+}
+
+.spacing-item-preview {
+  flex-shrink: 0; /* Prevent preview from shrinking */
+  width: 100%; /* Full width on small screens */
+  max-width: 150px; /* Max width on larger screens when side-by-side */
+  height: auto; /* Height will be set by inline style based on token value */
+  min-height: var(--sds-size-space-050); /* Ensure even small previews are visible */
+  border-radius: var(--sds-size-radius-100);
+  /* Background and border are set inline in the component for demonstration */
+}
+
+@media (min-width: 600px) {
+  .spacing-item-preview {
+    width: 100px; /* Fixed width when side-by-side */
+  }
+}
+
+.spacing-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-100); /* 4px gap between token, value, and description */
+  flex-grow: 1;
+}
+
+.spacing-item-details code {
+  /* Using .code-medium class from global typography */
+  /* background-color: var(--code-background); */ /* Optional: if specific bg needed */
+  /* padding: var(--sds-size-space-050) var(--sds-size-space-100); */
+  /* border-radius: var(--sds-size-radius-050); */
+  display: inline-block; /* To allow padding/bg if not using a component */
+}
+
+.spacing-item-details .body-medium strong {
+  font-weight: 600; /* Ensure value is bold */
+  color: var(--text-primary);
+}
+
+.spacing-item-details .body-small {
+  color: var(--text-secondary);
+}
+
+/* Styles for the conceptual utility class example on the Spacing page */
+.mb-400 {
+  margin-bottom: var(--sds-size-space-400) !important; /* !important for demo purposes if other styles conflict */
+}
+
+.p-600 {
+  padding: var(--sds-size-space-600) !important;
+}
+
+.mt-200 {
+  margin-top: var(--sds-size-space-200) !important;
+} 

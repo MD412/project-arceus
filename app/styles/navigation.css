@@ -1,7 +1,7 @@
 /******** Navigation & Layout Styles ********/
 
 :root {
-  --sidebar-width: 280px;
+  --sidebar-width: var(--sds-size-width-sidebar);
 }
 
 .app-layout {
@@ -10,58 +10,49 @@
   width: 100%;
 }
 
-/* Sidebar */
+/* Sidebar Container - styles specific to the main app's sidebar */
 .circuit-sidebar {
-  width: var(--sidebar-width);
+  width: var(--sds-size-width-sidebar);
   flex-shrink: 0;
   height: 100vh;
   position: fixed;
   top: 0;
   left: 0;
-  display: flex;
+  display: flex; /* This ensures the sidebar is visible and uses flex for internal layout */
   flex-direction: column;
-  gap: var(--sds-size-space-400);
+  gap: var(--sds-size-space-400); /* Gap between header and list, etc. */
   padding: var(--sds-size-space-400);
   background: var(--surface-background);
   border-right: 1px solid var(--border-default);
 }
 
-.circuit-sidebar-header {
-  padding-bottom: var(--sds-size-space-200);
-  border-bottom: 1px solid var(--border-default);
-}
-
-/* Nav list */
-.circuit-nav-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sds-size-space-100);
-}
-
-.circuit-nav-link {
-  display: block;
-  padding: 8px 12px; /* --sds-size-space-200 horizontally */
-  border-radius: var(--sds-size-radius-100);
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: background 0.15s ease;
-}
-
-.circuit-nav-link:hover {
-  background: var(--surface-background-hover);
-}
-
-.circuit-nav-link-active,
-.circuit-nav-link:focus {
-  background: var(--interactive-primary);
-  color: var(--text-inverse);
-}
+/* 
+  .circuit-sidebar-header, .circuit-nav-list, .circuit-nav-link, 
+  .circuit-nav-link:hover, .circuit-nav-link-active, .circuit-nav-link:focus 
+  are now handled by the generic .sidebar-nav-* classes in AppNavigation.css, 
+  as components/Navigation.tsx no longer passes these specific classes for internal elements.
+  If any specific overrides for these elements ARE NEEDED uniquely for .circuit-sidebar, 
+  they would be added here with more specific selectors, e.g., .circuit-sidebar .sidebar-nav-link { ... }
+*/
 
 /* Main content area */
 .app-content {
   flex: 1;
   padding: var(--sds-size-space-400) var(--sds-size-space-600);
   overflow-x: hidden;
-  margin-left: var(--sidebar-width); /* account for fixed sidebar width */
+  margin-left: var(--sds-size-width-sidebar); /* Make space for the now visible sidebar */
+}
+
+/* 
+  When .app-content from the root layout contains the .circuitds-layout-container, 
+  OR the .login-container (or future .signup-container etc. for auth pages),
+  it means we are on a page where the GlobalNavigationWrapper hides the main application sidebar. 
+  Therefore, the .app-content wrapper should not have a left margin or specific padding,
+  allowing these specific layouts to occupy the full width they define.
+*/
+.app-content:has(> .circuitds-layout-container),
+.app-content:has(> .login-container),
+.app-content:has(> .signup-container) {
+  margin-left: 0;
+  padding: 0; /* Reset padding as these containers will manage their own */
 } 

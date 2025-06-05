@@ -1,0 +1,158 @@
+'use client';
+
+import React from 'react';
+import PageLayout from '@/components/layout/PageLayout';
+import ContentSection from '@/components/layout/ContentSection';
+import ExampleShowcase from '@/components/layout/ExampleShowcase';
+
+// Data for typography examples
+const displayTypes = [
+  { class: 'display-large', label: 'display-large' },
+  { class: 'display-medium', label: 'display-medium' },
+  { class: 'display-small', label: 'display-small' },
+];
+
+const headingLevels = [1, 2, 3, 4, 5, 6].map(level => ({ class: `heading-${level}`, label: `heading-${level}` }));
+
+const bodySizes = ['large', 'medium', 'small'].map(size => ({ class: `body-${size}`, label: `body-${size}` }));
+
+const uiSizes = ['large', 'medium', 'small'].map(size => ({ class: `ui-${size}`, label: `ui-${size}` }));
+
+const codeSizes = ['large', 'medium', 'small'].map(size => ({ class: `code-${size}`, label: `code-${size}` }));
+
+const specialStyles = ['caption', 'overline', 'label'].map(style => ({ class: style, label: style }));
+
+const fontScale = [
+  { token: '--font-size-50', value: '0.75rem (12px)' },
+  { token: '--font-size-75', value: '0.875rem (14px)' },
+  { token: '--font-size-100', value: '1rem (16px)' },
+  { token: '--font-size-200', value: '1.125rem (18px)' },
+  { token: '--font-size-300', value: '1.25rem (20px)' },
+  { token: '--font-size-400', value: '1.5rem (24px)' },
+  { token: '--font-size-500', value: '1.75rem (28px)' },
+  { token: '--font-size-600', value: '2rem (32px)' },
+  { token: '--font-size-700', value: '2.5rem (40px)' },
+  { token: '--font-size-800', value: '3rem (48px)' },
+  { token: '--font-size-900', value: '3.5rem (56px)' },
+  { token: '--font-size-1000', value: '4rem (64px)' }
+];
+
+const TypographyExample = ({ className, label }: { className: string; label: string }) => (
+  <ExampleShowcase preview={<p className={className}>The quick brown fox jumps over the lazy dog</p>} code={label} />
+);
+
+export default function TypographyPage() {
+  return (
+    <PageLayout
+      title="Typography System"
+      description="A comprehensive type system built on semantic tokens and consistent scales."
+    >
+      <ContentSection title="Overview">
+        <p className="body-medium">
+          Our typography system is built on a foundation of primitive tokens that define our basic type properties, 
+          which are then composed into semantic tokens for specific use cases. This ensures consistency while 
+          maintaining flexibility across different contexts.
+        </p>
+      </ContentSection>
+
+      <ContentSection title="Display Typography">
+        <p className="body-medium mb-400">
+          Display typography is used for hero sections, large headlines, and other prominent text elements.
+        </p>
+        {displayTypes.map(type => <TypographyExample key={type.class} className={type.class} label={type.label} />)}
+      </ContentSection>
+
+      <ContentSection title="Headings">
+        <p className="body-medium mb-400">
+          A clear hierarchy of headings helps users understand the structure of your content.
+        </p>
+        {headingLevels.map(level => <TypographyExample key={level.class} className={level.class} label={level.label} />)}
+      </ContentSection>
+
+      <ContentSection title="Body Text">
+        <p className="body-medium mb-400">
+          Body text styles are optimized for readability in different contexts.
+        </p>
+        {bodySizes.map(size => <TypographyExample key={size.class} className={size.class} label={size.label} />)}
+      </ContentSection>
+
+      <ContentSection title="UI Text">
+        <p className="body-medium mb-400">
+          UI text is designed for interface elements like buttons, labels, and navigation.
+        </p>
+        {uiSizes.map(size => <TypographyExample key={size.class} className={size.class} label={size.label} />)}
+      </ContentSection>
+
+      <ContentSection title="Code">
+        <p className="body-medium mb-400">
+          Monospace typography for code examples and technical content.
+        </p>
+        {codeSizes.map(size => <TypographyExample key={size.class} className={size.class} label={size.label} />)}
+      </ContentSection>
+
+      <ContentSection title="Special Cases">
+        <p className="body-medium mb-400">
+          Special typography styles for specific use cases.
+        </p>
+        {specialStyles.map(style => <TypographyExample key={style.class} className={style.class} label={style.label} />)}
+      </ContentSection>
+
+      <ContentSection title="Implementation">
+        <ExampleShowcase 
+          title="Example Article Structure" 
+          headingLevel={3}
+          preview={ 
+            <article>
+              <h1 className="heading-1 mb-200">Main Heading</h1>
+              <p className="body-large mb-400">
+                This is a large body text paragraph that might introduce a section or contain important information that needs emphasis.
+              </p>
+              <h2 className="heading-3 mb-200">Subheading</h2>
+              <p className="body-medium mb-200">
+                Regular body text for the main content. This style is optimized for readability and works well for longer paragraphs.
+              </p>
+              <p className="caption">A caption that provides additional context</p>
+            </article>
+          }
+          code={`<article>
+  <h1 className="heading-1">Main Heading</h1>
+  <p className="body-large">
+    This is a large body text paragraph...
+  </p>
+  <h2 className="heading-3">Subheading</h2>
+  <p className="body-medium">
+    Regular body text for the main content...
+  </p>
+  <p className="caption">
+    A caption that provides additional context
+  </p>
+</article>`}
+        />
+        <ExampleShowcase
+          title="Using CSS Variables"
+          headingLevel={3}
+          description="Access typography tokens directly in your CSS for custom components."
+          code={`.custom-text {
+  font: var(--typography-body-large); /* Example, replace with actual token if available */
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--text-primary);
+}`}
+        />
+      </ContentSection>
+
+      <ContentSection title="Font Size Scale">
+        <p className="body-medium mb-400">
+          Our font size scale follows an 8px baseline grid for consistent vertical rhythm.
+        </p>
+        <div className="font-scale-list-container">
+          {fontScale.map(({ token, value }) => (
+            <div key={token} className="font-scale-item">
+              <code className="code-small">{token}</code>
+              <span className="body-medium">{value}</span>
+            </div>
+          ))}
+        </div>
+      </ContentSection>
+    </PageLayout>
+  );
+} 

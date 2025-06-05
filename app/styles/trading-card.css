@@ -12,7 +12,7 @@
 
 .circuit-trading-card:hover {
   border-color: var(--border-hover);
-  transform: translateY(-2px);
+  transform: translateY(var(--sds-size-space-negative-050));
 }
 
 .circuit-trading-card-image-wrapper {
@@ -59,8 +59,8 @@
   position: absolute;
   top: var(--sds-size-space-100);
   right: var(--sds-size-space-100);
-  width: 24px;
-  height: 24px;
+  width: var(--sds-size-icon-small);
+  height: var(--sds-size-icon-small);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,5 +81,5 @@
 .card-grid {
   display: grid;
   gap: var(--sds-size-space-400);
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--sds-size-width-card-min), 1fr));
 } 

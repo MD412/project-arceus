@@ -1,4 +1,6 @@
-import { EmptyState, TradingCard } from '@/components/ui';
+// import { EmptyState, TradingCard } from '@/components/ui'; // Old barrel import
+import { EmptyState } from '@/components/ui/EmptyState';
+import { TradingCard } from '@/components/ui/TradingCard';
 
 // Define the structure for the nested card details
 interface CardDetail {

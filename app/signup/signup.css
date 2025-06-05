@@ -1,0 +1,117 @@
+/* === Signup Page Styles === */
+
+.signup-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background); /* Reverted to original background */
+  padding: var(--sds-size-space-400);
+  /* position: relative; /* REMOVED */
+  /* z-index: 1; /* REMOVED */
+}
+
+.signup-card {
+  width: 100%;
+  max-width: 420px; /* Consistent with login card */
+  background: var(--surface-background);
+  border-radius: var(--sds-size-radius-400);
+  box-shadow: 0 var(--sds-size-depth-100) var(--sds-size-depth-200) var(--color-black-300);
+  padding: var(--sds-size-space-600) var(--sds-size-space-800);
+  margin-left: auto; /* Ensure card is centered if container is wider */
+  margin-right: auto; /* Ensure card is centered if container is wider */
+}
+
+/* Success Message Specific Styles */
+.success-message {
+  text-align: center;
+  padding: var(--sds-size-space-400) 0; /* Add some vertical padding */
+}
+
+.success-message h1 {
+  font: var(--font-heading); /* Use a heading font token */
+  color: var(--text-success); /* Use semantic success color */
+  margin-bottom: var(--sds-size-space-300);
+}
+
+.success-message p {
+  font: var(--font-body-base);
+  color: var(--text-primary);
+  margin-bottom: var(--sds-size-space-400);
+}
+
+/* Signup Form Specific Styles */
+.signup-header {
+  text-align: center;
+  margin-bottom: var(--sds-size-space-600);
+}
+
+.signup-header h1 {
+  font: var(--font-subtitle);
+  font-weight: 700;
+  color: var(--text-heading-strong);
+  margin-bottom: var(--sds-size-space-100);
+}
+
+.signup-header p {
+  font: var(--font-body-small);
+  color: var(--text-primary);
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-400); /* Gap for Input components */
+}
+
+/* Hide required asterisks for this form */
+.signup-form .circuit-field .circuit-label.required::after {
+  display: none;
+}
+
+.signup-form .circuit-field {
+  margin-bottom: var(--sds-size-space-100); /* Small gap between fields */
+}
+.signup-form .circuit-field:last-of-type {
+  margin-bottom: var(--sds-size-space-300); /* More space before button */
+}
+
+.signup-form-button { /* Class added to Button component in page.tsx */
+  max-width: 240px;
+  align-self: center; /* Center the button */
+}
+
+.signup-footer {
+  margin-top: var(--sds-size-space-600);
+  text-align: center;
+  font: var(--font-body-small);
+  color: var(--text-primary);
+}
+
+.signup-footer p {
+  margin-bottom: var(--sds-size-space-300);
+}
+
+/* Auth link styles used in both success message and footer */
+.auth-link {
+  color: var(--text-brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+  color: var(--eva-light-yellow);
+}
+
+/* General error messages (not field-specific, which Input component handles) */
+.general-error {
+  background-color: var(--color-red-100);
+  color: var(--color-red-600);
+  padding: var(--sds-size-space-300);
+  border-radius: var(--sds-size-radius-150);
+  border: var(--sds-size-stroke-border) solid var(--color-red-300);
+  margin-bottom: var(--sds-size-space-400);
+  text-align: center;
+  font: var(--font-body-small-strong);
+} 

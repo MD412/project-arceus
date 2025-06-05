@@ -1,0 +1,45 @@
+/* === Radius Page Specific Styles === */
+
+.radius-scale-grid {
+  display: grid;
+  gap: var(--sds-size-space-600); /* 24px gap between items */
+  /* Consider a 2-column layout on larger screens */
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.radius-item {
+  display: flex;
+  gap: var(--sds-size-space-400); /* 16px gap between preview and details */
+  padding: var(--sds-size-space-400); /* 16px padding */
+  background-color: var(--surface-background); /* Use a subtle background for each item */
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--sds-size-radius-200);
+  align-items: center;
+}
+
+.radius-item-preview {
+  flex-shrink: 0; /* Prevent preview from shrinking */
+}
+
+.radius-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-100); /* 4px gap between token, value, and description */
+}
+
+.radius-item-details code {
+  display: inline-block;
+  font-family: var(--font-mono);
+  color: var(--text-code);
+}
+
+.radius-item-details .body-medium strong {
+  font-weight: 600; /* Ensure value is bold */
+  color: var(--text-primary);
+}
+
+.radius-item-details .body-small {
+  color: var(--text-secondary);
+} 

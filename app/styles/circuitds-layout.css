@@ -1,0 +1,56 @@
+/* === CircuitDS Layout Styles === */
+
+.circuitds-layout-container {
+  display: flex;
+  height: calc(100vh - var(--header-height, 0px));
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* If this layout is meant to be full viewport height and the root layout already has a header, 
+     you might need to subtract that header's height. 
+     Or, ensure the root layout provides a container that this can fill. */
+}
+
+/* CircuitDS Sidebar Container - styles specific to the DS sidebar */
+.circuitds-sidebar {
+  width: 260px; /* Slightly wider for better readability of nav items */
+  flex-shrink: 0;
+  padding: var(--sds-size-space-600); /* 24px */
+  background-color: var(--surface-background);
+  overflow-y: auto; /* Allow sidebar to scroll if content is too long */
+  margin: 0;
+  border-right: var(--sds-size-stroke-border) solid var(--border-default); /* Light teal border using semantic token */
+  /* display: flex; flex-direction: column; gap: ...; are implicitly handled by AppNavigation's internal structure or default styles */
+}
+
+/* CircuitDS specific title style - passed as titleClass to AppNavigation */
+.circuitds-sidebar-title {
+  font: var(--font-heading-3); /* Example: use a typography token */
+  /* Adjust actual token based on desired appearance, e.g. heading-2 or heading-3 from typography.css */
+  font-size: var(--font-size-400); /* Overriding for specific size if needed */
+  font-weight: 600;
+  color: var(--text-primary); /* Was --text-heading-strong, adjust as needed */
+  margin-bottom: 0; /* Removed large margin, was var(--sds-size-space-500) */
+  padding-bottom: var(--sds-size-space-200);
+}
+
+/* 
+  .circuitds-nav-list (and its li),
+  .circuitds-nav-heading,
+  .circuitds-nav-sublist (and its li),
+  .circuitds-nav-link (and its :hover, and commented -active state)
+  are now handled by the generic .sidebar-nav-* classes in AppNavigation.css, 
+  as app/(circuitds)/circuitds/layout.tsx no longer passes these specific classes 
+  for most internal elements (except circuitds-sidebar-title).
+  Active links are styled by .sidebar-nav-link-active from AppNavigation.css.
+*/
+
+.circuitds-main-content {
+  flex: 1;
+  padding: var(--sds-size-space-800); /* 32px */
+  overflow-y: auto; /* Allow main content to scroll independently */
+  background-color: var(--surface-background-subtle);
+  min-width: 0; /* Prevents flexbox overflow issues */
+  margin: 0;
+} 

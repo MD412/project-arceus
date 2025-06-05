@@ -1,0 +1,86 @@
+/* === ContentSection Styles === */
+
+.content-section {
+  /* Spacing between sections, as per DocsSection in the guide */
+  margin-bottom: var(--sds-size-space-800); /* 32px */
+  /* Added styles to make it a visible container */
+  padding: var(--sds-size-space-600); /* 24px internal padding */
+  border: var(--sds-size-stroke-border) solid var(--border-default);
+  border-radius: var(--sds-size-radius-200); /* 8px radius, consistent with ExampleShowcase */
+  background-color: var(--surface-background);
+  overflow: hidden; /* To contain border-radius for child elements if they push content to edges */
+}
+
+.content-section-title {
+  /* Spacing below the section title, before the content body */
+  margin-bottom: var(--sds-size-space-400); /* 16px */
+  /* Typography (font-size, weight, etc.) for h2, h3... will be inherited 
+     from global typography styles or can be customized via titleClassName. */
+  /* Example: if you wanted to ensure all section titles have a specific base color: */
+  /* color: var(--text-primary); */
+}
+
+.content-section-body {
+  /* This div wraps the children of the section. */
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-600); /* 24px - Consistent spacing between all direct children */
+  /* e.g., if all section bodies needed specific line-height or color: */
+  /* line-height: var(--line-height-relaxed); */
+}
+
+/* Default list styling within content sections */
+.content-section ul,
+.content-section ol {
+  padding-left: var(--sds-size-space-800); /* 32px - Standard indentation */
+  margin: 0;
+  font: var(--font-body-medium); /* Apply body-medium font by default */
+}
+
+.content-section ul {
+  list-style-type: disc;
+}
+
+.content-section ol {
+  list-style-type: decimal;
+}
+
+/* Nested lists */
+.content-section ul ul,
+.content-section ol ul {
+  list-style-type: circle;
+}
+
+.content-section ul ul ul,
+.content-section ol ul ul {
+  list-style-type: square;
+}
+
+/* Override classes for explicit styling */
+.content-section .list-disc {
+  list-style-type: disc;
+  padding-left: var(--sds-size-space-800); /* 32px - More generous padding for list items */
+  margin: 0; /* Reset any default margins */
+}
+
+.content-section .list-circle {
+  list-style-type: circle;
+  padding-left: var(--sds-size-space-800); /* 32px - Consistent with list-disc */
+  margin: 0;
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 768px) {
+  .content-section {
+    margin-bottom: var(--sds-size-space-600); /* 24px on smaller screens */
+  }
+
+  .content-section-title {
+    margin-bottom: var(--sds-size-space-300); /* 12px on smaller screens */
+  }
+
+  .content-section ul,
+  .content-section ol {
+    padding-left: var(--sds-size-space-600); /* 24px on smaller screens */
+  }
+} 

@@ -1,0 +1,53 @@
+/* === PageLayout Styles === */
+
+.page-layout {
+  width: 100%;
+  /* Optional: Add padding if pages using this layout don't have their own outer padding */
+  /* padding: var(--sds-size-space-600); */ 
+}
+
+.page-layout-header {
+  margin-bottom: var(--sds-size-space-600); /* 24px - Default content spacing */
+  padding-bottom: var(--sds-size-space-400); /* 16px - Some spacing for a potential border */
+  border-bottom: var(--sds-size-stroke-border) solid var(--border-subtle);
+}
+
+.page-title {
+  /* Use heading-2 style from typography.css */
+  font-size: var(--font-size-600);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: 700;
+  color: var(--text-primary); /* Ensure color is set if not inherited */
+  margin-bottom: var(--sds-size-space-200); /* 8px space between title and description */
+}
+
+.page-description {
+  /* Use body-large style from typography.css */
+  font-size: var(--font-size-200);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+  color: var(--text-secondary); /* Secondary color for description */
+  max-width: 80ch; /* Improve readability */
+}
+
+.page-layout-content {
+  /* Content area for children, may not need specific styles now */
+  /* Example: margin-top: var(--sds-size-space-400); if header didn't have margin-bottom */
+}
+
+/* Responsive adjustments for header spacing if needed */
+@media (max-width: 768px) {
+  .page-layout-header {
+    margin-bottom: var(--sds-size-space-400); /* 16px on smaller screens */
+    padding-bottom: var(--sds-size-space-300); /* 12px on smaller screens */
+  }
+
+  .page-title {
+    font-size: var(--font-size-500); /* Slightly smaller title on mobile */
+  }
+
+  .page-description {
+    font-size: var(--font-size-100); /* Slightly smaller description on mobile */
+  }
+} 
