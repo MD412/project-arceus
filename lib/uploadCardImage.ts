@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 
 /**
  * Uploads a File to Supabase Storage and returns its public URL.
- * Bucket: user-card-images
+ * Bucket: binder-photo-uploads
  * Path:  user-uploads/{uuid}.{ext}
  */
 export async function uploadCardImage(file: File) {
@@ -14,7 +14,7 @@ export async function uploadCardImage(file: File) {
 
   const { error } = await supabase
     .storage
-    .from('user-card-images')
+    .from('binder-photo-uploads')
     .upload(filePath, file, { cacheControl: '3600', upsert: false });
 
   if (error) {
@@ -25,7 +25,7 @@ export async function uploadCardImage(file: File) {
 
   const { data } = supabase
     .storage
-    .from('user-card-images')
+    .from('binder-photo-uploads')
     .getPublicUrl(filePath);
 
   console.log('🔗 Public URL generated:', data.publicUrl);

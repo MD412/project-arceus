@@ -1,0 +1,7 @@
+# Computer Vision
+ultralytics
+Pillow
+
+# Supabase
+supabase
+python-dotenv 

@@ -2,21 +2,16 @@
 import { EmptyState } from '@/components/ui/EmptyState';
 import { TradingCard } from '@/components/ui/TradingCard';
 
-// Define the structure for the nested card details
-interface CardDetail {
+// Define the structure for cards from the cards table
+interface CardEntry {
   id: string;
   name: string;
   number: string;
   set_code: string;
+  set_name: string;
   image_url: string;
-}
-
-interface CardEntry {
-  id: string;
-  quantity: number;
-  condition: string;
-  image_url?: string; // Optional: image_url from the user_cards table itself
-  cards: CardDetail; // The joined card details from !inner join
+  user_id: string;
+  created_at: string;
 }
 
 interface SimpleCardGridProps {
@@ -25,26 +20,26 @@ interface SimpleCardGridProps {
 }
 
 export function SimpleCardGrid({ cards, onDelete }: SimpleCardGridProps) {
-  const handleDelete = async (entry: CardEntry) => {
-    if (!entry.cards) {
-      console.error('Cannot delete card: missing card data', entry);
+  const handleDelete = async (card: CardEntry) => {
+    if (!card.name) {
+      console.error('Cannot delete card: missing card data', card);
       alert('Cannot delete this card - missing card information');
       return;
     }
     
-    const cardName = entry.cards.name;
-    console.log(`🖱️ Delete button clicked for: ${cardName} (ID: ${entry.id})`);
+    const cardName = card.name;
+    console.log(`🖱️ Delete button clicked for: ${cardName} (ID: ${card.id})`);
     
     if (confirm(`Are you sure you want to delete "${cardName}" from your collection?`)) {
       console.log(`✔️ User confirmed deletion of: ${cardName}`);
-      onDelete?.(entry.id, cardName);
+      onDelete?.(card.id, cardName);
     } else {
       console.log(`❌ User cancelled deletion of: ${cardName}`);
     }
   };
 
-  // Filter for entries that have card details with a name
-  const validCards = cards.filter(entry => entry.cards && entry.cards.name);
+  // Filter for cards that have a name
+  const validCards = cards.filter(card => card.name);
 
   if (validCards.length === 0) {
     return (
@@ -57,20 +52,15 @@ export function SimpleCardGrid({ cards, onDelete }: SimpleCardGridProps) {
 
   return (
     <div className="card-grid">
-      {validCards.map((entry) => {
-        const cardDetail = entry.cards;
-        const imgUrl = entry.image_url ?? cardDetail.image_url;
-        
+      {validCards.map((card) => {
         return (
           <TradingCard
-            key={entry.id}
-            name={cardDetail.name}
-            imageUrl={imgUrl}
-            quantity={entry.quantity}
-            condition={entry.condition}
-            number={cardDetail.number}
-            setCode={cardDetail.set_code}
-            onDelete={onDelete ? () => handleDelete(entry) : undefined}
+            key={card.id}
+            name={card.name}
+            imageUrl={card.image_url}
+            number={card.number}
+            setCode={card.set_code}
+            onDelete={onDelete ? () => handleDelete(card) : undefined}
           />
         );
       })}

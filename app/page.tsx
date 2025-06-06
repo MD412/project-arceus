@@ -11,27 +11,16 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { useRouter } from 'next/navigation';
 
-// Define the structure for the nested card details
-interface CardDetail {
+// Define the structure for a user's card (directly from cards table)
+interface UserCard {
   id: string;
   name: string;
   number: string;
   set_code: string;
+  set_name: string;
   image_url: string;
-}
-
-// Define the structure for a user's card entry
-interface UserCard {
-  id: string;
-  quantity: number;
-  condition: string;
-  image_url?: string; // Optional: image_url from the user_cards table itself
-  cards: CardDetail; // The joined card details, a single object due to !inner join
-}
-
-interface RawUserCard extends Omit<UserCard, 'cards'> {
-  // Supabase join returns an array; we'll coerce to single object later
-  cards: CardDetail[];
+  user_id: string;
+  created_at: string;
 }
 
 export default function HomePage() {
@@ -94,33 +83,21 @@ export default function HomePage() {
     try {
       console.log('👤 Getting current user...');
       const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || '00000000-0000-0000-0000-000000000001';
       
-      console.log('👤 Loading cards for user:', userId);
+      if (!user) {
+        console.log('❌ No user found, redirecting to login');
+        router.push('/login');
+        return;
+      }
+      
+      console.log('👤 Loading cards for user:', user.id);
       
       console.log('🔍 Executing Supabase query...');
       
-      // TEMPORARY: Check if we can query without RLS constraints
-      console.log('🔧 Testing basic query capabilities...');
-      const testQuery = await supabase.from('user_cards').select('count');
-      console.log('🧪 Test query result:', testQuery);
-      
       const { data, error } = await supabase
-        .from('user_cards')
-        .select(`
-          id,
-          quantity,
-          condition,
-          image_url,
-          cards!inner (
-            id,
-            name,
-            number,
-            set_code,
-            image_url
-          )
-        `)
-        .eq('user_id', userId)
+        .from('cards')
+        .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -130,17 +107,9 @@ export default function HomePage() {
       }
       
       console.log('✅ Loaded cards from database:', data?.length || 0, 'cards');
-      console.log('📊 Card data (raw):', data);
-      
-      // Transform returned rows so `cards` is a single object (first element)
-      console.log('🔄 Processing card data...');
-      const processed: UserCard[] = (data as RawUserCard[] ?? []).map((row) => ({
-        ...row,
-        cards: Array.isArray(row.cards) ? row.cards[0] : (row.cards as unknown as CardDetail),
-      }));
-      console.log('✅ Processed card data:', processed);
+      console.log('📊 Card data:', data);
 
-      setUserCards(processed);
+      setUserCards(data || []);
       console.log('🎉 Cards loaded successfully!');
     } catch (err: unknown) {
       console.error('💥 Error loading cards:', err);
@@ -157,7 +126,7 @@ export default function HomePage() {
     
     try {
       const { error } = await supabase
-        .from('user_cards')
+        .from('cards')
         .delete()
         .eq('id', cardId);
       

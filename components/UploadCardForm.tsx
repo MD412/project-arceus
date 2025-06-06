@@ -61,40 +61,40 @@ export default function UploadCardForm({ close, onAdded }: Props) {
       const imageUrl = await uploadCardImage(file);
       console.log('✅ Image uploaded successfully:', imageUrl);
 
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('You must be logged in to add cards');
+      }
+
+      // Check if card already exists for this user
       const { data: existing } = await supabase
         .from('cards')
         .select('id')
         .eq('name', name)
         .eq('number', number)
         .eq('set_code', set_code)
+        .eq('user_id', user.id)
         .limit(1)
         .single();
 
-      let cardId: string;
       if (existing) {
-        cardId = existing.id;
-      } else {
-        const { data: insertedCard, error } = await supabase
-          .from('cards')
-          .insert({ name, number, set_code, image_url: imageUrl })
-          .select('id')
-          .single();
-        if (error) throw error;
-        cardId = insertedCard!.id;
+        throw new Error('You already have this card in your collection');
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || '00000000-0000-0000-0000-000000000001';
+      // Insert the new card
+      const { error } = await supabase
+        .from('cards')
+        .insert({
+          user_id: user.id,
+          name,
+          number,
+          set_code,
+          image_url: imageUrl
+        });
 
-      const { error: userErr } = await supabase.from('user_cards').insert({
-        user_id: userId,
-        card_id: cardId,
-        quantity,
-        condition,
-        image_url: imageUrl, // Use the same image URL for user_cards for now
-      });
-      if (userErr) throw userErr;
-      console.log('✅ Successfully added card to user collection!');
+      if (error) throw error;
+      console.log('✅ Successfully added card to collection!');
 
       onAdded?.();
       close();
