@@ -2,6 +2,10 @@
   "name": "project-arceus",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,7 +13,7 @@
     "lint": "next lint",
     "worker": "python services/worker/main.py",
     "supabase": "supabase start",
-    "dev-up": "concurrently \"npm:dev\" \"npm:worker\" \"npm:supabase\""
+    "dev-up": "concurrently \"npm:dev\" \"npm:worker\""
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.14",

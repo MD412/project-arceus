@@ -1,6 +1,7 @@
 # Computer Vision
 ultralytics
 Pillow
+opencv-python
 
 # Supabase
 supabase
