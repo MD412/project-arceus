@@ -3,17 +3,40 @@ import time
 import supabase
 import io
 import uuid
+import cv2
+import numpy as np
 from dotenv import load_dotenv
+from pathlib import Path
 from ultralytics import YOLO
 from PIL import Image
 
-load_dotenv() # Load environment variables from .env file
+# Load environment variables from .env.local in the project root
+project_root = Path(__file__).resolve().parent.parent
+dotenv_path = project_root / '.env.local'
+
+if dotenv_path.exists():
+    load_dotenv(dotenv_path=dotenv_path, override=True)
+    print(f"✅ Loaded environment variables from: {dotenv_path}")
+else:
+    print(f"⚠️ Warning: .env.local file not found at {dotenv_path}. Script might fail.")
 
 # --- Configuration ---
-# Let Ultralytics auto-download the model to its cache if not found locally
 YOLO_MODEL_IDENTIFIER = 'yolov8s.pt'
 CONFIDENCE_THRESHOLD = 0.25
 CROPPED_CARDS_BUCKET = 'card-crops'
+# Safety flag - set to False to disable new processing and use original pipeline
+ENABLE_CONTOUR_RECTIFICATION = True
+
+def order_points(pts):
+    """Order points in (top-left, top-right, bottom-right, bottom-left) order."""
+    rect = np.zeros((4, 2), dtype="float32")
+    s = pts.sum(axis=1)
+    rect[0] = pts[np.argmin(s)]
+    rect[2] = pts[np.argmax(s)]
+    diff = np.diff(pts, axis=1)
+    rect[1] = pts[np.argmin(diff)]
+    rect[3] = pts[np.argmax(diff)]
+    return rect
 
 def create_supabase_client():
     """Creates a Supabase client instance."""
@@ -55,11 +78,72 @@ def process_job(sb_client, job, model):
                 tiles.append({'image': tile, 'origin': (c * tile_w, r * tile_h)})
         print(f"[Info] Performed 3x3 slices -> got {len(tiles)} tiles in {time.time() - t0:.2f}s")
 
-        # 3. Run YOLO Detection on Each Tile
+        # 3. Run YOLO Detection on Each Tile (with optional contour rectification + CLAHE)
         t0 = time.time()
         all_detections = []
+        processed_count = 0
+        fallback_count = 0
+        
         for i, tile_data in enumerate(tiles):
-            results = model.predict(tile_data['image'], conf=CONFIDENCE_THRESHOLD, verbose=False)
+            tile_pil = tile_data['image']
+            
+            # Apply enhanced processing if enabled
+            if ENABLE_CONTOUR_RECTIFICATION:
+                try:
+                    # Convert PIL image to OpenCV format (BGR numpy array)
+                    tile_bgr = cv2.cvtColor(np.array(tile_pil), cv2.COLOR_RGB2BGR)
+                    tile_h, tile_w = tile_bgr.shape[:2]
+                    
+                    # 1. Convert to gray & blur to smooth noise
+                    gray = cv2.cvtColor(tile_bgr, cv2.COLOR_BGR2GRAY)
+                    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+                    
+                    # 2. Edge detect + find contours
+                    edges = cv2.Canny(blurred, 50, 150)
+                    contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+                    
+                    # 3. Pick the contour with largest area (if any contours found)
+                    if contours and len(contours) > 0:
+                        largest = max(contours, key=cv2.contourArea)
+                        
+                        # Only proceed if contour is reasonably large
+                        contour_area = cv2.contourArea(largest)
+                        if contour_area > (tile_w * tile_h * 0.1):  # At least 10% of tile
+                            # 4. Approximate to quadrilateral
+                            peri = cv2.arcLength(largest, True)
+                            approx = cv2.approxPolyDP(largest, 0.02 * peri, True)
+                            
+                            if len(approx) == 4:
+                                pts = approx.reshape(4, 2).astype("float32")
+                                
+                                # 5. Order pts (tl, tr, br, bl) then warp
+                                rect = order_points(pts)
+                                dst = np.array([[0, 0], [tile_w, 0], [tile_w, tile_h], [0, tile_h]], dtype="float32")
+                                M = cv2.getPerspectiveTransform(rect, dst)
+                                warped = cv2.warpPerspective(tile_bgr, M, (tile_w, tile_h))
+                                
+                                # 6. Apply CLAHE
+                                gray_w = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+                                clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+                                enhanced = clahe.apply(gray_w)
+                                processed_tile = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
+                                
+                                # Convert back to PIL for YOLO
+                                tile_pil = Image.fromarray(cv2.cvtColor(processed_tile, cv2.COLOR_BGR2RGB))
+                                processed_count += 1
+                                continue
+                    
+                    # If we get here, no good contour found - use raw tile
+                    fallback_count += 1
+                    
+                except Exception as e:
+                    print(f"[Warning] Tile {i} preprocessing failed: {e}, using raw tile")
+                    fallback_count += 1
+            else:
+                fallback_count += 1
+            
+            # Run YOLO on tile (either processed or raw)
+            results = model.predict(tile_pil, conf=CONFIDENCE_THRESHOLD, verbose=False)
             for res in results:
                 for box in res.boxes:
                     # Convert tile-coords to full-image coords
@@ -67,7 +151,9 @@ def process_job(sb_client, job, model):
                     origin_x, origin_y = tile_data['origin']
                     global_box = [x1 + origin_x, y1 + origin_y, x2 + origin_x, y2 + origin_y]
                     all_detections.append({'tile_index': i, 'box': global_box, 'confidence': box.conf.item()})
-        print(f"[Info] YOLO detected {len(all_detections)} total boxes in {time.time() - t0:.2f}s")
+        
+        processing_status = f"enhanced={processed_count}, raw={fallback_count}" if ENABLE_CONTOUR_RECTIFICATION else "raw=9 (enhancement disabled)"
+        print(f"[Info] YOLO detected {len(all_detections)} total boxes in {time.time() - t0:.2f}s ({processing_status})")
 
         # 4. Post-Process & Upload Cropped Cards
         t0 = time.time()

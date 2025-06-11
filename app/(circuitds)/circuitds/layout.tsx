@@ -57,9 +57,6 @@ const circuitDSNavItems: NavigationConfigItem[] = [
     heading: 'AI Operations',
     children: [
       { type: 'link', label: 'Change Propagation', href: '/circuitds/ai-ops' },
-      { type: 'link', label: '3x3 Slice Strategy', href: '/circuitds/vision-pipeline-3x3-slice' },
-      { type: 'link', label: '🔥 Vision Pipeline Case Study', href: '/circuitds/vision-pipeline-case-study' },
-      { type: 'link', label: '🔧 Technical Snapshot', href: '/circuitds/vision-pipeline-technical-snapshot' },
     ],
   },
   {

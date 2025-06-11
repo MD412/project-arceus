@@ -1,12 +1,7 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from './devAuth'
 
-// This creates a Supabase client for use in client components
-// Use explicit env vars to ensure local development works correctly
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// Get the Supabase client using environment variables
+export const supabase = getSupabaseClient()
 
 // Helper function to check if user is logged in
 export const getCurrentUser = async () => {

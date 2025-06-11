@@ -10,6 +10,9 @@ import './styles/metric-card.css';
 import '../components/ui/AppNavigation.css';
 // import Navigation from '@/components/Navigation'; // Replaced by GlobalNavigationWrapper
 import GlobalNavigationWrapper from "@/components/layout/GlobalNavigationWrapper";
+import QueryProvider from "@/components/providers/QueryProvider";
+import ToastProvider from "@/components/providers/ToastProvider";
+import ErrorBoundary from "@/components/layout/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: "Project Arceus",
@@ -28,13 +31,18 @@ export default function RootLayout({
       className={`${inter.variable} ${robotoMono.variable} ${monda.variable}`}
     >
       <body className="antialiased">
-        <div className="app-layout">
-          <GlobalNavigationWrapper />
-          <main id="main-content" className="app-content">
-            {children}
-          </main>
-        </div>
-        <div id="modal-root" />
+        <QueryProvider>
+          <ToastProvider />
+          <ErrorBoundary>
+            <div className="app-layout">
+              <GlobalNavigationWrapper />
+              <main id="main-content" className="app-content">
+                {children}
+              </main>
+            </div>
+            <div id="modal-root" />
+          </ErrorBoundary>
+        </QueryProvider>
       </body>
     </html>
   );

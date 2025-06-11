@@ -9,8 +9,8 @@ export default function GlobalNavigationWrapper() {
   // Define paths where the main navigation should be hidden
   const noNavPaths = ['/login', '/signup', '/forgot-password'];
 
-  // Don't render the main application sidebar on /circuitds routes or specified noNavPaths
-  if (pathname?.startsWith('/circuitds') || noNavPaths.includes(pathname)) {
+  // Don't render the main application sidebar on /circuitds or /handbook routes
+  if (pathname?.startsWith('/circuitds') || pathname?.startsWith('/handbook') || noNavPaths.includes(pathname)) {
     return null;
   }
 

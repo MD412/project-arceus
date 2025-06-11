@@ -26,10 +26,26 @@ const CodeBlock = ({ children }: { children: React.ReactNode }) => (
 export default function DeveloperGuidePage() {
   return (
     <PageLayout
-      title="CircuitDS: Developer & Contributor Guide"
-      description="This document provides essential information for developers and contributors working on the CircuitDS design system within Project Arceus."
+      title="Developer Guide"
+      description="Essential information for developers contributing to the CircuitDS design system."
     >
-      <ContentSection title="1. Project Overview & Philosophy" headingLevel={2}>
+      <div style={{
+        padding: 'var(--sds-size-space-500)',
+        background: 'var(--color-primary-50)',
+        border: '1px solid var(--color-primary-200)',
+        borderRadius: 'var(--sds-size-radius-200)',
+        marginBottom: 'var(--sds-size-space-600)'
+      }}>
+        <h3 style={{ marginTop: 0, color: 'var(--color-primary-600)' }}>Looking for Engineering Docs?</h3>
+        <p className="body-medium" style={{ margin: 'var(--sds-size-space-200) 0' }}>
+          This guide covers how to work with the <strong>Design System</strong>. For in-depth documentation on the application's architecture, backend services, and operational procedures, please see the full <strong>Handbook</strong>.
+        </p>
+        <Link href="/handbook" className="button-primary">
+          Go to Handbook
+        </Link>
+      </div>
+
+      <ContentSection title="Getting Started" headingLevel={2}>
         <p className="body-medium">
           CircuitDS is the dedicated design system for Project Arceus. Its primary goal is to provide a consistent, reusable, and well-documented set of UI components, styling guidelines, and interaction patterns.
         </p>

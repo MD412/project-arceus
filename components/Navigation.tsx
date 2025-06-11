@@ -1,6 +1,6 @@
 'use client';
 
-import AppNavigation, { type NavigationConfigItem, type NavLinkItem } from '@/components/ui/AppNavigation';
+import AppNavigation, { type NavigationConfigItem } from '@/components/ui/AppNavigation';
 
 // Original NavItem structure (can be removed or kept for reference if needed)
 // interface NavItem {
@@ -8,15 +8,25 @@ import AppNavigation, { type NavigationConfigItem, type NavLinkItem } from '@/co
 //   href: string;
 // }
 
-const appNavItems: NavLinkItem[] = [
+const navigationConfig: NavigationConfigItem[] = [
+  // This first set of links appears under the main title.
   { type: 'link', label: 'Collection', href: '/' },
-  { type: 'link', label: 'Add Card', href: '#' }, // Assuming this is a placeholder or future feature
-  { type: 'link', label: 'CircuitDS', href: '/circuitds' }, // Added link to CircuitDS
+  { type: 'link', label: 'My Binders', href: '/binders' },
+
+  // This creates a new group with a heading, providing visual separation.
+  {
+    type: 'group',
+    heading: 'Ops',
+    children: [
+      { type: 'link', label: 'CircuitDS', href: '/circuitds' },
+      { type: 'link', label: 'Handbook', href: '/handbook' },
+    ],
+  },
 ];
 
 // Transform to NavigationConfigItem[] if your AppNavigation expects the union type directly
 // For this simple case, an array of NavLinkItem will also work if AppNavigation's items prop is typed as (NavLinkItem | NavGroupItem)[]
-const navigationConfig: NavigationConfigItem[] = appNavItems.map(item => ({ ...item, type: 'link' }));
+// const navigationConfig: NavigationConfigItem[] = appNavItems.map(item => ({ ...item, type: 'link' }));
 
 export default function Navigation() {
   return (
