@@ -70,6 +70,15 @@ export default function VisionPipelineCaseStudyPage() {
             <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary-500)' }}>8</div>
             <div style={{ fontSize: 'var(--font-body-small)' }}>Total Detections</div>
           </div>
+          <div style={{
+            padding: 'var(--sds-size-space-400)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--sds-size-radius-100)',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-primary-500)' }}>100%</div>
+            <div style={{ fontSize: 'var(--font-body-small)' }}>Grid View Adoption</div>
+          </div>
         </div>
 
         <p className="body-large">

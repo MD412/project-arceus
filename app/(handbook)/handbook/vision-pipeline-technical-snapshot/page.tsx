@@ -149,6 +149,22 @@ Database: PostgreSQL with RLS disabled for worker tables
               <li>Works on 2048×1536 input images</li>
             </ul>
           </div>
+
+          <div style={{
+            padding: 'var(--sds-size-space-400)',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--sds-size-radius-100)',
+            background: 'var(--surface-background)'
+          }}>
+            <h5 style={{ color: 'var(--color-success-500)', margin: '0 0 var(--sds-size-space-200) 0' }}>
+              Latest Updates (Today)
+            </h5>
+            <ul className="body-small" style={{ margin: 0, listStyle: 'disc', paddingLeft: '1rem' }}>
+              <li>Improved default view mode for better UX</li>
+              <li>Grid view now set as default for cleaner presentation</li>
+              <li>Maintained spatial view toggle for binder position reference</li>
+            </ul>
+          </div>
         </div>
       </ContentSection>
 
