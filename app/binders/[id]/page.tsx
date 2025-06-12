@@ -297,7 +297,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
         /* NEW: UI Mapping Styles */
         .cards-header {
           margin-bottom: 1rem;
-          padding: 1rem;
+          padding: 0;
           background: var(--color-blue-50);
           border: 1px solid var(--color-blue-200);
           border-radius: var(--sds-size-radius-100);
@@ -310,7 +310,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
         }
         .cards-help-text {
           margin: 0;
-          color: var(--color-blue-700);
+          color: var(--text-tertiary);
           font-size: 0.875rem;
           flex: 1;
         }

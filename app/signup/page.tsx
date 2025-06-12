@@ -145,11 +145,12 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className="signup-container">
-      <div className="signup-card">
-        <div className="signup-header">
-          <h1>Create Account</h1>
-          <p>Join Project Arceus to start collecting</p>
-        </div>
+      <div className="signup-card-wrapper">
+        <div className="signup-card">
+          <div className="signup-header">
+            <h1>Create Account</h1>
+            <p>Join Project Arceus to start collecting</p>
+          </div>
         
         <form onSubmit={handleSubmit} className="signup-form">
           {errors.general && (
@@ -214,6 +215,12 @@ const SignupPage: React.FC = () => {
               Log in
             </Link>
           </p>
+        </div>
+        </div>
+        <div className="signup-back-button">
+          <Link href="/login" className="back-link">
+            ← Back to Login
+          </Link>
         </div>
       </div>
     </div>

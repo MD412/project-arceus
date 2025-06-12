@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+python in windows always wants to be called py. 
+
+- Q whatever command windows doesn't accept

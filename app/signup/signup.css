@@ -7,19 +7,67 @@
   justify-content: center;
   background: var(--background); /* Reverted to original background */
   padding: var(--sds-size-space-400);
-  /* position: relative; /* REMOVED */
-  /* z-index: 1; /* REMOVED */
+  position: relative;
+  overflow: hidden; /* Ensures rotated background doesn't cause scrollbars */
+}
+
+/* Tiled and rotated background pattern using Arceus art */
+.signup-container::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  right: -20%;
+  bottom: -20%;
+  background-image: url('/arceus-art.svg');
+  background-size: 120px 120px; /* Optimal size for tiling pattern */
+  background-repeat: repeat;
+  transform: rotate(15deg); /* Modern diagonal tiling effect */
+  z-index: 0; /* Behind all content */
+  pointer-events: none; /* Ensure it doesn't interfere with interactions */
+}
+
+/* Ensure signup card content appears above the background */
+.signup-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Card wrapper to contain both card and back button */
+.signup-card-wrapper {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .signup-card {
   width: 100%;
-  max-width: 420px; /* Consistent with login card */
-  background: var(--surface-background);
+  background: var(--circuit-dark-teal); /* Circuit Dark Teal background */
+  border: var(--sds-size-stroke-border) solid var(--circuit-mid-teal); /* Circuit Mid Teal border */
   border-radius: var(--sds-size-radius-400);
   box-shadow: 0 var(--sds-size-depth-100) var(--sds-size-depth-200) var(--color-black-300);
   padding: var(--sds-size-space-600) var(--sds-size-space-800);
-  margin-left: auto; /* Ensure card is centered if container is wider */
-  margin-right: auto; /* Ensure card is centered if container is wider */
+}
+
+/* Back Button Styles */
+.signup-back-button {
+  margin-top: var(--sds-size-space-500);
+  text-align: center;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  font: var(--font-body-small);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--text-brand);
+  text-decoration: none;
 }
 
 /* Success Message Specific Styles */

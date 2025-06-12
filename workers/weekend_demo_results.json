@@ -1,0 +1,226 @@
+{
+  "job_id": "demo_job_weekend",
+  "processed_at": "2025-06-11T04:17:54.855783",
+  "summary": {
+    "total_detections": 9,
+    "identified": 8,
+    "unidentified": 1,
+    "errors": 0,
+    "success_rate": 88.88888888888889
+  },
+  "detections": [
+    {
+      "detection_id": "demo_det_001",
+      "status": "identified",
+      "processing_time_ms": 0.558,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "card_name": "Charizard ex",
+      "set_name": "Scarlet & Violet",
+      "set_code": "SV1",
+      "card_number": "006",
+      "rarity": "Double Rare",
+      "pokemon_name": "Charizard",
+      "image_urls": {
+        "small": "https://images.pokemontcg.io/sv1/6.png",
+        "large": "https://images.pokemontcg.io/sv1/6_hires.png"
+      },
+      "market_price": 45.99,
+      "identification_confidence": 100.0,
+      "identification_method": "exact_match",
+      "match_type": "exact"
+    },
+    {
+      "detection_id": "demo_det_002",
+      "status": "identified",
+      "processing_time_ms": 0.456,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "card_name": "Pikachu VMAX",
+      "set_name": "Sword & Shield Promo",
+      "set_code": "SWSH045",
+      "card_number": "SWSH045",
+      "rarity": "Promo",
+      "pokemon_name": "Pikachu",
+      "image_urls": {
+        "small": "https://images.pokemontcg.io/swshp/SWSH045.png",
+        "large": "https://images.pokemontcg.io/swshp/SWSH045_hires.png"
+      },
+      "market_price": 12.5,
+      "identification_confidence": 87.5,
+      "identification_method": "fuzzy_match",
+      "match_type": "fuzzy_match"
+    },
+    {
+      "detection_id": "demo_det_003",
+      "status": "identified",
+      "processing_time_ms": 0.43600000000000005,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "card_name": "Mewtwo GX",
+      "set_name": "Sun & Moon Promo",
+      "set_code": "SMP",
+      "card_number": "SM196",
+      "rarity": "Promo",
+      "pokemon_name": "Mewtwo",
+      "image_urls": {
+        "small": "https://images.pokemontcg.io/smp/SM196.png",
+        "large": "https://images.pokemontcg.io/smp/SM196_hires.png"
+      },
+      "market_price": 12.5,
+      "identification_confidence": 100.0,
+      "identification_method": "exact_match",
+      "match_type": "exact"
+    },
+    {
+      "detection_id": "demo_det_004",
+      "status": "identified",
+      "processing_time_ms": 0.464,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "card_name": "Gardevoir ex",
+      "set_name": "Scarlet & Violet",
+      "set_code": "SV1",
+      "card_number": "086",
+      "rarity": "Ultra Rare",
+      "pokemon_name": "Gardevoir",
+      "image_urls": {
+        "small": "https://images.pokemontcg.io/sv1/86.png",
+        "large": "https://images.pokemontcg.io/sv1/86_hires.png"
+      },
+      "market_price": 12.5,
+      "identification_confidence": 100.0,
+      "identification_method": "exact_match",
+      "match_type": "exact"
+    },
+    {
+      "detection_id": "demo_det_005",
+      "status": "identified",
+      "processing_time_ms": 0.42700000000000005,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "card_name": "Blastoise",
+      "set_name": "Base Set",
+      "set_code": "BASE",
+      "card_number": "002",
+      "rarity": "Rare Holo",
+      "pokemon_name": "Blastoise",
+      "image_urls": {
+        "small": "https://images.pokemontcg.io/base1/2.png",
+        "large": "https://images.pokemontcg.io/base1/2_hires.png"
+      },
+      "market_price": 12.5,
+      "identification_confidence": 100.0,
+      "identification_method": "exact_match",
+      "match_type": "exact"
+    },
+    {
+      "detection_id": "demo_det_006",
+      "status": "unidentified",
+      "processing_time_ms": 0.40900000000000003,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "error_message": "No viable card matches found",
+      "fallback_display": "Unknown Card - Help us train this!"
+    },
+    {
+      "detection_id": "demo_det_007",
+      "status": "identified",
+      "processing_time_ms": 0.39,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "card_name": "Charizard ex",
+      "set_name": "Scarlet & Violet",
+      "set_code": "SV1",
+      "card_number": "006",
+      "rarity": "Double Rare",
+      "pokemon_name": "Charizard",
+      "image_urls": {
+        "small": "https://images.pokemontcg.io/sv1/6.png",
+        "large": "https://images.pokemontcg.io/sv1/6_hires.png"
+      },
+      "market_price": 45.99,
+      "identification_confidence": 100.0,
+      "identification_method": "exact_match",
+      "match_type": "exact"
+    },
+    {
+      "detection_id": "demo_det_008",
+      "status": "identified",
+      "processing_time_ms": 0.357,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "card_name": "Pikachu VMAX",
+      "set_name": "Sword & Shield Promo",
+      "set_code": "SWSH045",
+      "card_number": "SWSH045",
+      "rarity": "Promo",
+      "pokemon_name": "Pikachu",
+      "image_urls": {
+        "small": "https://images.pokemontcg.io/swshp/SWSH045.png",
+        "large": "https://images.pokemontcg.io/swshp/SWSH045_hires.png"
+      },
+      "market_price": 12.5,
+      "identification_confidence": 100.0,
+      "identification_method": "exact_match",
+      "match_type": "exact"
+    },
+    {
+      "detection_id": "demo_det_009",
+      "status": "identified",
+      "processing_time_ms": 0.40700000000000003,
+      "bounding_box": {
+        "x": 100,
+        "y": 100,
+        "width": 180,
+        "height": 240
+      },
+      "card_name": "Charizard ex",
+      "set_name": "Scarlet & Violet",
+      "set_code": "SV1",
+      "card_number": "006",
+      "rarity": "Double Rare",
+      "pokemon_name": "Charizard",
+      "image_urls": {
+        "small": "https://images.pokemontcg.io/sv1/6.png",
+        "large": "https://images.pokemontcg.io/sv1/6_hires.png"
+      },
+      "market_price": 45.99,
+      "identification_confidence": 50.0,
+      "identification_method": "low_confidence_match",
+      "match_type": "low_confidence"
+    }
+  ]
+}

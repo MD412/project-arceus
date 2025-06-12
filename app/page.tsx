@@ -148,7 +148,7 @@ export default function HomePage() {
           margin-bottom: var(--spacing-1);
         }
         .user-info {
-          color: #666;
+          color: var(--text-secondary);
           font-size: 0.875rem;
           margin: 0;
         }

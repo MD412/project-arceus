@@ -4,6 +4,7 @@
   /* Font Size Scale */
   --font-size-50: 0.75rem;   /* 12px */
   --font-size-75: 0.875rem;  /* 14px */
+  --font-size-87: 0.9375rem; /* 15px */
   --font-size-100: 1rem;     /* 16px */
   --font-size-200: 1.125rem; /* 18px */
   --font-size-300: 1.25rem;  /* 20px */
@@ -27,21 +28,21 @@
 }
 
 /* Display Typography */
-.display-large {
+.display-xl {
   font-size: var(--font-size-1000);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: 700;
 }
 
-.display-medium {
+.display-lg {
   font-size: var(--font-size-800);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
   font-weight: 700;
 }
 
-.display-small {
+.display-md {
   font-size: var(--font-size-700);
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-tight);
@@ -92,40 +93,52 @@
 }
 
 /* Body Text */
-.body-large {
+.text-xl {
   font-size: var(--font-size-200);
   line-height: var(--line-height-relaxed);
   letter-spacing: var(--letter-spacing-normal);
 }
 
-.body-medium {
+.text-lg {
   font-size: var(--font-size-100);
   line-height: var(--line-height-relaxed);
   letter-spacing: var(--letter-spacing-normal);
 }
 
-.body-small {
+.text-base {
+  font-size: var(--font-size-87);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-sm {
   font-size: var(--font-size-75);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-xs {
+  font-size: var(--font-size-50);
   line-height: var(--line-height-relaxed);
   letter-spacing: var(--letter-spacing-normal);
 }
 
 /* UI Text */
-.ui-large {
+.ui-lg {
   font-size: var(--font-size-100);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-wide);
   font-weight: 500;
 }
 
-.ui-medium {
+.ui-md {
   font-size: var(--font-size-75);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-wide);
   font-weight: 500;
 }
 
-.ui-small {
+.ui-sm {
   font-size: var(--font-size-50);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-wide);
@@ -133,21 +146,21 @@
 }
 
 /* Code */
-.code-large {
+.code-lg {
   font-family: var(--font-mono);
   font-size: var(--font-size-100);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-normal);
 }
 
-.code-medium {
+.code-md {
   font-family: var(--font-mono);
   font-size: var(--font-size-75);
   line-height: var(--line-height-normal);
   letter-spacing: var(--letter-spacing-normal);
 }
 
-.code-small {
+.code-sm {
   font-family: var(--font-mono);
   font-size: var(--font-size-50);
   line-height: var(--line-height-normal);

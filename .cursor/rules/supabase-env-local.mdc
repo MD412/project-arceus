@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Any time you run into supabase problems and can't find .env or .local.env it's because it's hidden from you in .gitignore . rest assured, I these keys are all correct and working.Whatever you're working on, this is not the problem. 

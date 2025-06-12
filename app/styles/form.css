@@ -78,9 +78,9 @@
   opacity: 0.8;
 }
 
-.circuit-input:hover:not(:disabled):not(:focus) {
+input.circuit-input:hover:not(:disabled):not(:focus) {
   border-color: var(--border-hover);
-  background-color: var(--surface-background-hover);
+  background-color: var(--circuit-medium-light-teal);
 }
 
 .circuit-input:focus {
@@ -104,9 +104,9 @@
   cursor: pointer;
 }
 
-.circuit-input[type="file"]:hover:not(:disabled) {
+input.circuit-input[type="file"]:hover:not(:disabled) {
   border-color: var(--border-hover);
-  background-color: var(--surface-background-hover);
+  background-color: var(--circuit-medium-light-teal);
 }
 
 /* Number Input Specific */

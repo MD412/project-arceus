@@ -61,11 +61,9 @@ export default function BindersPage() {
                 
                 {job.status === 'completed' && job.results?.summary_image_path && (
                   <div className="image-container">
-                    <Image
+                    <img
                       src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${job.results.summary_image_path}`}
                       alt={`Processed view of ${job.binder_title}`}
-                      width={500}
-                      height={375}
                       className="result-image"
                     />
                     <p className="card-count">
@@ -128,6 +126,8 @@ export default function BindersPage() {
           display: flex;
           flex-direction: column;
           gap: 1rem;
+          max-width: 100%;
+          overflow: hidden;
         }
         .binder-card h3 {
           margin: 0;
@@ -145,10 +145,13 @@ export default function BindersPage() {
           margin-top: 1rem;
         }
         .result-image {
-          width: 100%;
+          max-width: 100%;
+          width: auto;
           height: auto;
+          max-height: 300px;
           border-radius: var(--sds-size-radius-100);
           border: 1px solid var(--border-subtle);
+          display: block;
         }
         .card-count {
           font-weight: 500;

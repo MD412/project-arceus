@@ -5,16 +5,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--background); /* Reverted to original background */
+  background: var(--background);
   padding: var(--sds-size-space-400);
-  /* position: relative; /* REMOVED */
-  /* z-index: 1; /* REMOVED */
+  position: relative;
+  overflow: hidden; /* Ensures rotated background doesn't cause scrollbars */
+}
+
+/* Tiled and rotated background pattern using Arceus art */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  right: -20%;
+  bottom: -20%;
+  background-image: url('/arceus-art.svg');
+  background-size: 120px 120px; /* Optimal size for tiling pattern */
+  background-repeat: repeat;
+  transform: rotate(15deg); /* Modern diagonal tiling effect */
+  z-index: 0; /* Behind all content */
+  pointer-events: none; /* Ensure it doesn't interfere with interactions */
+}
+
+/* Ensure login card content appears above the background */
+.login-container > * {
+  position: relative;
+  z-index: 1;
 }
 
 .login-card {
   width: 100%;
   max-width: 420px; /* Slightly wider for better spacing with new tokens */
-  background: var(--surface-background); /* Changed to standard surface background */
+  background: var(--circuit-dark-teal); /* Circuit Dark Teal background */
+  border: var(--sds-size-stroke-border) solid var(--circuit-mid-teal); /* Circuit Mid Teal border */
   border-radius: var(--sds-size-radius-400); /* Softer radius */
   box-shadow: 0 var(--sds-size-depth-100) var(--sds-size-depth-200) var(--color-black-300); /* Subtle shadow using primitives */
   padding: var(--sds-size-space-600) var(--sds-size-space-800); /* More padding horizontal */

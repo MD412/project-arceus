@@ -82,6 +82,23 @@
   border-color: var(--status-error-pressed);
 }
 
+/* Info Button */
+.button_button_info_uCVc {
+  background-color: var(--color-blue-500);
+  color: var(--text-inverse);
+  border-color: var(--color-blue-500);
+}
+
+.button_button_info_uCVc:hover:not(:disabled) {
+  background-color: var(--color-blue-700);
+  border-color: var(--color-blue-700);
+}
+
+.button_button_info_uCVc:active:not(:disabled) {
+  background-color: var(--color-blue-700);
+  border-color: var(--color-blue-700);
+}
+
 /* Disabled state for all variants */
 .button_button_uCVc:disabled {
   cursor: not-allowed;

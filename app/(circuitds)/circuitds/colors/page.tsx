@@ -5,426 +5,425 @@ import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
 import ExampleShowcase from '@/components/layout/ExampleShowcase';
 
-// Helper component to display a color swatch
-const ColorSwatch = ({ colorVar, name }: { colorVar: string; name: string }) => (
-  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+// Enhanced helper component to display a color swatch with hex values
+const ColorSwatch = ({ 
+  colorVar, 
+  name, 
+  hexValue, 
+  description 
+}: { 
+  colorVar: string; 
+  name: string; 
+  hexValue?: string;
+  description?: string;
+}) => (
+  <div className="flex items-center gap-4 p-3 border border-[var(--border-default)] rounded-lg">
     <div
-      style={{
-        width: '100px',
-        height: '50px',
-        backgroundColor: `var(${colorVar})`,
-        border: '1px solid var(--border-default)',
-        marginRight: '1rem',
-      }}
+      className="w-16 h-16 rounded-lg border border-[var(--border-default)] flex-shrink-0"
+      style={{ backgroundColor: `var(${colorVar})` }}
     />
-    <div>
-      <div>{name}</div>
-      <code style={{ fontSize: '0.875rem' }}>{colorVar}</code>
+    <div className="flex-1">
+      <div className="font-medium text-[var(--text-primary)]">{name}</div>
+      <div className="text-sm text-[var(--text-secondary)] font-mono">{colorVar}</div>
+      {hexValue && (
+        <div className="text-sm text-[var(--text-tertiary)] font-mono">{hexValue}</div>
+      )}
+      {description && (
+        <div className="text-xs text-[var(--text-secondary)] mt-1">{description}</div>
+      )}
     </div>
   </div>
 );
 
-const PrimitiveColorRow = ({ scaleName, colorVarPrefix }: { scaleName: string; colorVarPrefix: string }) => {
-  const shades = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
-  return (
-    <>
-      {shades.map(shade => (
-        <ExampleShowcase
-          key={`${colorVarPrefix}-${shade}`}
-          title={`${scaleName} ${shade}`}
-          headingLevel={4} // Use h4 for individual swatches within a scale for better hierarchy
-          preview={<ColorSwatch colorVar={`${colorVarPrefix}-${shade}`} name={`${scaleName} ${shade}`} />}
-          code={`<div style={{ backgroundColor: 'var(${colorVarPrefix}-${shade})' }} />`}
+// Component for displaying color scales
+const ColorScale = ({ 
+  scaleName, 
+  colors, 
+  description 
+}: { 
+  scaleName: string; 
+  colors: Array<{ name: string; var: string; hex: string; }>; 
+  description: string;
+}) => (
+  <div className="space-y-4">
+    <div>
+      <h4 className="font-semibold text-[var(--text-primary)] mb-2">{scaleName}</h4>
+      <p className="text-sm text-[var(--text-secondary)]">{description}</p>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      {colors.map((color) => (
+        <ColorSwatch
+          key={color.var}
+          colorVar={color.var}
+          name={color.name}
+          hexValue={color.hex}
         />
       ))}
-    </>
+    </div>
+  </div>
   );
-};
 
 export default function ColorsPage() {
   return (
     <PageLayout
       title="Colors"
-      description="Our color system provides a comprehensive palette for building consistent and accessible interfaces. Each color is available as a CSS custom property that you can reference in your styles."
+      description="Our color system provides a comprehensive palette for building consistent and accessible interfaces. Each color is available as a CSS custom property with corresponding hex values for design tools."
     >
-      <ContentSection title="Current Theme Colors">
-        <p>These are the semantic colors currently active in the selected theme. They provide consistent color usage across the interface regardless of the theme.</p>
-        <ExampleShowcase
-          title="Background"
-          headingLevel={3}
-          description="Main background color."
-          preview={<ColorSwatch colorVar="--background" name="Background" />}
-          code={`<div style={{ backgroundColor: 'var(--background)' }} />`}
-        />
-        <ExampleShowcase
-          title="Foreground"
-          headingLevel={3}
-          description="Main foreground color, typically used for text."
-          preview={<ColorSwatch colorVar="--foreground" name="Foreground" />}
-          code={`<div style={{ color: 'var(--foreground)' }} />`}
-        />
-      </ContentSection>
-
-      <ContentSection title="Surface Colors">
-         <p>Colors used for different surface states and backgrounds.</p>
-        <ExampleShowcase
-          title="Surface Background"
-          headingLevel={3}
-          description="Default surface background color."
-          preview={<ColorSwatch colorVar="--surface-background" name="Surface Background" />}
-          code={`<div style={{ backgroundColor: 'var(--surface-background)' }} />`}
-        />
-        <ExampleShowcase
-          title="Surface Background Hover"
-          headingLevel={3}
-          description="Surface background color on hover."
-          preview={<ColorSwatch colorVar="--surface-background-hover" name="Surface Background Hover" />}
-          code={`<div style={{ backgroundColor: 'var(--surface-background-hover)' }} />`}
-        />
-        <ExampleShowcase
-          title="Surface Background Pressed"
-          headingLevel={3}
-          description="Surface background color when pressed."
-          preview={<ColorSwatch colorVar="--surface-background-pressed" name="Surface Background Pressed" />}
-          code={`<div style={{ backgroundColor: 'var(--surface-background-pressed)' }} />`}
-        />
-        <ExampleShowcase
-          title="Surface Background Subtle"
-          headingLevel={3}
-          description="Subtle surface background variation."
-          preview={<ColorSwatch colorVar="--surface-background-subtle" name="Surface Background Subtle" />}
-          code={`<div style={{ backgroundColor: 'var(--surface-background-subtle)' }} />`}
-        />
-        <ExampleShowcase
-          title="Surface Background Muted"
-          headingLevel={3}
-          description="Muted surface background color."
-          preview={<ColorSwatch colorVar="--surface-background-muted" name="Surface Background Muted" />}
-          code={`<div style={{ backgroundColor: 'var(--surface-background-muted)' }} />`}
-        />
-        <ExampleShowcase
-          title="Surface Background Emphasis"
-          headingLevel={3}
-          description="Emphasized surface background color."
-          preview={<ColorSwatch colorVar="--surface-background-emphasis" name="Surface Background Emphasis" />}
-          code={`<div style={{ backgroundColor: 'var(--surface-background-emphasis)' }} />`}
-        />
-        <ExampleShowcase
-          title="Surface Background Disabled"
-          headingLevel={3}
-          description="Surface background color for disabled states."
-          preview={<ColorSwatch colorVar="--surface-background-disabled" name="Surface Background Disabled" />}
-          code={`<div style={{ backgroundColor: 'var(--surface-background-disabled)' }} />`}
-        />
+      <ContentSection title="Circuit Brand Colors">
+        <p className="body-medium">
+          The core brand colors that define the Circuit design system's visual identity. These colors were designed to work harmoniously together and provide excellent contrast ratios.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ColorSwatch 
+            colorVar="--circuit-dark-teal" 
+            name="Circuit Dark Teal" 
+            hexValue="#1a4a47"
+            description="Primary brand color, used for main backgrounds and emphasis"
+          />
+          <ColorSwatch 
+            colorVar="--circuit-mid-teal" 
+            name="Circuit Mid Teal" 
+            hexValue="#2d6a65"
+            description="Surface backgrounds and secondary elements"
+          />
+          <ColorSwatch 
+            colorVar="--circuit-light-teal" 
+            name="Circuit Light Teal" 
+            hexValue="#4a9b94"
+            description="Borders, dividers, and subtle accents"
+          />
+          <ColorSwatch 
+            colorVar="--circuit-bright-teal" 
+            name="Circuit Bright Teal" 
+            hexValue="#5dbfb7"
+            description="Hover states and interactive highlights"
+          />
+          <ColorSwatch 
+            colorVar="--circuit-bright-yellow" 
+            name="Circuit Bright Yellow" 
+            hexValue="#ffcf60"
+            description="Primary action color and key interactions"
+          />
+          <ColorSwatch 
+            colorVar="--circuit-light-yellow" 
+            name="Circuit Light Yellow" 
+            hexValue="#fff2d1"
+            description="Primary text color and subtle highlights"
+          />
+          <ColorSwatch 
+            colorVar="--circuit-magenta" 
+            name="Circuit Magenta" 
+            hexValue="#e91e63"
+            description="Secondary action color and accent elements"
+          />
+          <ColorSwatch 
+            colorVar="--circuit-darker-teal" 
+            name="Circuit Darker Teal" 
+            hexValue="#0f2b29"
+            description="Deep backgrounds and inverse text"
+          />
+        </div>
       </ContentSection>
       
-      <ContentSection title="Text Colors">
-        <p>Colors used for different types of text and content.</p>
-        <ExampleShowcase
-          title="Text Primary"
-          headingLevel={3}
-          description="Primary text color."
-          preview={<ColorSwatch colorVar="--text-primary" name="Text Primary" />}
-          code={`<p style={{ color: 'var(--text-primary)' }}>Text Primary</p>`}
-        />
-         <ExampleShowcase
-          title="Text Secondary"
-          headingLevel={3}
-          description="Secondary text color."
-          preview={<ColorSwatch colorVar="--text-secondary" name="Text Secondary" />}
-          code={`<p style={{ color: 'var(--text-secondary)' }}>Text Secondary</p>`}
-        />
-        <ExampleShowcase
-          title="Text Tertiary"
-          headingLevel={3}
-          description="Tertiary text color."
-          preview={<ColorSwatch colorVar="--text-tertiary" name="Text Tertiary" />}
-          code={`<p style={{ color: 'var(--text-tertiary)' }}>Text Tertiary</p>`}
-        />
-        <ExampleShowcase
-          title="Text Disabled"
-          headingLevel={3}
-          description="Text color for disabled states."
-          preview={<ColorSwatch colorVar="--text-disabled" name="Text Disabled" />}
-          code={`<p style={{ color: 'var(--text-disabled)' }}>Text Disabled</p>`}
-        />
-        <ExampleShowcase
-          title="Text Inverse"
-          headingLevel={3}
-          description="Inverse text color, for use on dark backgrounds."
-          preview={<ColorSwatch colorVar="--text-inverse" name="Text Inverse" />}
-          code={`<p style={{ color: 'var(--text-inverse)', backgroundColor: 'var(--color-slate-800)', padding: '0.5rem' }}>Text Inverse</p>`}
-        />
-        <ExampleShowcase
-          title="Text Brand"
-          headingLevel={3}
-          description="Brand-aligned text color."
-          preview={<ColorSwatch colorVar="--text-brand" name="Text Brand" />}
-          code={`<p style={{ color: 'var(--text-brand)' }}>Text Brand</p>`}
-        />
-        <ExampleShowcase
-          title="Text Error"
-          headingLevel={3}
-          description="Text color for error messages."
-          preview={<ColorSwatch colorVar="--text-error" name="Text Error" />}
-          code={`<p style={{ color: 'var(--text-error)' }}>Text Error</p>`}
-        />
-        <ExampleShowcase
-          title="Text Success"
-          headingLevel={3}
-          description="Text color for success messages."
-          preview={<ColorSwatch colorVar="--text-success" name="Text Success" />}
-          code={`<p style={{ color: 'var(--text-success)' }}>Text Success</p>`}
-        />
-        <ExampleShowcase
-          title="Text Warning"
-          headingLevel={3}
-          description="Text color for warning messages."
-          preview={<ColorSwatch colorVar="--text-warning" name="Text Warning" />}
-          code={`<p style={{ color: 'var(--text-warning)' }}>Text Warning</p>`}
-        />
+      <ContentSection title="Semantic Colors">
+        <p className="body-medium">
+          Semantic colors provide meaning and context throughout the interface. They adapt to themes while maintaining consistent purpose and accessibility.
+        </p>
+
+        <ContentSection title="Core Semantics" headingLevel={3}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ColorSwatch 
+              colorVar="--background" 
+              name="Background" 
+              hexValue="#1a4a47"
+              description="Main page background color"
+            />
+            <ColorSwatch 
+              colorVar="--foreground" 
+              name="Foreground" 
+              hexValue="#fff2d1"
+              description="Primary text and content color"
+            />
+          </div>
+        </ContentSection>
+
+        <ContentSection title="Surface Colors" headingLevel={3}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <ColorSwatch 
+              colorVar="--surface-background" 
+              name="Surface Background" 
+              hexValue="#2d6a65"
+              description="Cards, panels, and elevated surfaces"
+            />
+            <ColorSwatch 
+              colorVar="--surface-background-hover" 
+              name="Surface Hover" 
+              hexValue="#4a9b94"
+              description="Surface hover states"
+            />
+            <ColorSwatch 
+              colorVar="--surface-background-pressed" 
+              name="Surface Pressed" 
+              hexValue="#1a4a47"
+              description="Surface active/pressed states"
+            />
+            <ColorSwatch 
+              colorVar="--surface-background-emphasis" 
+              name="Surface Emphasis" 
+              hexValue="#fff2d1"
+              description="Emphasized surface backgrounds"
+            />
+          </div>
       </ContentSection>
 
-      <ContentSection title="Border Colors">
-        <p>Colors used for borders and dividers.</p>
-        <ExampleShowcase
-          title="Border Default"
-          headingLevel={3}
-          description="Default border color."
-          preview={<ColorSwatch colorVar="--border-default" name="Border Default" />}
-          code={`<div style={{ border: '1px solid var(--border-default)', padding: '1rem' }} />`}
-        />
-        <ExampleShowcase
-          title="Border Hover"
-          headingLevel={3}
-          description="Border color on hover."
-          preview={<ColorSwatch colorVar="--border-hover" name="Border Hover" />}
-          code={`<div style={{ border: '1px solid var(--border-hover)', padding: '1rem' }} />`}
-        />
-        <ExampleShowcase
-          title="Border Focus"
-          headingLevel={3}
-          description="Border color for focused states."
-          preview={<ColorSwatch colorVar="--border-focus" name="Border Focus" />}
-          code={`<div style={{ border: '1px solid var(--border-focus)', padding: '1rem' }} />`}
-        />
-        <ExampleShowcase
-          title="Border Error"
-          headingLevel={3}
-          description="Border color for error states."
-          preview={<ColorSwatch colorVar="--border-error" name="Border Error" />}
-          code={`<div style={{ border: '1px solid var(--border-error)', padding: '1rem' }} />`}
-        />
-        <ExampleShowcase
-          title="Border Success"
-          headingLevel={3}
-          description="Border color for success states."
-          preview={<ColorSwatch colorVar="--border-success" name="Border Success" />}
-          code={`<div style={{ border: '1px solid var(--border-success)', padding: '1rem' }} />`}
-        />
-        <ExampleShowcase
-          title="Border Disabled"
-          headingLevel={3}
-          description="Border color for disabled states."
-          preview={<ColorSwatch colorVar="--border-disabled" name="Border Disabled" />}
-          code={`<div style={{ border: '1px solid var(--border-disabled)', padding: '1rem' }} />`}
-        />
+        <ContentSection title="Text Colors" headingLevel={3}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <ColorSwatch 
+              colorVar="--text-primary" 
+              name="Text Primary" 
+              hexValue="#fff2d1"
+              description="Main body text and headings"
+            />
+            <ColorSwatch 
+              colorVar="--text-secondary" 
+              name="Text Secondary" 
+              hexValue="#fff2d1"
+              description="Supporting text and labels"
+            />
+            <ColorSwatch 
+              colorVar="--text-inverse" 
+              name="Text Inverse" 
+              hexValue="#1a4a47"
+              description="Text on light backgrounds"
+            />
+            <ColorSwatch 
+              colorVar="--text-brand" 
+              name="Text Brand" 
+              hexValue="#ffcf60"
+              description="Brand-colored text and highlights"
+            />
+          </div>
       </ContentSection>
 
-      <ContentSection title="Interactive Colors">
-        <p>Colors used for interactive elements like buttons.</p>
-        <ExampleShowcase
-          title="Interactive Primary"
-          headingLevel={3}
-          description="Primary interactive element color."
-          preview={<ColorSwatch colorVar="--interactive-primary" name="Interactive Primary" />}
-          code={`<button style={{ backgroundColor: 'var(--interactive-primary)', color: 'var(--text-inverse)', border: 'none', padding: '0.5rem 1rem' }}>Primary Action</button>`}
-        />
-        <ExampleShowcase
-          title="Interactive Primary Hover"
-          headingLevel={3}
-          description="Primary interactive element color on hover."
-          preview={<ColorSwatch colorVar="--interactive-primary-hover" name="Interactive Primary Hover" />}
-          code={`<button style={{ backgroundColor: 'var(--interactive-primary-hover)', color: 'var(--text-inverse)', border: 'none', padding: '0.5rem 1rem' }}>Primary Hover</button>`}
-        />
-        <ExampleShowcase
-          title="Interactive Primary Pressed"
-          headingLevel={3}
-          description="Primary interactive element color when pressed."
-          preview={<ColorSwatch colorVar="--interactive-primary-pressed" name="Interactive Primary Pressed" />}
-          code={`<button style={{ backgroundColor: 'var(--interactive-primary-pressed)', color: 'var(--text-inverse)', border: 'none', padding: '0.5rem 1rem' }}>Primary Pressed</button>`}
-        />
-        <ExampleShowcase
-          title="Interactive Primary Disabled"
-          headingLevel={3}
-          description="Primary interactive element color for disabled states."
-          preview={<ColorSwatch colorVar="--interactive-primary-disabled" name="Interactive Primary Disabled" />}
-          code={`<button style={{ backgroundColor: 'var(--interactive-primary-disabled)', color: 'var(--text-disabled)', border: 'none', padding: '0.5rem 1rem' }}>Primary Disabled</button>`}
-        />
-        <ExampleShowcase
-          title="Interactive Secondary"
-          headingLevel={3}
-          description="Secondary interactive element color."
-          preview={<ColorSwatch colorVar="--interactive-secondary" name="Interactive Secondary" />}
-          code={`<button style={{ backgroundColor: 'var(--interactive-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', padding: '0.5rem 1rem' }}>Secondary Action</button>`}
-        />
-        <ExampleShowcase
-          title="Interactive Secondary Hover"
-          headingLevel={3}
-          description="Secondary interactive element color on hover."
-          preview={<ColorSwatch colorVar="--interactive-secondary-hover" name="Interactive Secondary Hover" />}
-          code={`<button style={{ backgroundColor: 'var(--interactive-secondary-hover)', color: 'var(--text-primary)', border: '1px solid var(--border-hover)', padding: '0.5rem 1rem' }}>Secondary Hover</button>`}
-        />
-        <ExampleShowcase
-          title="Interactive Secondary Pressed"
-          headingLevel={3}
-          description="Secondary interactive element color when pressed."
-          preview={<ColorSwatch colorVar="--interactive-secondary-pressed" name="Interactive Secondary Pressed" />}
-          code={`<button style={{ backgroundColor: 'var(--interactive-secondary-pressed)', color: 'var(--text-primary)', border: '1px solid var(--border-default)', padding: '0.5rem 1rem' }}>Secondary Pressed</button>`}
-        />
-        <ExampleShowcase
-          title="Interactive Secondary Disabled"
-          headingLevel={3}
-          description="Secondary interactive element color for disabled states."
-          preview={<ColorSwatch colorVar="--interactive-secondary-disabled" name="Interactive Secondary Disabled" />}
-          code={`<button style={{ backgroundColor: 'var(--interactive-secondary-disabled)', color: 'var(--text-disabled)', border: '1px solid var(--border-disabled)', padding: '0.5rem 1rem' }}>Secondary Disabled</button>`}
-        />
+        <ContentSection title="Interactive Colors" headingLevel={3}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ColorSwatch 
+              colorVar="--interactive-primary" 
+              name="Interactive Primary" 
+              hexValue="#ffcf60"
+              description="Primary buttons and main actions"
+            />
+            <ColorSwatch 
+              colorVar="--interactive-primary-hover" 
+              name="Primary Hover" 
+              hexValue="#ffdc73"
+              description="Primary button hover state"
+            />
+            <ColorSwatch 
+              colorVar="--interactive-secondary" 
+              name="Interactive Secondary" 
+              hexValue="#e91e63"
+              description="Secondary actions and accents"
+            />
+            <ColorSwatch 
+              colorVar="--interactive-secondary-hover" 
+              name="Secondary Hover" 
+              hexValue="#f04fa8"
+              description="Secondary button hover state"
+            />
+          </div>
+        </ContentSection>
       </ContentSection>
 
       <ContentSection title="Status Colors">
-        <p>Colors used to communicate status and feedback.</p>
-        <ExampleShowcase
-          title="Status Error"
-          headingLevel={3}
-          description="Color for error status."
-          preview={<ColorSwatch colorVar="--status-error" name="Status Error" />}
-          code={`<div style={{ backgroundColor: 'var(--status-error)', color: 'var(--text-inverse)', padding: '0.5rem' }}>Error Status</div>`}
-        />
-        <ExampleShowcase
-          title="Status Error Subtle"
-          headingLevel={3}
-          description="Subtle color for error status."
-          preview={<ColorSwatch colorVar="--status-error-subtle" name="Status Error Subtle" />}
-          code={`<div style={{ backgroundColor: 'var(--status-error-subtle)', color: 'var(--text-error)', padding: '0.5rem' }}>Subtle Error Status</div>`}
-        />
-        <ExampleShowcase
-          title="Status Success"
-          headingLevel={3}
-          description="Color for success status."
-          preview={<ColorSwatch colorVar="--status-success" name="Status Success" />}
-          code={`<div style={{ backgroundColor: 'var(--status-success)', color: 'var(--text-inverse)', padding: '0.5rem' }}>Success Status</div>`}
-        />
-        <ExampleShowcase
-          title="Status Success Subtle"
-          headingLevel={3}
-          description="Subtle color for success status."
-          preview={<ColorSwatch colorVar="--status-success-subtle" name="Status Success Subtle" />}
-          code={`<div style={{ backgroundColor: 'var(--status-success-subtle)', color: 'var(--text-success)', padding: '0.5rem' }}>Subtle Success Status</div>`}
-        />
-        <ExampleShowcase
-          title="Status Warning"
-          headingLevel={3}
-          description="Color for warning status."
-          preview={<ColorSwatch colorVar="--status-warning" name="Status Warning" />}
-          code={`<div style={{ backgroundColor: 'var(--status-warning)', color: 'var(--text-primary)', padding: '0.5rem' }}>Warning Status</div>`}
-        />
-        <ExampleShowcase
-          title="Status Warning Subtle"
-          headingLevel={3}
-          description="Subtle color for warning status."
-          preview={<ColorSwatch colorVar="--status-warning-subtle" name="Status Warning Subtle" />}
-          code={`<div style={{ backgroundColor: 'var(--status-warning-subtle)', color: 'var(--text-warning)', padding: '0.5rem' }}>Subtle Warning Status</div>`}
-        />
-        <ExampleShowcase
-          title="Status Info"
-          headingLevel={3}
-          description="Color for informational status."
-          preview={<ColorSwatch colorVar="--status-info" name="Status Info" />}
-          code={`<div style={{ backgroundColor: 'var(--status-info)', color: 'var(--text-inverse)', padding: '0.5rem' }}>Info Status</div>`}
-        />
-        <ExampleShowcase
-          title="Status Info Subtle"
-          headingLevel={3}
-          description="Subtle color for informational status."
-          preview={<ColorSwatch colorVar="--status-info-subtle" name="Status Info Subtle" />}
-          code={`<div style={{ backgroundColor: 'var(--status-info-subtle)', color: 'var(--text-primary)', padding: '0.5rem' }}>Subtle Info Status</div>`}
-        />
+        <p className="body-medium">
+          Status colors communicate different states and feedback to users. Each status color includes both solid and subtle variants for flexible usage.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <ColorSwatch 
+            colorVar="--status-error" 
+            name="Error" 
+            hexValue="#e74c3c"
+            description="Error states and destructive actions"
+          />
+          <ColorSwatch 
+            colorVar="--status-success" 
+            name="Success" 
+            hexValue="#2ecc71"
+            description="Success states and confirmations"
+          />
+          <ColorSwatch 
+            colorVar="--status-warning" 
+            name="Warning" 
+            hexValue="#ffcf60"
+            description="Warning states and cautions"
+          />
+          <ColorSwatch 
+            colorVar="--status-info" 
+            name="Info" 
+            hexValue="#4a9b94"
+            description="Informational states and tips"
+          />
+        </div>
       </ContentSection>
 
-      <ContentSection title="Focus & Overlay">
-        <p>Colors used for focus states and overlays.</p>
-        <ExampleShowcase
-          title="Focus Ring"
-          headingLevel={3}
-          description="Color for focus indicators."
-          preview={<div style={{ width: '50px', height:'50px', boxShadow: `0 0 0 3px var(--focus-ring)`}} />}
-          code={`<div style={{ boxShadow: '0 0 0 3px var(--focus-ring)' }} />`}
-        />
-        <ExampleShowcase
-          title="Overlay Background"
-          headingLevel={3}
-          description="Background color for overlays."
-          preview={<ColorSwatch colorVar="--overlay-background" name="Overlay Background" />}
-          code={`<div style={{ backgroundColor: 'var(--overlay-background)', width: '100%', height: '50px' }} />`}
-        />
-        <ExampleShowcase
-          title="Overlay Hover"
-          headingLevel={3}
-          description="Overlay color on hover."
-          preview={<ColorSwatch colorVar="--overlay-hover" name="Overlay Hover" />}
-          code={`<div style={{ backgroundColor: 'var(--overlay-hover)', width: '100%', height: '50px' }} />`}
-        />
+      <ContentSection title="Supplementary Color Scales">
+        <p className="body-medium">
+          Extended color scales provide additional options for data visualization, complex interfaces, and creative applications. Each scale includes multiple shades for versatile usage.
+        </p>
+
+        <div className="space-y-8">
+          <ColorScale
+            scaleName="Blue Scale"
+            description="Information states, links, and cool accents. Perfect for conveying trust and stability."
+            colors={[
+              { name: "Blue 100", var: "--color-blue-100", hex: "#e8f4ff" },
+              { name: "Blue 300", var: "--color-blue-300", hex: "#93c5ff" },
+              { name: "Blue 500", var: "--color-blue-500", hex: "#3286f5" },
+              { name: "Blue 700", var: "--color-blue-700", hex: "#1e5daf" },
+            ]}
+          />
+
+          <ColorScale
+            scaleName="Purple Scale"
+            description="Creative accents, premium features, and secondary branding elements."
+            colors={[
+              { name: "Purple 100", var: "--color-purple-100", hex: "#f5ebff" },
+              { name: "Purple 300", var: "--color-purple-300", hex: "#c199ff" },
+              { name: "Purple 500", var: "--color-purple-500", hex: "#8c51f5" },
+              { name: "Purple 700", var: "--color-purple-700", hex: "#6636b6" },
+            ]}
+          />
+
+          <ColorScale
+            scaleName="Orange Scale"
+            description="Warning states, attention-grabbing elements, and energetic accents."
+            colors={[
+              { name: "Orange 100", var: "--color-orange-100", hex: "#fff2e7" },
+              { name: "Orange 300", var: "--color-orange-300", hex: "#ffb681" },
+              { name: "Orange 500", var: "--color-orange-500", hex: "#f67e22" },
+              { name: "Orange 700", var: "--color-orange-700", hex: "#c15009" },
+            ]}
+          />
+
+          <ColorScale
+            scaleName="Semantic Reds"
+            description="Error states, destructive actions, and critical alerts."
+            colors={[
+              { name: "Red 100", var: "--color-red-100", hex: "#ffeaea" },
+              { name: "Red 300", var: "--color-red-300", hex: "#ffb3ba" },
+              { name: "Red 500", var: "--color-red-500", hex: "#e74c3c" },
+              { name: "Red 600", var: "--color-red-600", hex: "#c0392b" },
+            ]}
+          />
+
+          <ColorScale
+            scaleName="Semantic Greens"
+            description="Success states, positive actions, and confirmation feedback."
+            colors={[
+              { name: "Green 100", var: "--color-green-100", hex: "#ebffef" },
+              { name: "Green 300", var: "--color-green-300", hex: "#aff4c6" },
+              { name: "Green 500", var: "--color-green-500", hex: "#14ae5c" },
+              { name: "Green 700", var: "--color-green-700", hex: "#008043" },
+            ]}
+          />
+
+          <ColorScale
+            scaleName="Semantic Yellows"
+            description="Warning states, pending actions, and attention indicators."
+            colors={[
+              { name: "Yellow 100", var: "--color-yellow-100", hex: "#fffbeb" },
+              { name: "Yellow 300", var: "--color-yellow-300", hex: "#ffe8a3" },
+              { name: "Yellow 500", var: "--color-yellow-500", hex: "#e6a000" },
+              { name: "Yellow 600", var: "--color-yellow-600", hex: "#bf6a02" },
+            ]}
+          />
+        </div>
+      </ContentSection>
+
+      <ContentSection title="Alpha Colors">
+        <p className="body-medium">
+          Semi-transparent colors for overlays, shadows, and subtle effects. Available in both white and black variations.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h4 className="font-semibold text-[var(--text-primary)] mb-4">White Alpha Scale</h4>
+            <div className="space-y-2">
+              {[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000].map((shade) => (
+                <div key={shade} className="flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded border border-[var(--border-default)]"
+                    style={{ backgroundColor: `var(--color-white-${shade})` }}
+                  />
+                  <div className="text-sm">
+                    <span className="font-mono">--color-white-{shade}</span>
+                    <span className="text-[var(--text-secondary)] ml-2">
+                      Alpha {(shade / 10).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-[var(--text-primary)] mb-4">Black Alpha Scale</h4>
+            <div className="space-y-2">
+              {[100, 200, 300, 400, 500, 600, 700, 800, 900, 1000].map((shade) => (
+                <div key={shade} className="flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded border border-[var(--border-default)]"
+                    style={{ backgroundColor: `var(--color-black-${shade})` }}
+                  />
+                  <div className="text-sm">
+                    <span className="font-mono">--color-black-{shade}</span>
+                    <span className="text-[var(--text-secondary)] ml-2">
+                      Alpha {(shade / 10).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </ContentSection>
       
-      <ContentSection title="Primitive Color Scales">
-        <p>These are the base color scales that power our semantic color system. They provide the foundation for building consistent color themes.</p>
-        
-        <ContentSection title="Brand Colors" headingLevel={3}>
-            <p>Primary brand colors used for main UI elements and key interactions.</p>
-            <PrimitiveColorRow scaleName="Brand" colorVarPrefix="--color-brand" />
-        </ContentSection>
+      <ContentSection title="Usage Guidelines">
+        <div className="space-y-6">
+          <div className="p-4 bg-[var(--status-info-subtle)] border border-[var(--color-blue-300)] rounded-lg">
+            <h4 className="font-semibold text-[var(--text-primary)] mb-2">Accessibility</h4>
+            <ul className="text-sm text-[var(--text-secondary)] space-y-1">
+              <li>• All color combinations meet WCAG 2.1 AA contrast requirements</li>
+              <li>• Text colors provide at least 4.5:1 contrast ratio against their backgrounds</li>
+              <li>• Interactive elements have sufficient color contrast in all states</li>
+              <li>• Never rely on color alone to convey important information</li>
+            </ul>
+          </div>
 
-        <ContentSection title="Slate Colors" headingLevel={3}>
-            <p>Cool gray tones for subtle backgrounds and secondary elements.</p>
-            <PrimitiveColorRow scaleName="Slate" colorVarPrefix="--color-slate" />
-        </ContentSection>
+          <div className="p-4 bg-[var(--status-warning-subtle)] border border-[var(--color-orange-300)] rounded-lg">
+            <h4 className="font-semibold text-[var(--text-primary)] mb-2">Implementation</h4>
+            <ul className="text-sm text-[var(--text-secondary)] space-y-1">
+              <li>• Use CSS custom properties (variables) instead of hard-coded hex values</li>
+              <li>• Semantic tokens adapt automatically when themes change</li>
+              <li>• Primitive colors remain consistent across all themes</li>
+              <li>• Always test color combinations in both light and dark contexts</li>
+            </ul>
+          </div>
 
-        <ContentSection title="Red Colors" headingLevel={3}>
-            <p>Used for error states, destructive actions, and critical information.</p>
-            <PrimitiveColorRow scaleName="Red" colorVarPrefix="--color-red" />
-        </ContentSection>
-
-        <ContentSection title="Yellow Colors" headingLevel={3}>
-            <p>Used for warnings, pending states, and attention-grabbing elements.</p>
-            <PrimitiveColorRow scaleName="Yellow" colorVarPrefix="--color-yellow" />
-        </ContentSection>
-
-        <ContentSection title="Green Colors" headingLevel={3}>
-            <p>Used for success states, positive actions, and confirmations.</p>
-            <PrimitiveColorRow scaleName="Green" colorVarPrefix="--color-green" />
-        </ContentSection>
-
-        <ContentSection title="Pink Colors" headingLevel={3}>
-            <p>Used for highlighting, special features, and accent elements.</p>
-            <PrimitiveColorRow scaleName="Pink" colorVarPrefix="--color-pink" />
-        </ContentSection>
-
-        <ContentSection title="Neutral Gray Colors" headingLevel={3}>
-            <p>Used for text, borders, and neutral UI elements.</p>
-            <PrimitiveColorRow scaleName="Gray" colorVarPrefix="--color-gray" />
-        </ContentSection>
-
-        <ContentSection title="White (Alpha) Colors" headingLevel={3}>
-            <p>Semi-transparent white colors for overlays and subtle effects.</p>
-            <PrimitiveColorRow scaleName="White Alpha" colorVarPrefix="--color-white" />
-        </ContentSection>
-
-        <ContentSection title="Black (Alpha) Colors" headingLevel={3}>
-            <p>Semi-transparent black colors for shadows and depth.</p>
-            <PrimitiveColorRow scaleName="Black Alpha" colorVarPrefix="--color-black" />
-        </ContentSection>
+          <div className="p-4 bg-[var(--status-success-subtle)] border border-[var(--color-green-300)] rounded-lg">
+            <h4 className="font-semibold text-[var(--text-primary)] mb-2">Design Tokens</h4>
+            <ul className="text-sm text-[var(--text-secondary)] space-y-1">
+              <li>• All colors are available as design tokens for Figma import</li>
+              <li>• Hex values provided for design tools and documentation</li>
+              <li>• CSS variables ensure consistency between design and code</li>
+              <li>• Token names follow a consistent semantic hierarchy</li>
+            </ul>
+          </div>
+        </div>
       </ContentSection>
-
     </PageLayout>
   );
 } 

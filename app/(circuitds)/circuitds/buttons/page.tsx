@@ -6,6 +6,79 @@ import ContentSection from '@/components/layout/ContentSection';
 import ExampleShowcase from '@/components/layout/ExampleShowcase';
 import { Button } from '@/components/ui/Button';
 
+// Helper component to display button colors
+const ButtonColorInfo = ({ 
+  variantName, 
+  backgroundVar, 
+  backgroundHex, 
+  textVar, 
+  textHex, 
+  borderVar, 
+  borderHex,
+  description 
+}: { 
+  variantName: string;
+  backgroundVar: string;
+  backgroundHex: string;
+  textVar: string;
+  textHex: string;
+  borderVar?: string;
+  borderHex?: string;
+  description: string;
+}) => (
+  <div className="space-y-4 border border-[var(--border-default)] rounded-lg p-4">
+    <div>
+      <h4 className="font-semibold text-[var(--text-primary)] mb-2">{variantName}</h4>
+      <p className="text-sm text-[var(--text-secondary)] mb-4">{description}</p>
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Background Color */}
+      <div className="flex items-center gap-3">
+        <div 
+          className="w-8 h-8 rounded border border-[var(--border-default)]" 
+          style={{ backgroundColor: backgroundHex }}
+        />
+        <div>
+          <div className="text-sm font-medium">Background</div>
+          <div className="text-xs text-[var(--text-secondary)]">{backgroundVar}</div>
+          <div className="text-xs font-mono text-[var(--text-tertiary)]">{backgroundHex}</div>
+        </div>
+      </div>
+
+      {/* Text Color */}
+      <div className="flex items-center gap-3">
+        <div 
+          className="w-8 h-8 rounded border border-[var(--border-default)] flex items-center justify-center text-xs font-bold"
+          style={{ backgroundColor: backgroundHex, color: textHex }}
+        >
+          Aa
+        </div>
+        <div>
+          <div className="text-sm font-medium">Text</div>
+          <div className="text-xs text-[var(--text-secondary)]">{textVar}</div>
+          <div className="text-xs font-mono text-[var(--text-tertiary)]">{textHex}</div>
+        </div>
+      </div>
+
+      {/* Border Color (if provided) */}
+      {borderVar && borderHex && (
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-8 h-8 rounded border-2" 
+            style={{ borderColor: borderHex, backgroundColor: 'transparent' }}
+          />
+          <div>
+            <div className="text-sm font-medium">Border</div>
+            <div className="text-xs text-[var(--text-secondary)]">{borderVar}</div>
+            <div className="text-xs font-mono text-[var(--text-tertiary)]">{borderHex}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 export default function ButtonsPage() {
   return (
     <PageLayout
@@ -80,6 +153,94 @@ export default function ButtonsPage() {
           code={`<Button variant="destructive">Destructive button</Button>
 <Button variant="destructive" disabled>Destructive disabled</Button>`}
         />
+
+        <ExampleShowcase
+          title="Info button"
+          headingLevel={3}
+          description="Use info buttons for informational actions or to provide additional context. Perfect for help actions, documentation links, or neutral informational dialogs."
+          preview={
+            <div className="flex flex-col gap-4">
+              <Button variant="info">Info button</Button>
+              <Button variant="info" disabled>Info disabled</Button>
+            </div>
+          }
+          code={`<Button variant="info">Info button</Button>
+<Button variant="info" disabled>Info disabled</Button>`}
+        />
+      </ContentSection>
+
+      <ContentSection title="Colors & Theming">
+        <p className="body-medium">
+          Each button variant uses specific colors from our design system. Here are the exact colors and CSS variables used for each button type, including their hex values for reference.
+        </p>
+
+        <div className="space-y-6">
+          <ButtonColorInfo
+            variantName="Primary Button"
+            description="High-emphasis buttons for primary actions. Uses circuit bright yellow background with dark teal text for optimal contrast."
+            backgroundVar="--interactive-primary"
+            backgroundHex="#ffcf60"
+            textVar="--text-inverse"
+            textHex="#1a4a47"
+            borderVar="--interactive-primary"
+            borderHex="#ffcf60"
+          />
+
+          <ButtonColorInfo
+            variantName="Secondary Button"
+            description="Medium-emphasis buttons for secondary actions. Transparent background with border and primary text color."
+            backgroundVar="transparent"
+            backgroundHex="transparent"
+            textVar="--text-primary"
+            textHex="#fff2d1"
+            borderVar="--border-default"
+            borderHex="#4a9b94"
+          />
+
+          <ButtonColorInfo
+            variantName="Ghost Button"
+            description="Low-emphasis buttons for tertiary actions. Minimal styling with brand color text on transparent background."
+            backgroundVar="transparent"
+            backgroundHex="transparent"
+            textVar="--interactive-primary"
+            textHex="#ffcf60"
+          />
+
+          <ButtonColorInfo
+            variantName="Destructive Button"
+            description="High-emphasis buttons for destructive actions. Uses error color background with inverse text for strong contrast."
+            backgroundVar="--status-error"
+            backgroundHex="#e74c3c"
+            textVar="--text-inverse"
+            textHex="#1a4a47"
+            borderVar="--status-error"
+            borderHex="#e74c3c"
+          />
+
+          <ButtonColorInfo
+            variantName="Info Button"
+            description="Medium-emphasis buttons for informational actions. Uses blue color background with inverse text for good contrast."
+            backgroundVar="--color-blue-500"
+            backgroundHex="#3286f5"
+            textVar="--text-inverse"
+            textHex="#1a4a47"
+            borderVar="--color-blue-500"
+            borderHex="#3286f5"
+          />
+        </div>
+
+        <div className="mt-8 p-4 bg-[var(--status-info-subtle)] border border-[var(--color-blue-300)] rounded-lg">
+          <h4 className="font-semibold text-[var(--text-primary)] mb-2">Hover & Focus States</h4>
+          <p className="text-sm text-[var(--text-secondary)]">
+            All buttons have hover, active, and focus states with slightly modified colors:
+          </p>
+          <ul className="text-sm text-[var(--text-secondary)] mt-2 space-y-1">
+            <li>• <strong>Hover:</strong> Backgrounds become lighter or more saturated</li>
+            <li>• <strong>Active/Pressed:</strong> Backgrounds become darker or less saturated</li>
+            <li>• <strong>Focus:</strong> Bright yellow focus ring ({`var(--focus-ring)`}: #ffcf60)</li>
+            <li>• <strong>Disabled:</strong> 60% opacity with pointer-events disabled</li>
+          </ul>
+        </div>
       </ContentSection>
 
       <ContentSection title="Sizes">

@@ -4,7 +4,7 @@ import requests
 from dotenv import load_dotenv
 from pathlib import Path
 from ultralytics import YOLO
-from PIL import Image, ImageDraw, ImageFont, ExifTags
+from PIL import Image, ImageDraw, ImageFont, ExifTags, ImageOps
 import cv2
 import numpy as np
 import supabase
@@ -26,26 +26,25 @@ def setup_output_dir():
     print(f"📁 Output directory: {OUTPUT_DIR.absolute()}")
 
 def fix_image_orientation(image):
-    """Fix image orientation based on EXIF data."""
+    """
+    Fix image orientation using EXIF data (via ImageOps.exif_transpose). If EXIF
+    data does **not** change the image, we fall back to the YOLO-powered smart
+    orientation detection.
+    """
+
     try:
-        for orientation in ExifTags.TAGS.keys():
-            if ExifTags.TAGS[orientation] == 'Orientation':
-                break
-        
-        exif = image._getexif()
-        if exif is not None:
-            orientation_value = exif.get(orientation)
-            if orientation_value == 3:
-                image = image.rotate(180, expand=True)
-            elif orientation_value == 6:
-                image = image.rotate(270, expand=True)
-            elif orientation_value == 8:
-                image = image.rotate(90, expand=True)
-    except (AttributeError, KeyError, TypeError):
-        # No EXIF data or other error, just continue
-        pass
-    
-    return image
+        corrected = ImageOps.exif_transpose(image)
+
+        if corrected is not image:
+            print("📱 EXIF: Orientation corrected via ImageOps ✅")
+            return corrected
+        else:
+            print("📱 EXIF: No orientation metadata or already correct, running smart detection…")
+            return smart_orientation_detection(corrected)
+
+    except Exception as e:
+        print(f"🔥 EXIF orientation handling failed ({e}). Falling back to smart detection…")
+        return smart_orientation_detection(image)
 
 def order_points(pts):
     """Order points in (top-left, top-right, bottom-right, bottom-left) order."""

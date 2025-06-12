@@ -1,0 +1,11 @@
+# Database connectivity
+asyncpg>=0.29.0
+
+# HTTP client for Pokemon TCG API
+aiohttp>=3.9.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Argument parsing and utilities (built-in modules)
+# argparse, logging, asyncio, json, re, datetime 

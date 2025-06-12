@@ -5,14 +5,15 @@
 
   /* 1. COLOR PRIMITIVES */
   /* Circuit Theme Color Palette */
-  --eva-dark-teal: #1a4a47;
-  --eva-mid-teal: #2d6a65;
-  --eva-light-teal: #4a9b94;
-  --eva-bright-teal: #5dbfb7; /* New color for hover states */
-  --eva-bright-yellow: #FFCF60; /* UPDATED: User request for a new yellow */ 
-  --eva-light-yellow: #fff2d1; 
-  --eva-magenta: #e91e63;
-  --eva-darker-teal: #0f2b29;
+  --circuit-dark-teal: #1a4a47;
+  --circuit-mid-teal: #2d6a65;
+  --circuit-medium-light-teal: #3b847e;
+  --circuit-light-teal: #4a9b94;
+  --circuit-bright-teal: #5dbfb7; /* New color for hover states */
+  --circuit-bright-yellow: #FFCF60; /* UPDATED: User request for a new yellow */ 
+  --circuit-light-yellow: #fff2d1; 
+  --circuit-magenta: #e91e63;
+  --circuit-darker-teal: #0f2b29;
 
   /* Neutral Colors */
   --color-white-100: rgba(255, 255, 255, 0.05);
@@ -125,50 +126,50 @@
   /* --- SEMANTIC TOKENS (CIRCUIT THEME AS DEFAULT) --- */
   
   /* A. Core Page Semantics */
-  --background: var(--eva-darker-teal); 
-  --foreground: var(--eva-light-yellow); 
+  --background: var(--circuit-darker-teal); 
+  --foreground: var(--circuit-light-yellow); 
 
   /* B. Surface Colors */
-  --surface-background: var(--eva-mid-teal);         
-  --surface-background-hover: var(--eva-light-teal);   
-  --surface-background-pressed: var(--eva-dark-teal);    
-  --surface-background-subtle: var(--eva-darker-teal);  
-  --surface-background-muted: var(--eva-dark-teal);    
-  --surface-background-emphasis: var(--eva-light-yellow); 
+  --surface-background: var(--circuit-mid-teal);         
+  --surface-background-hover: var(--circuit-light-teal);   
+  --surface-background-pressed: var(--circuit-dark-teal);    
+  --surface-background-subtle: var(--circuit-darker-teal);  
+  --surface-background-muted: var(--circuit-dark-teal);    
+  --surface-background-emphasis: var(--circuit-light-yellow); 
   --surface-background-disabled: #1f3a38; 
-  --surface-container-level-1: var(--eva-dark-teal); 
-  --surface-preview-background: var(--eva-dark-teal);
+  --surface-container-level-1: var(--circuit-dark-teal); 
+  --surface-preview-background: var(--circuit-dark-teal);
 
   /* C. Text Colors */
-  --text-primary: var(--eva-light-yellow);   
-  --text-secondary: var(--eva-light-yellow); 
+  --text-primary: var(--circuit-light-yellow);   
+  --text-secondary: var(--circuit-light-yellow); 
   --text-tertiary: rgba(255, 242, 209, 0.6);    /* Updated to be a semi-transparent light yellow */
   --text-disabled: #4a6664;  
-  --text-inverse: var(--eva-darker-teal);   
-  --text-brand: var(--eva-bright-yellow);    
+  --text-inverse: var(--circuit-darker-teal);   
+  --text-brand: var(--circuit-bright-yellow);    
   --text-error: #ff6b6b; 
   --text-success: #48c774; 
   --text-warning: #ffdd57; 
-  --text-heading-strong: var(--eva-bright-yellow);
+  --text-heading-strong: var(--circuit-bright-yellow);
   
   /* D. Border Colors */
-  --border-default: var(--eva-light-teal);
-  --border-hover: var(--eva-bright-teal);
-  --border-focus: var(--eva-bright-yellow);
+  --border-default: var(--circuit-light-teal);
+  --border-hover: var(--circuit-bright-teal);
+  --border-focus: var(--circuit-bright-yellow);
   --border-error: #ff3860;
   --border-success: #257942;
   --border-disabled: #365855;
   --border-interactive-primary: var(--interactive-primary-pressed); 
-  --border-interactive-secondary: var(--eva-magenta);
-  --border-subtle: var(--eva-mid-teal);
+  --border-interactive-secondary: var(--circuit-magenta);
+  --border-subtle: var(--circuit-mid-teal);
 
   /* E. Interactive Element Colors */
-  --interactive-primary: var(--eva-bright-yellow);
+  --interactive-primary: var(--circuit-bright-yellow);
   --interactive-primary-hover: #ffdc73; /* UPDATED: Lighter shade of new yellow */ 
   --interactive-primary-pressed: #f0c052; /* UPDATED: Darker shade of new yellow */ 
   --interactive-primary-disabled: #7d6a3c; /* This might need re-evaluation if it was based on the old yellow */
   
-  --interactive-secondary: var(--eva-magenta);
+  --interactive-secondary: var(--circuit-magenta);
   --interactive-secondary-hover: #f04fa8; 
   --interactive-secondary-pressed: #c71a53; 
   --interactive-secondary-disabled: #733b50;
@@ -178,10 +179,28 @@
   --status-error-subtle: rgba(231, 76, 60, 0.15);
   --status-success: #2ecc71;
   --status-success-subtle: rgba(46, 204, 113, 0.15);
-  --status-warning: var(--eva-bright-yellow); 
+  --status-warning: var(--circuit-bright-yellow); 
   --status-warning-subtle: rgba(255, 185, 53, 0.15);
-  --status-info: var(--eva-light-teal); 
+  --status-info: var(--circuit-light-teal); 
   --status-info-subtle: rgba(74, 155, 148, 0.15);
+
+  /* F2. Supplementary Colors - Blues */
+  --color-blue-100: #e8f4ff; /* Light info background */
+  --color-blue-300: #93c5ff; /* Medium info accent */
+  --color-blue-500: #3286f5; /* Primary info color */
+  --color-blue-700: #1e5daf; /* Dark info color */
+
+  /* F3. Supplementary Colors - Purples */
+  --color-purple-100: #f5ebff; /* Light accent background */
+  --color-purple-300: #c199ff; /* Medium accent */
+  --color-purple-500: #8c51f5; /* Primary accent color */
+  --color-purple-700: #6636b6; /* Dark accent color */
+
+  /* F4. Supplementary Colors - Oranges */
+  --color-orange-100: #fff2e7; /* Light warning background */
+  --color-orange-300: #ffb681; /* Medium warning accent */
+  --color-orange-500: #f67e22; /* Primary warning color */
+  --color-orange-700: #c15009; /* Dark warning color */
 
   /* G. Focus Indicator Colors */
   --focus-ring: var(--eva-bright-yellow);
@@ -202,16 +221,16 @@
   --font-subtitle: 400 28px/1.2 var(--font-family-display);
   --font-heading: 600 21px/1.2 var(--font-family-display);
   --font-subheading: 400 18px/1.2 var(--font-family-display);
-  --font-body-base: 400 15px/1.4 var(--font-family-display);
-  --font-body-strong: 600 15px/1.4 var(--font-family-display);
-  --font-body-small: 400 13px/1.4 var(--font-family-display);
-  --font-body-small-strong: 600 13px/1 var(--font-family-display);
-  --font-body-code: 400 16px/1 var(--font-family-mono);
-  --font-input: 400 15px/1 var(--font-family-display);
+  --font-body-base: 400 var(--font-size-87)/1.4 var(--font-family-display);
+  --font-body-strong: 600 var(--font-size-87)/1.4 var(--font-family-display);
+  --font-body-small: 400 var(--font-size-75)/1.4 var(--font-family-display);
+  --font-body-small-strong: 600 var(--font-size-75)/1 var(--font-family-display);
+  --font-body-code: 400 var(--font-size-100)/1 var(--font-family-mono);
+  --font-input: 400 var(--font-size-87)/1 var(--font-family-display);
 
   /* Single Line Variants */
-  --font-body-base-single: 400 15px/1 var(--font-family-display);
-  --font-body-small-strong-single: 600 13px/1 var(--font-family-display);
+  --font-body-base-single: 400 var(--font-size-87)/1 var(--font-family-display);
+  --font-body-small-strong-single: 600 var(--font-size-75)/1 var(--font-family-display);
 
   /* Letter Spacing */
   --letter-spacing-title-hero: -3%;
@@ -246,7 +265,7 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-family-display);
-  font-size: 15px;
+  font-size: var(--font-size-87);
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -287,6 +306,7 @@ a {
   font: var(--font-subheading);
 }
 
+/* Legacy classes maintained for compatibility - use typography.css classes in new code */
 .body-base {
   font: var(--font-body-base);
 }
