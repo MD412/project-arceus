@@ -55,7 +55,6 @@ __pycache__/
 .venv
 venv/
 env/
-requirements.txt
 
 # ML Models and Training Data
 *.pt
