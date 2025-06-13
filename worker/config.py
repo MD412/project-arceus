@@ -45,10 +45,23 @@ def get_supabase_client() -> Client:
         print("Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.")
         exit(1)
 
+    # Debug logging
+    print(f"🔍 Supabase URL: {supabase_url}")
+    print(f"🔑 Service key length: {len(supabase_service_key)}, starts with: {supabase_service_key[:20]}...")
+
     print("Initializing Supabase client...")
     try:
         client: Client = create_client(supabase_url, supabase_service_key)
         print("✅ Supabase client initialized successfully.")
+        
+        # Test the client with a simple query
+        print("🧪 Testing client with a simple query...")
+        try:
+            test_response = client.from_("job_queue").select("count").execute()
+            print("✅ Test query successful - client is working!")
+        except Exception as test_error:
+            print(f"❌ Test query failed: {test_error}")
+            
         return client
     except Exception as e:
         print(f"🔥 Failed to initialize Supabase client: {e}")
