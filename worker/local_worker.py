@@ -188,17 +188,32 @@ def main():
         if job:
             try:
                 results = whole_image_pipeline(job)
-                supabase_client.from_("jobs").update({
-                    "status": "completed",
-                    "results": results
+                
+                # Update job_queue table
+                supabase_client.from_("job_queue").update({
+                    "status": "completed"
                 }).eq("id", job["id"]).execute()
+                
+                # Update binder_page_uploads table
+                supabase_client.from_("binder_page_uploads").update({
+                    "processing_status": "completed",
+                    "results": results
+                }).eq("id", job["binder_page_upload_id"]).execute()
+                
                 print(f"✅ Job {job['id']} completed successfully")
             except Exception as e:
                 print(f"🔥 Job {job['id']} failed: {e}")
-                supabase_client.from_("jobs").update({
-                    "status": "failed",
-                    "error_message": str(e)
+                
+                # Update job_queue table
+                supabase_client.from_("job_queue").update({
+                    "status": "failed"
                 }).eq("id", job["id"]).execute()
+                
+                # Update binder_page_uploads table
+                supabase_client.from_("binder_page_uploads").update({
+                    "processing_status": "failed",
+                    "error_message": str(e)
+                }).eq("id", job["binder_page_upload_id"]).execute()
         else:
             print("💤 No jobs found, waiting...")
             time.sleep(10)

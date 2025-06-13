@@ -88,8 +88,8 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
     >
       <ContentSection title="Processing Summary" headingLevel={2}>
         <div className="summary-card">
-            <div className="status-chip" style={{ backgroundColor: getStatusChipColor(job.status) }}>
-                {job.status}
+            <div className="status-chip" style={{ backgroundColor: getStatusChipColor(job.processing_status) }}>
+                {job.processing_status}
             </div>
             <p><strong>Total Cards Detected:</strong> {job.results?.total_cards_detected ?? 0}</p>
             {job.results?.enrichment_stats && (
@@ -109,7 +109,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
       </ContentSection>
 
       <ContentSection title="Detected Cards" headingLevel={2}>
-        {job.status === 'completed' ? (
+        {job.processing_status === 'completed' ? (
           <>
             <div className="cards-header">
               <div className="cards-header-content">

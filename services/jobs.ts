@@ -1,4 +1,4 @@
-import { getSupabaseClient } from '@/lib/supabase/browser';
+import { getSupabaseClient, getCurrentUser } from '@/lib/supabase/browser';
 
 const supabase = getSupabaseClient();
 
@@ -52,9 +52,17 @@ export async function getJobById(jobId: string) {
  * @param newTitle - The new title for the binder.
  */
 export async function renameJob(jobId: string, newTitle: string) {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const response = await fetch(`/api/binders/${jobId}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'x-user-id': user.id
+    },
     body: JSON.stringify({ binder_title: newTitle }),
   });
 
@@ -69,12 +77,27 @@ export async function renameJob(jobId: string, newTitle: string) {
  * @param jobId - The UUID of the job to delete.
  */
 export async function deleteJob(jobId: string) {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
   const response = await fetch(`/api/binders/${jobId}`, {
     method: 'DELETE',
+    headers: {
+      'x-user-id': user.id
+    },
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to delete binder');
+    let errorMessage = 'Failed to delete binder';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch (e) {
+      // Response might not be JSON (500 error, etc.)
+      errorMessage = `Server error (${response.status}): ${response.statusText}`;
+    }
+    throw new Error(errorMessage);
   }
 } 

@@ -24,8 +24,16 @@ interface BinderPageUpload {
 const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 export default function BindersPage() {
-  const { data: uploads, isLoading, isError, error, renameJob, deleteJob } = useJobs();
+  const { data: uploads, isLoading, isError, error, renameJob, deleteJob, deleteJobStatus } = useJobs();
   const [renamingUpload, setRenamingUpload] = useState<BinderPageUpload | null>(null);
+  
+  // Show delete status for debugging
+  if (deleteJobStatus.isPending) {
+    console.log('🔄 Delete in progress...');
+  }
+  if (deleteJobStatus.isError) {
+    console.error('❌ Delete error:', deleteJobStatus.error);
+  }
 
   const handleRename = (newTitle: string) => {
     if (renamingUpload) {
@@ -35,6 +43,7 @@ export default function BindersPage() {
 
   const handleDelete = (uploadId: string, jobTitle: string) => {
     if (window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
+      console.log('🗑️ Attempting to delete:', jobTitle, uploadId);
       deleteJob(uploadId);
     }
   };

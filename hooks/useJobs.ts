@@ -22,8 +22,11 @@ export function useJobs() {
 
   const deleteJobMutation = useMutation({
     mutationFn: (jobId: string) => deleteJob(jobId),
-    onSettled: () => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['binder_page_uploads'] });
+    },
+    onError: (error) => {
+      console.error('❌ Delete failed:', error);
     },
   });
 
@@ -34,6 +37,11 @@ export function useJobs() {
     error,
     renameJob: renameJobMutation.mutate,
     deleteJob: deleteJobMutation.mutate,
+    deleteJobStatus: {
+      isPending: deleteJobMutation.isPending,
+      isError: deleteJobMutation.isError,
+      error: deleteJobMutation.error,
+    },
   };
 }
 
