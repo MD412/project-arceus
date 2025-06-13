@@ -1,114 +1,98 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
-// This is a Route Handler for the endpoint DELETE /api/binders/[id]
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const binderId = params.id;
+// PATCH /api/binders/[id] - for renaming
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+  const cookieStore = cookies();
+  const supabase = createServerClient(cookieStore);
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // Create a Supabase client with the service_role key to bypass RLS.
-  // This is safe because this code only runs on the server.
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = params;
+  const { binder_title } = await request.json();
+
+  if (!binder_title) {
+    return NextResponse.json({ error: 'New title is required' }, { status: 400 });
+  }
 
   try {
-    // Step 1: Fetch the job record to get the paths of the files to delete.
-    const { data: job, error: fetchError } = await supabaseAdmin
-      .from('jobs')
-      .select('input_image_path, results')
-      .eq('id', binderId)
+    const { data, error } = await supabase
+      .from('binder_page_uploads')
+      .update({ binder_title })
+      .eq('id', id)
+      .eq('user_id', user.id) // Ensure user can only update their own binders
+      .select()
       .single();
 
-    if (fetchError) {
-      if (fetchError.code === 'PGRST116') {
-        return new NextResponse(JSON.stringify({ error: 'Binder not found' }), { status: 404 });
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Binder not found or you do not have permission to update it' }, { status: 404 });
       }
-      throw fetchError;
+      throw error;
     }
 
-    // Step 2: Build an array of file paths to delete from storage.
-    const pathsToDelete: string[] = [];
-    if (job.input_image_path) {
-      pathsToDelete.push(job.input_image_path);
-    }
-    if (job.results?.summary_image_path) {
-      pathsToDelete.push(job.results.summary_image_path);
-    }
+    return NextResponse.json({ message: 'Binder renamed successfully', binder: data }, { status: 200 });
+  } catch (error: any) {
+    console.error(`Error in PATCH /api/binders/${id}:`, error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
 
-    // Step 3: Delete the files from storage.
-    if (pathsToDelete.length > 0) {
-      const { error: storageError } = await supabaseAdmin.storage
-        .from('binders')
-        .remove(pathsToDelete);
+// DELETE /api/binders/[id]
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const cookieStore = cookies();
+  const supabase = createServerClient(cookieStore);
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = params;
+
+  try {
+    // First, get the storage_path of the binder to delete the file
+    const { data: uploadData, error: fetchError } = await supabase
+      .from('binder_page_uploads')
+      .select('storage_path')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single();
       
-      if (storageError) {
-        // Log the error but proceed to delete the DB record anyway
-        console.error(`Error deleting storage for job ${binderId}:`, storageError);
-      }
+    if (fetchError || !uploadData) {
+        return NextResponse.json({ error: 'Binder not found or you do not have permission to delete it.' }, { status: 404 });
     }
 
-    // Step 4: Delete the binder (job) record from the database.
-    const { error: deleteError } = await supabaseAdmin
-      .from('jobs')
+    // Delete the file from storage
+    if (uploadData.storage_path) {
+        const { error: storageError } = await supabase.storage
+            .from('binders')
+            .remove([uploadData.storage_path]);
+
+        if (storageError) {
+            // Log the error but continue to delete the DB record
+            console.error(`Could not delete file ${uploadData.storage_path} from storage:`, storageError);
+        }
+    }
+
+    // Then, delete the binder record from the database
+    // The CASCADE on job_queue will delete the associated job.
+    const { error: deleteError } = await supabase
+      .from('binder_page_uploads')
       .delete()
-      .eq('id', binderId);
+      .eq('id', id);
 
     if (deleteError) {
       throw deleteError;
     }
 
-    // Step 5: Return a success response.
-    return new NextResponse(JSON.stringify({ message: 'Binder deleted successfully' }), {
-      status: 200,
-    });
+    return NextResponse.json({ message: 'Binder deleted successfully' }, { status: 200 });
   } catch (error: any) {
-    console.error('Error in DELETE /api/binders/[id]:', error);
-    return new NextResponse(JSON.stringify({ error: error.message }), {
-      status: 500,
-    });
-  }
-}
-
-// This is a Route Handler for the endpoint PATCH /api/binders/[id]
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const binderId = params.id;
-  const body = await request.json();
-  const newTitle = body.binder_title;
-
-  if (!newTitle) {
-    return new NextResponse(JSON.stringify({ error: 'New title is required' }), { status: 400 });
-  }
-
-  // Create a Supabase client with the service_role key to bypass RLS.
-  const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  try {
-    const { error } = await supabaseAdmin
-      .from('jobs')
-      .update({ binder_title: newTitle })
-      .eq('id', binderId);
-
-    if (error) {
-      throw error;
-    }
-
-    return new NextResponse(JSON.stringify({ message: 'Binder renamed successfully' }), {
-      status: 200,
-    });
-  } catch (error: any) {
-    console.error('Error in PATCH /api/binders/[id]:', error);
-    return new NextResponse(JSON.stringify({ error: error.message }), {
-      status: 500,
-    });
+    console.error(`Error in DELETE /api/binders/${id}:`, error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 } 

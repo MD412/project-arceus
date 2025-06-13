@@ -100,7 +100,7 @@ export default function BindersPage() {
               </Link>
               <div className="binder-actions">
                 <Button variant="ghost" size="sm" onClick={() => setRenamingUpload(upload)}>Rename</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(upload.id, upload.binder_title)}>Delete</Button>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(upload.id, upload.binder_title || 'Untitled Binder')}>Delete</Button>
               </div>
             </div>
           ))}
@@ -117,7 +117,7 @@ export default function BindersPage() {
 
       {renamingUpload && (
         <RenameBinderModal
-          currentTitle={renamingUpload.binder_title}
+          currentTitle={renamingUpload.binder_title || ''}
           onRename={handleRename}
           onClose={() => setRenamingUpload(null)}
         />
