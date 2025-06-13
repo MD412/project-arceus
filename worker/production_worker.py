@@ -78,45 +78,16 @@ def get_yolo_model():
 
 # --- Database Functions ---
 
-def get_next_job():
-    """Fetches and locks the next pending job from the queue."""
+def fetch_and_lock_job():
+    """Atomically fetch and lock the next pending job (same as local worker)."""
     try:
-        response = supabase_client.from_("job_queue").select("*").eq("status", "pending").order("created_at").limit(1).execute()
-        if not response.data:
-            return None
-        
-        job = response.data[0]
-        
-        # Mark as processing
-        supabase_client.from_("job_queue").update({"status": "processing", "started_at": "now()"}).eq("id", job['id']).execute()
-        
-        # Also update the related binder page upload
-        supabase_client.from_("binder_page_uploads").update({"processing_status": "processing"}).eq("id", job['binder_page_upload_id']).execute()
-
-        return job
+        response = supabase_client.rpc("fetch_and_lock_job").execute()
+        return response.data[0] if response.data else None
     except Exception as e:
-        logger.error(f"Error getting next job: {e}")
+        logger.error(f"🔥 Error fetching job: {e}")
         return None
 
-def update_job_and_upload(job_id, upload_id, status, results=None, error_message=None):
-    """Updates the status and results for both the job and the upload."""
-    try:
-        # Update job_queue
-        job_update = {"status": status, "finished_at": "now()"}
-        if error_message:
-            job_update['error_message'] = error_message
-        supabase_client.from_("job_queue").update(job_update).eq("id", job_id).execute()
 
-        # Update binder_page_uploads
-        upload_update = {"processing_status": status}
-        if results:
-            upload_update['results'] = results
-        if error_message:
-            upload_update['error_message'] = error_message
-        supabase_client.from_("binder_page_uploads").update(upload_update).eq("id", upload_id).execute()
-
-    except Exception as e:
-        logger.error(f"🔥 Failed to update job/upload status for job {job_id}: {e}")
 
 # --- Image Processing Pipeline ---
 
@@ -131,14 +102,11 @@ def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
 
 def run_vision_pipeline(job: dict, model: YOLO):
     """Downloads image, runs YOLO, and returns structured results."""
-    upload_id = job['binder_page_upload_id']
     
-    # The `enqueue` function now includes storage_path in the job payload
-    job_payload = job.get('payload', {})
-    input_path = job_payload.get('storage_path')
-    
+    # Use the same field name as local worker
+    input_path = job.get('input_image_path')
     if not input_path:
-        raise ValueError(f"Job {job['id']} is missing 'storage_path' in its payload.")
+        raise ValueError("Job missing 'input_image_path'")
 
     logger.info(f"Downloading image from: {input_path}")
     response = supabase_client.storage.from_("binders").download(input_path)
@@ -209,19 +177,38 @@ def main():
     logger.info("✅ Health checks passed. Worker is ready.")
     
     while True:
-        job = get_next_job()
+        job = fetch_and_lock_job()
         if job:
-            job_id = job['id']
-            upload_id = job['binder_page_upload_id']
-            logger.info(f"⚙️  Processing job {job_id} for upload {upload_id}")
             try:
-                pipeline_results = run_vision_pipeline(job, yolo_model)
-                update_job_and_upload(job_id, upload_id, 'completed', results=pipeline_results)
-                logger.info(f"✅ Job {job_id} completed successfully.")
+                results = run_vision_pipeline(job, yolo_model)
+                
+                # Update job_queue table (same as local)
+                supabase_client.from_("job_queue").update({
+                    "status": "completed"
+                }).eq("id", job["id"]).execute()
+                
+                # Update binder_page_uploads table (same as local)
+                supabase_client.from_("binder_page_uploads").update({
+                    "processing_status": "completed",
+                    "results": results
+                }).eq("id", job["binder_page_upload_id"]).execute()
+                
+                logger.info(f"✅ Job {job['id']} completed successfully")
             except Exception as e:
-                logger.error(f"🔥 Job {job_id} failed: {e}", exc_info=True)
-                update_job_and_upload(job_id, upload_id, 'failed', error_message=str(e))
+                logger.error(f"🔥 Job {job['id']} failed: {e}")
+                
+                # Update job_queue table (same as local)
+                supabase_client.from_("job_queue").update({
+                    "status": "failed"
+                }).eq("id", job["id"]).execute()
+                
+                # Update binder_page_uploads table (same as local)
+                supabase_client.from_("binder_page_uploads").update({
+                    "processing_status": "failed",
+                    "error_message": str(e)
+                }).eq("id", job["binder_page_upload_id"]).execute()
         else:
+            logger.info("💤 No jobs found, waiting...")
             time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":
