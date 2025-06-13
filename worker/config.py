@@ -8,7 +8,12 @@ def load_environment():
     Find and load the .env.local file from the project root.
     Handles being run from any subdirectory.
     """
-    # Start from the current file's directory and move up until we find the project root
+    # In production (like Render), environment variables are set directly.
+    # We only need to load a .env file for local development.
+    if os.getenv('RENDER'):
+        print("✅ Running in Render environment. Skipping .env file.")
+        return
+
     current_path = Path(__file__).resolve()
     project_root = None
     for parent in current_path.parents:
@@ -23,31 +28,21 @@ def load_environment():
             load_dotenv(dotenv_path=dotenv_path, override=True)
             return
     
-    print("⚠️ Could not find .env.local, checking parent directories...")
-    # Fallback for simple cases if the above fails
-    try:
-        dotenv_path = Path(__file__).parent.parent / '.env.local'
-        if dotenv_path.exists():
-            print(f"✅ Loading environment from fallback path: {dotenv_path}")
-            load_dotenv(dotenv_path=dotenv_path, override=True)
-            return
-    except Exception:
-        pass
+    print("⚠️  .env.local not found. Relying on container environment variables.")
 
-    print("⚠️  .env.local not found. Continuing with environment variables set in the container…")
 
 def get_supabase_client() -> Client:
     """
-    Initialize and return a Supabase client with service role key.
+    Initialize and return a Supabase client using environment variables.
     """
     load_environment()
     
-    supabase_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL") or os.getenv("SUPABASE_URL")
+    supabase_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
     supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
     if not supabase_url or not supabase_service_key:
-        print("🔥 Missing Supabase environment variables!")
-        print("Required: NEXT_PUBLIC_SUPABASE_URL (or SUPABASE_URL), SUPABASE_SERVICE_ROLE_KEY")
+        print("🔥 Critical: Missing Supabase environment variables!")
+        print("Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.")
         exit(1)
 
     print("Initializing Supabase client...")
