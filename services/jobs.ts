@@ -8,7 +8,7 @@ const supabase = getSupabaseClient();
  */
 export const getJobs = async () => {
   const { data, error } = await supabase
-    .from('jobs')
+    .from('binder_page_uploads')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -28,7 +28,7 @@ export const getJobs = async () => {
  */
 export async function getJobById(jobId: string) {
   const { data, error } = await supabase
-    .from('jobs')
+    .from('binder_page_uploads')
     .select('*')
     .eq('id', jobId)
     .single(); // Expect one or zero rows

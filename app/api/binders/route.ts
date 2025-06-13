@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
     const { data, error: enqueueError } = await supabase.rpc('enqueue_binder_upload', {
       p_user_id: userId,
       p_storage_path: filePath,
-      p_content_hash: contentHash
+      p_content_hash: contentHash,
+      p_binder_title: title
     });
 
     if (enqueueError) {
