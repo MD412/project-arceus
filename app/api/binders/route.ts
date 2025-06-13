@@ -41,8 +41,7 @@ export async function POST(request: NextRequest) {
     console.log('Binder upload enqueued:', data);
     return NextResponse.json({ 
       message: 'Binder uploaded and queued for processing',
-      upload_id: data?.upload_id,
-      job_id: data?.job_id
+      job_id: data?.[0]?.job_id
     }, { status: 201 });
     
   } catch (error: any) {
