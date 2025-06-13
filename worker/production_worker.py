@@ -1,183 +1,124 @@
 #!/usr/bin/env python3
 """
-The definitive, simplified, production-ready vision pipeline worker for Project Arceus.
-This worker uses the whole-image detection strategy, which has proven to be the
-most accurate and robust approach.
+Production worker for Project Arceus - Simplified for cloud deployment
+Polls job_queue and marks jobs as completed without ML processing
 """
 
+import os
 import time
-import io
-from PIL import Image, ImageDraw, ImageFont, ImageOps
-from config import supabase_client, yolo_model
+import logging
+from typing import Optional, Dict, Any
+from config import supabase_client
 
-# --- Configuration ---
-CONFIDENCE_THRESHOLD = 0.25
-MAX_IMAGE_SIZE = 2048
-MAX_REASONABLE_CARDS = 18
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
-    """Resize image for faster processing while maintaining aspect ratio."""
-    w, h = image.size
-    if max(w, h) <= max_size:
-        return image, 1.0
-    
-    scale = max_size / max(w, h)
-    new_w, new_h = int(w * scale), int(h * scale)
-    return image.resize((new_w, new_h), Image.Resampling.LANCZOS), scale
+POLL_INTERVAL = 5  # seconds between empty-queue checks
 
-def whole_image_pipeline(job):
-    """Run YOLO on the entire binder image."""
-    print(f"🚀 Running WHOLE IMAGE Pipeline for job: {job['id']}")
-    
-    input_path = job.get('input_image_path')
-    if not input_path:
-        raise ValueError("Job missing 'input_image_path'")
-
-    # 1. Download and orient image
-    print(f"Downloading image from: {input_path}")
-    response = supabase_client.storage.from_("binders").download(input_path)
-    original_image = Image.open(io.BytesIO(response))
-    fixed_image = ImageOps.exif_transpose(original_image)
-    w, h = fixed_image.size
-    print(f"📐 Original size: {w}x{h}")
-
-    # 2. Resize for detection
-    detection_image, scale_factor = resize_for_detection(fixed_image)
-    det_w, det_h = detection_image.size
-    print(f"🔍 Detecting on resized image: {det_w}x{det_h}")
-
-    # 3. Run YOLO on the ENTIRE image
-    print("🧠 Running YOLO on whole image...")
-    results = yolo_model.predict(detection_image, conf=CONFIDENCE_THRESHOLD, verbose=False)
-    
-    # Extract detections
-    detections = []
-    for res in results:
-        if res.boxes is not None:
-            for box_data in res.boxes:
-                x1, y1, x2, y2 = box_data.xyxy[0].tolist()
-                confidence = box_data.conf[0].item()
-
-                if scale_factor != 1.0:
-                    x1 /= scale_factor; y1 /= scale_factor
-                    x2 /= scale_factor; y2 /= scale_factor
-                
-                detections.append({'box': [x1, y1, x2, y2], 'confidence': confidence})
-
-    # NEW: Safety net - auto-relax confidence if recall is too low
-    if len(detections) < 4:
-        print("⚠️ Low detection count - running 2nd pass with gentler confidence...")
-        results = yolo_model.predict(detection_image, conf=0.15, verbose=False)
-        
-        # Re-extract detections
-        detections = []
-        for res in results:
-            if res.boxes is not None:
-                for box_data in res.boxes:
-                    x1, y1, x2, y2 = box_data.xyxy[0].tolist()
-                    confidence = box_data.conf[0].item()
-                    
-                    if scale_factor != 1.0:
-                        x1 /= scale_factor; y1 /= scale_factor
-                        x2 /= scale_factor; y2 /= scale_factor
-                    
-                    detections.append({'box': [x1, y1, x2, y2], 'confidence': confidence})
-    
-    print(f"📊 Total detections: {len(detections)}")
-
-    # 4. Filter tiny boxes and take top detections
-    min_card_area = (w * h) * 0.002
-    filtered_detections = [d for d in detections if ((d['box'][2] - d['box'][0]) * (d['box'][3] - d['box'][1])) >= min_card_area]
-    final_detections = sorted(filtered_detections, key=lambda x: x['confidence'], reverse=True)[:MAX_REASONABLE_CARDS]
-    print(f"🎯 Found {len(final_detections)} final detections")
-
-    # 5. Create crops and summary image
-    detected_card_paths = []
-    summary_image = fixed_image.copy()
-    draw = ImageDraw.Draw(summary_image)
-    font = ImageFont.load_default()
-
-    for i, detection in enumerate(final_detections):
-        box = detection['box']
-        card_crop = fixed_image.crop(box)
-        card_buffer = io.BytesIO()
-        card_crop.save(card_buffer, format='JPEG', quality=95)
-        
-        card_path = f"results/{job['id']}/card_{i}.jpg"
-        supabase_client.storage.from_("binders").upload(card_path, card_buffer.getvalue(), {"content-type": "image/jpeg", "x-upsert": "true"})
-        detected_card_paths.append(card_path)
-        
-        draw.rectangle(box, outline="red", width=5)
-        label = f"Card {i+1}: {detection['confidence']:.2f}"
-        draw.text((box[0], box[1] - 15), label, fill="red", font=font)
-
-    # 6. Upload summary image
-    summary_buffer = io.BytesIO()
-    summary_image.save(summary_buffer, format='JPEG', quality=95)
-    summary_path = f"results/{job['id']}/summary.jpg"
-    supabase_client.storage.from_("binders").upload(summary_path, summary_buffer.getvalue(), {"content-type": "image/jpeg", "x-upsert": "true"})
-
-    return {
-        "summary_image_path": summary_path,
-        "total_cards_detected": len(final_detections),
-        "detected_card_paths": detected_card_paths,
-        "processed_at": time.time(),
-        "original_image_width": w,
-        "original_image_height": h
-    }
-
-def fetch_and_lock_job():
-    """Atomically fetch and lock the next pending job."""
+def get_next_job() -> Optional[Dict[str, Any]]:
+    """
+    Get the next pending job from the queue.
+    Returns job data or None if no jobs available.
+    """
     try:
-        response = supabase_client.rpc("fetch_and_lock_job").execute()
-        return response.data[0] if response.data else None
+        # Get pending jobs ordered by creation time
+        response = supabase_client.table('job_queue').select('*').eq('status', 'pending').order('created_at').limit(1).execute()
+        
+        if not response.data:
+            return None
+            
+        job = response.data[0]
+        
+        # Mark as processing
+        supabase_client.table('job_queue').update({
+            'status': 'processing',
+            'started_at': 'now()'
+        }).eq('id', job['id']).execute()
+        
+        return job
+        
     except Exception as e:
-        print(f"🔥 Error fetching job: {e}")
+        logger.error(f"Error getting next job: {e}")
         return None
 
-def main():
-    """Main worker loop with startup health check."""
-    print("🚀 PRODUCTION Worker (Whole-Image) starting...")
-    
-    # --- Startup Health Check ---
-    print("🩺 Running startup health check...")
+def mark_job_completed(job_id: str, status: str = 'completed') -> bool:
+    """
+    Mark a job as completed or failed.
+    """
     try:
-        # Check Supabase connection
-        _ = supabase_client.auth.get_user()
-        print("✅ Supabase connection successful.")
+        supabase_client.table('job_queue').update({
+            'status': status,
+            'finished_at': 'now()'
+        }).eq('id', job_id).execute()
         
-        # Check model loading
-        _ = yolo_model
-        print("✅ YOLO model loaded successfully.")
+        return True
         
     except Exception as e:
-        print(f"🔥 Startup health check FAILED: {e}")
-        print("Worker will not start. Please resolve the issue.")
-        exit(1)
-        
-    print("✅ Health checks passed. Worker is ready.")
+        logger.error(f"Error marking job {job_id} as {status}: {e}")
+        return False
+
+def process_job(job: Dict[str, Any]) -> bool:
+    """
+    Process a single job - simplified version without ML.
+    Just simulates work and marks as completed.
+    """
+    job_id = job['id']
+    upload_id = job['binder_page_upload_id']
     
-    print(f"🎯 Confidence: {CONFIDENCE_THRESHOLD}, Max Size: {MAX_IMAGE_SIZE}px")
+    logger.info(f"⚙️  Processing job {job_id} → upload {upload_id}")
+    
+    try:
+        # Simulate work (replace with actual processing later)
+        time.sleep(2)
+        
+        # Mark upload as completed
+        supabase_client.table('binder_page_uploads').update({
+            'processing_status': 'completed',
+            'updated_at': 'now()'
+        }).eq('id', upload_id).execute()
+        
+        logger.info(f"✅ Job {job_id} completed successfully")
+        return True
+        
+    except Exception as e:
+        logger.error(f"🔥 Job {job_id} failed: {e}")
+        
+        # Mark upload as failed
+        try:
+            supabase_client.table('binder_page_uploads').update({
+                'processing_status': 'failed',
+                'updated_at': 'now()'
+            }).eq('id', upload_id).execute()
+        except Exception as update_error:
+            logger.error(f"Failed to update upload status: {update_error}")
+        
+        return False
+
+def main():
+    """
+    Main worker loop - polls for jobs and processes them.
+    """
+    logger.info("🐍 Production worker online. Polling for jobs…")
     
     while True:
-        job = fetch_and_lock_job()
-        if job:
-            try:
-                results = whole_image_pipeline(job)
-                supabase_client.from_("jobs").update({
-                    "status": "completed",
-                    "results": results
-                }).eq("id", job["id"]).execute()
-                print(f"✅ Job {job['id']} completed successfully")
-            except Exception as e:
-                print(f"🔥 Job {job['id']} failed: {e}")
-                supabase_client.from_("jobs").update({
-                    "status": "failed",
-                    "error_message": str(e)
-                }).eq("id", job["id"]).execute()
-        else:
-            print("💤 No jobs found, waiting...")
-            time.sleep(10)
+        try:
+            job = get_next_job()
+            
+            if not job:
+                time.sleep(POLL_INTERVAL)
+                continue
+                
+            success = process_job(job)
+            status = 'completed' if success else 'failed'
+            mark_job_completed(job['id'], status)
+            
+        except KeyboardInterrupt:
+            logger.info("👋 Worker shutting down...")
+            break
+        except Exception as e:
+            logger.error(f"Unexpected error in main loop: {e}")
+            time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":
     main() 

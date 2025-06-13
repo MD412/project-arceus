@@ -2,7 +2,6 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from pathlib import Path
-from ultralytics import YOLO
 
 def load_environment():
     """
@@ -60,26 +59,5 @@ def get_supabase_client() -> Client:
         print(f"🔥 Failed to initialize Supabase client: {e}")
         exit(1)
 
-def get_yolo_model(model_path='worker/pokemon_cards_trained.pt'):
-    """
-    Load and return the trained YOLO model.
-    """
-    print(f"📊 Loading trained model from: {model_path}")
-    
-    # Check from project root, which is the CWD for the worker
-    if not Path(model_path).exists():
-         print(f"❌ Trained model not found at: {model_path}")
-         print("Please ensure the model file is in the correct location.")
-         exit(1)
-
-    try:
-        model = YOLO(model_path)
-        print("✅ YOLO model loaded (TRAINED VERSION).")
-        return model
-    except Exception as e:
-        print(f"🔥 Failed to load YOLO model: {e}")
-        exit(1)
-
-# Initialize clients and model once to be imported by other scripts
-supabase_client = get_supabase_client()
-yolo_model = get_yolo_model() 
+# Initialize client once to be imported by other scripts
+supabase_client = get_supabase_client() 
