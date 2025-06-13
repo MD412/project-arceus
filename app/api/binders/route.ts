@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage.from('binders').upload(filePath, file);
     if (uploadError) throw uploadError;
 
-    // Create binder upload record and enqueue job using the stored procedure
-    const { data, error: enqueueError } = await supabase.rpc('enqueue_binder_upload', {
+    // Create binder upload record and enqueue job using the new, correctly named stored procedure
+    const { data, error: enqueueError } = await supabase.rpc('create_binder_and_enqueue_job', {
       p_user_id: userId,
       p_storage_path: filePath,
       p_content_hash: contentHash,
