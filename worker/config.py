@@ -35,8 +35,7 @@ def load_environment():
     except Exception:
         pass
 
-    print("🔥 Critical: .env.local not found. Worker cannot start.")
-    exit(1)
+    print("⚠️  .env.local not found. Continuing with environment variables set in the container…")
 
 def get_supabase_client() -> Client:
     """
