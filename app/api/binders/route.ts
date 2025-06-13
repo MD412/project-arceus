@@ -15,6 +15,14 @@ export async function POST(request: NextRequest) {
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
+  // Debug logging
+  console.log('Environment check:', {
+    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20),
+    keyPrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20)
+  });
+
   try {
     // Generate content hash for deduplication
     const fileBuffer = await file.arrayBuffer();
