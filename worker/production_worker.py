@@ -47,29 +47,51 @@ def whole_image_pipeline(job):
     print(f"🔍 Detecting on resized image: {det_w}x{det_h}")
 
     # 3. Run YOLO on the ENTIRE image
+    print("🧠 Running YOLO on whole image...")
     results = yolo_model.predict(detection_image, conf=CONFIDENCE_THRESHOLD, verbose=False)
     
-    # 4. Extract and scale detections
+    # Extract detections
     detections = []
     for res in results:
         if res.boxes is not None:
             for box_data in res.boxes:
                 x1, y1, x2, y2 = box_data.xyxy[0].tolist()
                 confidence = box_data.conf[0].item()
-                
+
                 if scale_factor != 1.0:
                     x1 /= scale_factor; y1 /= scale_factor
                     x2 /= scale_factor; y2 /= scale_factor
                 
                 detections.append({'box': [x1, y1, x2, y2], 'confidence': confidence})
+
+    # NEW: Safety net - auto-relax confidence if recall is too low
+    if len(detections) < 4:
+        print("⚠️ Low detection count - running 2nd pass with gentler confidence...")
+        results = yolo_model.predict(detection_image, conf=0.15, verbose=False)
+        
+        # Re-extract detections
+        detections = []
+        for res in results:
+            if res.boxes is not None:
+                for box_data in res.boxes:
+                    x1, y1, x2, y2 = box_data.xyxy[0].tolist()
+                    confidence = box_data.conf[0].item()
+                    
+                    if scale_factor != 1.0:
+                        x1 /= scale_factor; y1 /= scale_factor
+                        x2 /= scale_factor; y2 /= scale_factor
+                    
+                    detections.append({'box': [x1, y1, x2, y2], 'confidence': confidence})
     
-    # 5. Filter tiny boxes and take top detections
+    print(f"📊 Total detections: {len(detections)}")
+
+    # 4. Filter tiny boxes and take top detections
     min_card_area = (w * h) * 0.002
     filtered_detections = [d for d in detections if ((d['box'][2] - d['box'][0]) * (d['box'][3] - d['box'][1])) >= min_card_area]
     final_detections = sorted(filtered_detections, key=lambda x: x['confidence'], reverse=True)[:MAX_REASONABLE_CARDS]
     print(f"🎯 Found {len(final_detections)} final detections")
 
-    # 6. Create crops and summary image
+    # 5. Create crops and summary image
     detected_card_paths = []
     summary_image = fixed_image.copy()
     draw = ImageDraw.Draw(summary_image)
@@ -89,7 +111,7 @@ def whole_image_pipeline(job):
         label = f"Card {i+1}: {detection['confidence']:.2f}"
         draw.text((box[0], box[1] - 15), label, fill="red", font=font)
 
-    # 7. Upload summary image
+    # 6. Upload summary image
     summary_buffer = io.BytesIO()
     summary_image.save(summary_buffer, format='JPEG', quality=95)
     summary_path = f"results/{job['id']}/summary.jpg"
@@ -114,8 +136,27 @@ def fetch_and_lock_job():
         return None
 
 def main():
-    """Main worker loop."""
+    """Main worker loop with startup health check."""
     print("🚀 PRODUCTION Worker (Whole-Image) starting...")
+    
+    # --- Startup Health Check ---
+    print("🩺 Running startup health check...")
+    try:
+        # Check Supabase connection
+        _ = supabase_client.auth.get_user()
+        print("✅ Supabase connection successful.")
+        
+        # Check model loading
+        _ = yolo_model
+        print("✅ YOLO model loaded successfully.")
+        
+    except Exception as e:
+        print(f"🔥 Startup health check FAILED: {e}")
+        print("Worker will not start. Please resolve the issue.")
+        exit(1)
+        
+    print("✅ Health checks passed. Worker is ready.")
+    
     print(f"🎯 Confidence: {CONFIDENCE_THRESHOLD}, Max Size: {MAX_IMAGE_SIZE}px")
     
     while True:

@@ -55,9 +55,11 @@ __pycache__/
 .venv
 venv/
 env/
+!worker/pokemon_cards_trained.pt
 
 # Models
 *.pt
+!worker/pokemon_cards_trained.pt
 *.onnx
 
 # Supabase

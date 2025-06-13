@@ -1,5 +1,62 @@
 ---
-description:
-globs:
-alwaysApply: false
+description: 
+globs: 
+alwaysApply: true
 ---
+When creating a new component:
+- Check if related design tokens already exist in app/globals.css
+- Reference global CSS variables in your component CSS modules
+- Create a clean, reusable interface with appropriate props
+- Document the component usage with examples
+- Add the component to the design system library page
+
+For design system implementation:
+1. First, extract and implement foundational elements (colors, typography, spacing) from Figma to app/globals.css
+2. Then build basic components using these variables
+3. Finally, assemble more complex components from the basic building blocks
+
+For design system library documentation:
+- Each component should have its own section in the library
+- Include a visual example of the component with variations
+- Provide usage code snippets
+- Document available props and their usage
+
+- Group related components together (e.g., form elements, navigation)
+
+{
+  "rules": [
+    {
+      "when": {
+        // Trigger when the user's message contains phrases indicating
+        // work on the design system.
+        "messageMatches": [
+          "design system changes",
+          "circuitds update",
+          "modify circuitds",
+          "add to circuitds",
+          "update design system",
+          "new ds component",
+          "style the ds"
+          // Add other relevant phrases
+        ]
+      },
+      "then": {
+        "actions": [
+          {
+            "type": "SHOW_MESSAGE", // Or "PREPEND_TO_USER_MESSAGE" or "ADD_CONTEXT"
+            "content": "Referencing CircuitDS Developer Guide: app/(circuitds)/circuitds/README.md. Please review for project structure, conventions, and philosophy before proceeding."
+          },
+          {
+            "type": "ATTACH_FILE_CONTEXT", // If Cursor supports this directly
+            "filePath": "app/(circuitds)/circuitds/README.md"
+          }
+          // Alternatively, if direct file attachment isn't an action,
+          // the SHOW_MESSAGE could instruct the AI (me) to read it:
+          // "content": "It looks like you're working on CircuitDS. I will now read app/(circuitds)/circuitds/README.md to ensure I have the latest context. Please wait a moment."
+          // And then the AI would be programmed to follow that instruction.
+        ]
+      },
+      "description": "Automatically provides context from the CircuitDS README when design system work is initiated."
+    }
+  ]
+}

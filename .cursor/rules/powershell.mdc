@@ -3,6 +3,5 @@ description:
 globs: 
 alwaysApply: false
 ---
-python in windows always wants to be called py. 
-
-- Q whatever command windows doesn't accept
+ - PowerShell uses Invoke-WebRequest instead of curl
+ - Common error: q^D^c = q: the term 'q' is not recognized as the name of a cmdlet, function, script file, or operable program. 

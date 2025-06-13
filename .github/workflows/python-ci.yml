@@ -1,0 +1,46 @@
+name: Python Worker CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.11' # Match your local environment
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f worker/requirements.txt ]; then pip install -r worker/requirements.txt; fi
+        pip install ultralytics  # Ensure ultralytics is installed for syntax check
+
+    - name: Check for trained model file
+      run: |
+        if [ ! -f "worker/pokemon_cards_trained.pt" ]; then
+          echo "❌ Trained model 'worker/pokemon_cards_trained.pt' not found."
+          exit 1
+        fi
+        echo "✅ Trained model file found."
+
+    - name: Check for config file
+      run: |
+        if [ ! -f "worker/config.py" ]; then
+          echo "❌ Config file 'worker/config.py' not found."
+          exit 1
+        fi
+        echo "✅ Config file found."
+
+    - name: Check Python syntax
+      run: |
+        python -m py_compile worker/production_worker.py
+        echo "✅ Python syntax OK." 
