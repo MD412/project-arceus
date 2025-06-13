@@ -55,12 +55,16 @@ __pycache__/
 .venv
 venv/
 env/
-!worker/pokemon_cards_trained.pt
+requirements.txt
 
-# Models
+# ML Models and Training Data
 *.pt
-!worker/pokemon_cards_trained.pt
 *.onnx
+*.pkl
+*.h5
+*.pb
+training_data/
+datasets/
 
 # Supabase
 .supabase

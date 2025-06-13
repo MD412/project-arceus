@@ -29,3 +29,16 @@ CREATE POLICY "Allow authenticated users to view their own jobs"
 ON public.jobs FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
+
+-- Policy: Allow users to update their own jobs
+CREATE POLICY "Allow authenticated users to update their own jobs"
+ON public.jobs FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Policy: Allow users to delete their own jobs
+CREATE POLICY "Allow authenticated users to delete their own jobs"
+ON public.jobs FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);

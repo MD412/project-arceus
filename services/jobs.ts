@@ -1,36 +1,5 @@
 import { supabase } from '@/lib/supabase/browser';
 
-interface JobPayload {
-  binder_title: string;
-  input_image_path: string;
-}
-
-/**
- * Creates a new job entry in the public.jobs table.
- * This is called after a file has been successfully uploaded to storage.
- * @param payload - The data needed to create the job.
- * @returns The newly created job record.
- */
-export async function createJob(payload: JobPayload) {
-  // Supabase auth helper automatically gets the user, RLS on the table
-  // ensures that the user_id must match the authenticated user.
-  const { data, error } = await supabase
-    .from('jobs')
-    .insert({
-      binder_title: payload.binder_title,
-      input_image_path: payload.input_image_path,
-    })
-    .select() // Return the created row
-    .single(); // Expect only one row back
-
-  if (error) {
-    console.error('Error creating job:', error);
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
 /**
  * Fetches all jobs for the currently authenticated user.
  * RLS policies on the 'jobs' table ensure that users can only see their own jobs.
@@ -73,4 +42,37 @@ export async function getJobById(jobId: string) {
   }
 
   return data;
+}
+
+/**
+ * Renames a binder by calling the server-side API endpoint.
+ * @param jobId - The UUID of the job to rename.
+ * @param newTitle - The new title for the binder.
+ */
+export async function renameJob(jobId: string, newTitle: string) {
+  const response = await fetch(`/api/binders/${jobId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ binder_title: newTitle }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to rename binder');
+  }
+}
+
+/**
+ * Deletes a binder by calling the server-side API endpoint.
+ * @param jobId - The UUID of the job to delete.
+ */
+export async function deleteJob(jobId: string) {
+  const response = await fetch(`/api/binders/${jobId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to delete binder');
+  }
 } 

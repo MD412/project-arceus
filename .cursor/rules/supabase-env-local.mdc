@@ -4,3 +4,6 @@ globs:
 alwaysApply: true
 ---
 Any time you run into supabase problems and can't find .env or .local.env it's because it's hidden from you in .gitignore . rest assured, I these keys are all correct and working.Whatever you're working on, this is not the problem. 
+
+
+ no we're not running any local supabase link crap. we're working from the production db. in this context production is the test env cuz this is just a stealth solo side project no one cares or knows about yet lol

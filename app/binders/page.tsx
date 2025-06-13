@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
+import { RenameBinderModal } from '@/components/ui/RenameBinderModal';
 
 // This is the shape of the 'jobs' table row, including the 'results' JSON
 // It helps TypeScript understand our data structure.
@@ -22,7 +24,20 @@ interface Job {
 const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 export default function BindersPage() {
-  const { data: jobs, isLoading, isError, error } = useJobs();
+  const { data: jobs, isLoading, isError, error, renameJob, deleteJob } = useJobs();
+  const [renamingJob, setRenamingJob] = useState<Job | null>(null);
+
+  const handleRename = (newTitle: string) => {
+    if (renamingJob) {
+      renameJob({ jobId: renamingJob.id, newTitle });
+    }
+  };
+
+  const handleDelete = (jobId: string, jobTitle: string) => {
+    if (window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
+      deleteJob(jobId);
+    }
+  };
 
   const getStatusChipColor = (status: string) => {
     switch (status) {
@@ -52,33 +67,39 @@ export default function BindersPage() {
       {jobs && jobs.length > 0 ? (
         <div className="binders-grid">
           {(jobs as Job[]).map((job) => (
-            <Link href={`/binders/${job.id}`} key={job.id} className="binder-card-link">
-              <div className="binder-card">
-                <h3>{job.binder_title}</h3>
-                <div className="status-chip" style={{ backgroundColor: getStatusChipColor(job.status) }}>
-                  {job.status}
-                </div>
-                
-                {job.status === 'completed' && job.results?.summary_image_path && (
-                  <div className="image-container">
-                    <img
-                      src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${job.results.summary_image_path}`}
-                      alt={`Processed view of ${job.binder_title}`}
-                      className="result-image"
-                    />
-                    <p className="card-count">
-                      Detected {job.results.total_cards_detected || 0} cards
-                    </p>
+            <div key={job.id} className="binder-card-wrapper">
+              <Link href={`/binders/${job.id}`} className="binder-card-link">
+                <div className="binder-card">
+                  <h3>{job.binder_title}</h3>
+                  <div className="status-chip" style={{ backgroundColor: getStatusChipColor(job.status) }}>
+                    {job.status}
                   </div>
-                )}
+                  
+                  {job.status === 'completed' && job.results?.summary_image_path && (
+                    <div className="image-container">
+                      <img
+                        src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${job.results.summary_image_path}`}
+                        alt={`Processed view of ${job.binder_title}`}
+                        className="result-image"
+                      />
+                      <p className="card-count">
+                        Detected {job.results.total_cards_detected || 0} cards
+                      </p>
+                    </div>
+                  )}
 
-                {job.status === 'processing' && <p>Your binder is currently being processed...</p>}
-                {job.status === 'pending' && <p>This binder is in the queue and will be processed shortly.</p>}
-                {job.status === 'failed' && <p className="error-text">Processing failed: {job.error_message}</p>}
+                  {job.status === 'processing' && <p>Your binder is currently being processed...</p>}
+                  {job.status === 'pending' && <p>This binder is in the queue and will be processed shortly.</p>}
+                  {job.status === 'failed' && <p className="error-text">Processing failed: {job.error_message}</p>}
 
-                <p className="timestamp">Uploaded: {new Date(job.created_at).toLocaleString()}</p>
+                  <p className="timestamp">Uploaded: {new Date(job.created_at).toLocaleString()}</p>
+                </div>
+              </Link>
+              <div className="binder-actions">
+                <Button variant="ghost" size="sm" onClick={() => setRenamingJob(job)}>Rename</Button>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(job.id, job.binder_title)}>Delete</Button>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       ) : (
@@ -89,6 +110,14 @@ export default function BindersPage() {
             Upload Your First Binder
           </Link>
         </div>
+      )}
+
+      {renamingJob && (
+        <RenameBinderModal
+          currentTitle={renamingJob.binder_title}
+          onRename={handleRename}
+          onClose={() => setRenamingJob(null)}
+        />
       )}
 
       <style jsx>{`
@@ -116,6 +145,16 @@ export default function BindersPage() {
         .binder-card-link:hover {
           transform: translateY(-4px);
           box-shadow: var(--shadow-lg);
+        }
+        .binder-card-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem; /* Space between card and actions */
+        }
+        .binder-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 0.5rem;
         }
         .binder-card {
           border: 1px solid var(--border-default);

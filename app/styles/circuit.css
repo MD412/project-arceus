@@ -176,6 +176,8 @@
 
   /* F. Status Colors */
   --status-error: #e74c3c;
+  --status-error-hover: #c0392b;
+  --status-error-pressed: #962d22;
   --status-error-subtle: rgba(231, 76, 60, 0.15);
   --status-success: #2ecc71;
   --status-success-subtle: rgba(46, 204, 113, 0.15);

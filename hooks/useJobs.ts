@@ -1,15 +1,40 @@
-import { useQuery } from '@tanstack/react-query';
-import { getJobs, getJobById } from '@/services/jobs';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getJobs, getJobById, renameJob, deleteJob } from '@/services/jobs';
 
 /**
  * A custom hook to fetch all jobs for the current user.
  * It uses TanStack Query to handle caching, refetching, and server state.
  */
 export function useJobs() {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['jobs'], // A unique key for this query
     queryFn: getJobs,   // The function that will be called to fetch the data
   });
+
+  const renameJobMutation = useMutation({
+    mutationFn: ({ jobId, newTitle }: { jobId: string; newTitle: string }) => renameJob(jobId, newTitle),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+    },
+  });
+
+  const deleteJobMutation = useMutation({
+    mutationFn: (jobId: string) => deleteJob(jobId),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+    },
+  });
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    renameJob: renameJobMutation.mutate,
+    deleteJob: deleteJobMutation.mutate,
+  };
 }
 
 /**
