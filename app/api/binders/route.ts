@@ -9,6 +9,13 @@ export async function POST(request: NextRequest) {
   const file = formData.get('file') as File;
   const userId = formData.get('user_id') as string;
 
+  // --- Start of New Debugging ---
+  console.log('--- API /api/binders RECEIVED ---');
+  console.log('Title from form:', title);
+  console.log('File name from form:', file?.name);
+  console.log('User ID from form:', userId);
+  // --- End of New Debugging ---
+
   if (!title || !file || !userId) {
     return NextResponse.json({ error: 'Title, file, and user_id are required' }, { status: 400 });
   }
