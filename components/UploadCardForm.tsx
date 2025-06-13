@@ -5,10 +5,13 @@
 // import { Input } from './ui/Input'; // This line will be removed as components/ui/Input.tsx was deleted
 import { Input } from '@/components/forms'; // New import using path alias and barrel file
 import React, { useRef, useState } from 'react'; // Restored useState
-import { supabase } from '@/lib/supabase'; // Restored supabase
-import { uploadCardImage } from '@/lib/uploadCardImage'; // Restored uploadCardImage
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { getSupabaseClient } from '@/lib/supabase/browser';
+import { uploadCardImage } from '@/lib/uploadCardImage';
 import { Button } from '@/components/ui/Button'; // Restored Button
 import { Modal } from '@/components/ui/Modal'; // Restored Modal import
+import { z } from 'zod';
 
 // All other imports and most of the component logic will be commented out
 // import { useRef, useState } from 'react';
@@ -16,6 +19,8 @@ import { Modal } from '@/components/ui/Modal'; // Restored Modal import
 // import { uploadCardImage } from '@/lib/uploadCardImage';
 // import { Button } from '@/components/ui/Button';
 // import { Modal } from '@/components/ui/Modal';
+
+const supabase = getSupabaseClient();
 
 interface Props {
   /** close() will be called after successful submit or when user clicks cancel  */

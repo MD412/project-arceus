@@ -3,5 +3,27 @@ description:
 globs: 
 alwaysApply: false
 ---
- - PowerShell uses Invoke-WebRequest instead of curl
- - Common error: q^D^c = q: the term 'q' is not recognized as the name of a cmdlet, function, script file, or operable program. 
+# PowerShell Rules for AI Assistant
+
+## Command Guidelines
+- PowerShell uses `Invoke-WebRequest` instead of `curl`
+- Use `exit` to quit PowerShell, never `q`
+
+## CRITICAL: Terminal Command Validation
+**ALWAYS validate terminal commands before sending them**
+
+### Common Error to PREVENT:
+- ❌ `q^D^C` = "q: the term 'q' is not recognized as the name of a cmdlet, function, script file, or operable program"
+- ❌ Any command ending with stray characters like `q`, `^D`, `^C`
+
+### Before using `run_terminal_cmd`:
+1. Ensure command contains ONLY intended characters
+2. No accidental Unix habits (like `q` to quit)
+3. No control character artifacts (`^D`, `^C`)
+4. Command is valid PowerShell syntax
+
+### Examples:
+- ✅ `git push`
+- ❌ `git push q^D^C`
+- ✅ `npm install`  
+- ❌ `npm install q` 

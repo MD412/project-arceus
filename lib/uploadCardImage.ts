@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getSupabaseClient } from '@/lib/supabase/browser';
 
 /**
  * Uploads a File to Supabase Storage and returns its public URL.
@@ -6,6 +6,7 @@ import { supabase } from './supabase';
  * Path:  user-uploads/{uuid}.{ext}
  */
 export async function uploadCardImage(file: File) {
+  const supabase = getSupabaseClient();
   console.log('📁 File info:', { name: file.name, size: file.size, type: file.type });
   
   const ext      = file.name.split('.').pop();

@@ -42,6 +42,33 @@ export default function HandbookHomePage() {
 
       <ContentSection title="📝 Project Update Log" headingLevel={2}>
         <div className="update-log-feed">
+          {/* --- JUNE 13 2025 INFRA REFACTOR --- */}
+          <div className="log-entry" style={{ borderLeft: '6px solid #38bdf8' }}>
+            <div className="log-header">
+              <h3 className="log-title">🔧 Infrastructure Refactor & Auth Stability</h3>
+              <p className="log-date">June 13 2025 – Late-night rescue mission</p>
+            </div>
+            <div className="log-body">
+              <p>
+                <strong>Root-Cause Fix:</strong> Eliminated conflicting Supabase clients that caused persistent 401 "Not authorized" errors when uploading binders.
+              </p>
+              <h4>Key Changes</h4>
+              <ul className="list-disc pl-6 space-y-1">
+                <li><strong>Single-source Supabase setup:</strong> <code>browser.ts</code>, <code>server.ts</code>, plus <code>middleware.ts</code> built with <code>@supabase/auth-helpers-nextjs</code>.</li>
+                <li><strong>Binder Upload API:</strong> Consolidated to one <code>/api/binders</code> route; service-role client writes files to <code>binders/&lt;user_id&gt;/…</code> and inserts a job row.</li>
+                <li><strong>Frontend Form:</strong> Zod-validated, now posts <code>user_id</code> in <code>FormData</code>; uses <code>credentials:"include"</code>.</li>
+                <li><strong>Model Hosting:</strong> 22 MB YOLO weights moved to Hugging Face Hub; repo no longer bloated.</li>
+                <li><strong>CI Pipeline:</strong> GitHub Action downloads models via <code>worker/download_models.py</code> before tests.</li>
+                <li><strong>Repo Cleanup:</strong> Removed stray Python artefacts, added wildcard ignores for <code>*.pt</code>, <code>datasets/</code>.</li>
+              </ul>
+              <h4>Outcome</h4>
+              <p>
+                Binder uploads, rename / delete, and job processing are back to 💯. The project is demo-ready again with a lean repo, stable auth, and automated CI.
+              </p>
+            </div>
+          </div>
+          {/* --- END JUNE 13 2025 ENTRY --- */}
+          
           {/* --- THE BREAKTHROUGH MOMENT --- */}
           <div className="log-entry" style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)', border: '3px solid #DAA520' }}>
             <div className="log-header">

@@ -1,10 +1,12 @@
-import { supabase } from '@/lib/supabase/browser';
+import { getSupabaseClient } from '@/lib/supabase/browser';
+
+const supabase = getSupabaseClient();
 
 /**
  * Fetches all jobs for the currently authenticated user.
  * RLS policies on the 'jobs' table ensure that users can only see their own jobs.
  */
-export async function getJobs() {
+export const getJobs = async () => {
   const { data, error } = await supabase
     .from('jobs')
     .select('*')

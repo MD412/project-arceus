@@ -1,4 +1,6 @@
-import { supabase } from '@/lib/supabase/browser';
+import { getSupabaseClient } from '@/lib/supabase/browser';
+
+const supabase = getSupabaseClient();
 
 export async function getCards(userId: string) {
   const { data, error } = await supabase

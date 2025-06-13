@@ -1,0 +1,5 @@
+- [ ] No accidental `q`, `^D`, `^C` suffixes
+- [ ] Command is valid PowerShell/Windows syntax
+- [ ] No Unix-specific shortcuts or habits 
+- [ ] Powershell doesn't use &&
+- [ ] Powershell uses py not python

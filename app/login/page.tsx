@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase/browser';
 import './login.css'; // Import the CSS file
 import { Input } from '@/components/forms/Input';
 import { Button } from '@/components/ui/Button';
+
+const supabase = getSupabaseClient();
 
 interface LoginFormData {
   email: string;

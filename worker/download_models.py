@@ -16,12 +16,11 @@ MODELS = {
         "filename": "yolov8s.pt",
         "sha256": None  # Add checksum if needed for verification
     },
-    # Add your custom model here when you upload it to Hugging Face
-    # "pokemon_cards": {
-    #     "url": "https://huggingface.co/your-username/pokemon-card-detector/resolve/main/pokemon_cards_trained.pt",
-    #     "filename": "pokemon_cards_trained.pt",
-    #     "sha256": None
-    # }
+    "pokemon_cards": {
+        "url": "https://huggingface.co/zanzoy/alkzm/resolve/main/pokemon_cards_trained.pt",
+        "filename": "pokemon_cards_trained.pt",
+        "sha256": None
+    }
 }
 
 def download_file(url: str, filepath: Path, chunk_size: int = 8192) -> bool:

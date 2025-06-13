@@ -5,20 +5,28 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { getSupabaseClient } from '@/lib/supabase/browser';
 
 import { BinderSchema } from '@/schemas/binder';
 
 type BinderFormValues = z.infer<typeof BinderSchema>;
 
-// The new mutation function that calls our single API endpoint
-async function createBinder(data: BinderFormValues) {
+// The mutation function accepts the transformed data
+async function createBinder(data: any) {
+  const supabase = getSupabaseClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error('Not logged in');
+
   const formData = new FormData();
   formData.append('title', data.title);
   formData.append('file', data.file);
+  formData.append('user_id', userId);
 
   const response = await fetch('/api/binders', {
     method: 'POST',
     body: formData,
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -37,7 +45,7 @@ export default function BinderUploadForm() {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<BinderFormValues>({
+  } = useForm({
     resolver: zodResolver(BinderSchema),
   });
 
@@ -53,8 +61,8 @@ export default function BinderUploadForm() {
     },
   });
 
-  // Wrapper function to match the expected signature for handleSubmit
-  const onSubmit = (data: BinderFormValues) => {
+  // After validation, handleSubmit provides the transformed output data
+  const onSubmit = (data: any) => {
     mutation.mutate(data);
   };
 
@@ -70,15 +78,10 @@ export default function BinderUploadForm() {
 
       <div className="form-group">
         <label htmlFor="file">Binder Photo</label>
-        <input
-          id="file"
-          type="file"
-          {...register('file', {
-            // zod schema handles the validation, but this helps with typing
-            setValueAs: (v) => v[0],
-          })}
-        />
-        {errors.file && <p className="form-error">{errors.file.message}</p>}
+        <input id="file" type="file" {...register('file')} />
+        {errors.file && (
+          <p className="form-error">{errors.file.message as string}</p>
+        )}
       </div>
 
       <button type="submit" className="button-primary" disabled={mutation.isPending}>

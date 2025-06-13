@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase/browser';
 import './signup.css'; // Import the CSS file
 import { Input } from '@/components/forms/Input';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +20,8 @@ interface FormErrors {
   confirmPassword?: string;
   general?: string;
 }
+
+const supabase = getSupabaseClient();
 
 const SignupPage: React.FC = () => {
   const [formData, setFormData] = useState<SignupFormData>({

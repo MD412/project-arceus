@@ -41,6 +41,9 @@ jobs:
         print('Available models:', list(download_models.MODELS.keys()))
         "
 
+    - name: Download models for CI
+      run: python worker/download_models.py
+
     - name: Check for config file
       run: |
         if [ ! -f "worker/config.py" ]; then

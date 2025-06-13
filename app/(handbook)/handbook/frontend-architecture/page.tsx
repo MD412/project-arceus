@@ -4,6 +4,9 @@ import React from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
 import ExampleShowcase from '@/components/layout/ExampleShowcase';
+import { getSupabaseClient } from '@/lib/supabase/browser';
+// import { CodeBlock } from '@/components/CodeBlock';
+// import { ExternalLink } from '@/components/ExternalLink';
 
 export default function FrontendArchitecturePage() {
   const supabaseClientCode = `
