@@ -7,13 +7,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { RenameBinderModal } from '@/components/ui/RenameBinderModal';
 
-// This is the shape of the 'jobs' table row, including the 'results' JSON
-// It helps TypeScript understand our data structure.
-interface Job {
+// This is the shape of the 'binder_page_uploads' table row.
+interface BinderPageUpload {
   id: string;
   created_at: string;
   binder_title: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  processing_status: 'queued' | 'processing' | 'review_pending' | 'failed' | 'timeout' | 'cancelled' | 'completed';
+  // The 'results' field is now part of the 'jobs' table, so it's optional here.
   results?: {
     summary_image_path?: string;
     total_cards_detected?: number;
@@ -24,26 +24,29 @@ interface Job {
 const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 export default function BindersPage() {
-  const { data: jobs, isLoading, isError, error, renameJob, deleteJob } = useJobs();
-  const [renamingJob, setRenamingJob] = useState<Job | null>(null);
+  const { data: uploads, isLoading, isError, error, renameJob, deleteJob } = useJobs();
+  const [renamingUpload, setRenamingUpload] = useState<BinderPageUpload | null>(null);
 
   const handleRename = (newTitle: string) => {
-    if (renamingJob) {
-      renameJob({ jobId: renamingJob.id, newTitle });
+    if (renamingUpload) {
+      renameJob({ jobId: renamingUpload.id, newTitle });
     }
   };
 
-  const handleDelete = (jobId: string, jobTitle: string) => {
+  const handleDelete = (uploadId: string, jobTitle: string) => {
     if (window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
-      deleteJob(jobId);
+      deleteJob(uploadId);
     }
   };
 
   const getStatusChipColor = (status: string) => {
     switch (status) {
-      case 'completed': return '#22c55e'; // green-500
+      case 'completed':
+      case 'review_pending':
+        return '#22c55e'; // green-500
       case 'processing': return '#3b82f6'; // blue-500
-      case 'pending': return '#f97316'; // orange-500
+      case 'queued':
+        return '#f97316'; // orange-500
       case 'failed': return '#ef4444'; // red-500
       default: return '#6b7280'; // gray-500
     }
@@ -64,40 +67,40 @@ export default function BindersPage() {
         <p>Here are the results of your submitted binder scans.</p>
       </header>
 
-      {jobs && jobs.length > 0 ? (
+      {uploads && uploads.length > 0 ? (
         <div className="binders-grid">
-          {(jobs as Job[]).map((job) => (
-            <div key={job.id} className="binder-card-wrapper">
-              <Link href={`/binders/${job.id}`} className="binder-card-link">
+          {(uploads as BinderPageUpload[]).map((upload) => (
+            <div key={upload.id} className="binder-card-wrapper">
+              <Link href={`/binders/${upload.id}`} className="binder-card-link">
                 <div className="binder-card">
-                  <h3>{job.binder_title}</h3>
-                  <div className="status-chip" style={{ backgroundColor: getStatusChipColor(job.status) }}>
-                    {job.status}
+                  <h3>{upload.binder_title || 'Untitled Binder'}</h3>
+                  <div className="status-chip" style={{ backgroundColor: getStatusChipColor(upload.processing_status) }}>
+                    {upload.processing_status}
                   </div>
                   
-                  {job.status === 'completed' && job.results?.summary_image_path && (
+                  {upload.processing_status === 'completed' && upload.results?.summary_image_path && (
                     <div className="image-container">
                       <img
-                        src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${job.results.summary_image_path}`}
-                        alt={`Processed view of ${job.binder_title}`}
+                        src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${upload.results.summary_image_path}`}
+                        alt={`Processed view of ${upload.binder_title}`}
                         className="result-image"
                       />
                       <p className="card-count">
-                        Detected {job.results.total_cards_detected || 0} cards
+                        Detected {upload.results.total_cards_detected || 0} cards
                       </p>
                     </div>
                   )}
+                  
+                  {upload.processing_status === 'processing' && <p>Your binder is currently being processed...</p>}
+                  {upload.processing_status === 'queued' && <p>This binder is in the queue and will be processed shortly.</p>}
+                  {upload.processing_status === 'failed' && <p className="error-text">Processing failed: {upload.error_message}</p>}
 
-                  {job.status === 'processing' && <p>Your binder is currently being processed...</p>}
-                  {job.status === 'pending' && <p>This binder is in the queue and will be processed shortly.</p>}
-                  {job.status === 'failed' && <p className="error-text">Processing failed: {job.error_message}</p>}
-
-                  <p className="timestamp">Uploaded: {new Date(job.created_at).toLocaleString()}</p>
+                  <p className="timestamp">Uploaded: {new Date(upload.created_at).toLocaleString()}</p>
                 </div>
               </Link>
               <div className="binder-actions">
-                <Button variant="ghost" size="sm" onClick={() => setRenamingJob(job)}>Rename</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(job.id, job.binder_title)}>Delete</Button>
+                <Button variant="ghost" size="sm" onClick={() => setRenamingUpload(upload)}>Rename</Button>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(upload.id, upload.binder_title)}>Delete</Button>
               </div>
             </div>
           ))}
@@ -112,11 +115,11 @@ export default function BindersPage() {
         </div>
       )}
 
-      {renamingJob && (
+      {renamingUpload && (
         <RenameBinderModal
-          currentTitle={renamingJob.binder_title}
+          currentTitle={renamingUpload.binder_title}
           onRename={handleRename}
-          onClose={() => setRenamingJob(null)}
+          onClose={() => setRenamingUpload(null)}
         />
       )}
 
