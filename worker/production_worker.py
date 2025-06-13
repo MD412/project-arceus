@@ -36,15 +36,29 @@ def download_model_if_needed():
     logger.info(f"Model not found locally. Downloading from Hugging Face repo '{MODEL_REPO_ID}'...")
     try:
         hf_token = os.getenv("HUGGING_FACE_TOKEN")
-        if not hf_token:
-            logger.warning("HUGGING_FACE_TOKEN not set. Trying anonymous download.")
         
-        hf_hub_download(
-            repo_id=MODEL_REPO_ID,
-            filename=MODEL_FILENAME,
-            local_dir=LOCAL_MODEL_PATH.parent,
-            token=hf_token,
-        )
+        # Try without token first since repo is public
+        try:
+            logger.info("Attempting anonymous download (public repo)...")
+            hf_hub_download(
+                repo_id=MODEL_REPO_ID,
+                filename=MODEL_FILENAME,
+                local_dir=LOCAL_MODEL_PATH.parent,
+                token=None,  # Force anonymous download
+            )
+            logger.info("✅ Anonymous download successful.")
+        except Exception as anonymous_error:
+            logger.warning(f"Anonymous download failed: {anonymous_error}")
+            if hf_token:
+                logger.info("Retrying with authentication token...")
+                hf_hub_download(
+                    repo_id=MODEL_REPO_ID,
+                    filename=MODEL_FILENAME,
+                    local_dir=LOCAL_MODEL_PATH.parent,
+                    token=hf_token,
+                )
+            else:
+                raise anonymous_error
         logger.info("✅ Model downloaded successfully.")
     except Exception as e:
         logger.error(f"🔥 Failed to download model from Hugging Face: {e}")
