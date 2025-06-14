@@ -12,6 +12,9 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from ultralytics import YOLO
 from huggingface_hub import hf_hub_download
+import cv2
+import numpy as np
+import pillow_heif
 
 from config import supabase_client
 
@@ -129,28 +132,55 @@ def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
     new_w, new_h = int(w * scale), int(h * scale)
     return image.resize((new_w, new_h), Image.Resampling.LANCZOS), scale
 
-def run_vision_pipeline(job: dict, model: YOLO):
-    """Downloads image, runs YOLO, and returns structured results."""
-    upload_id = job['binder_page_upload_id']
-    
-    # The `enqueue` function now includes storage_path in the job payload
-    job_payload = job.get('payload', {})
-    input_path = job_payload.get('storage_path')
-    
-    if not input_path:
-        raise ValueError(f"Job {job['id']} is missing 'storage_path' in its payload.")
+def download_image(storage_path):
+    """Downloads an image from Supabase storage."""
+    try:
+        response = supabase_client.storage.from_("binders").download(storage_path)
+        return response
+    except Exception as e:
+        logger.error(f"Failed to download {storage_path}: {e}")
+        return None
 
-    logger.info(f"Downloading image from: {input_path}")
-    response = supabase_client.storage.from_("binders").download(input_path)
-    original_image = Image.open(io.BytesIO(response))
-    fixed_image = ImageOps.exif_transpose(original_image)
-    w, h = fixed_image.size
-    logger.info(f"📐 Original size: {w}x{h}")
-
-    detection_image, scale_factor = resize_for_detection(fixed_image)
-    logger.info(f"🧠 Running YOLO on resized image ({detection_image.width}x{detection_image.height})...")
+def whole_image_pipeline(job):
+    """
+    Main processing pipeline for a single uploaded image.
+    Handles HEIC conversion, object detection, and result formatting.
+    """
+    logger.info(f"🚀 Running WHOLE IMAGE Pipeline for job: {job['id']}")
     
-    results = model.predict(detection_image, conf=CONFIDENCE_THRESHOLD, verbose=False)
+    storage_path = job['payload']['storage_path']
+    logger.info(f"Downloading image from: {storage_path}")
+    
+    image_bytes = download_image(storage_path)
+    if not image_bytes:
+        raise Exception("Failed to download image from storage.")
+
+    try:
+        # Try to open with Pillow directly (for JPG, PNG, etc.)
+        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        logger.info("Successfully opened standard image format (JPG/PNG).")
+    except Exception:
+        try:
+            # If Pillow fails, it might be HEIC. Try pillow-heif.
+            logger.info("Standard open failed, attempting HEIC conversion...")
+            heif_file = pillow_heif.read_heif(io.BytesIO(image_bytes))
+            img = Image.frombytes(
+                heif_file.mode,
+                heif_file.size,
+                heif_file.data,
+                "raw",
+            ).convert("RGB")
+            logger.info("✅ Successfully converted HEIC to RGB Image.")
+        except Exception as heic_error:
+            # If both methods fail, raise an error.
+            raise Exception(f"Cannot identify image file. Both standard and HEIC reads failed. HEIC error: {heic_error}")
+
+    # Convert the PIL Image to a NumPy array for OpenCV/YOLO
+    cv_image = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+
+    # --- YOLOv8 Detection ---
+    logger.info("🔬 Running YOLOv8 detection...")
+    results = model(cv_image)
     
     detections = []
     for res in results:
@@ -158,9 +188,6 @@ def run_vision_pipeline(job: dict, model: YOLO):
             for box_data in res.boxes:
                 x1, y1, x2, y2 = box_data.xyxy[0].tolist()
                 confidence = box_data.conf[0].item()
-                if scale_factor != 1.0:
-                    x1 /= scale_factor; y1 /= scale_factor
-                    x2 /= scale_factor; y2 /= scale_factor
                 detections.append({'box': [x1, y1, x2, y2], 'confidence': confidence})
 
     logger.info(f"📊 Found {len(detections)} potential cards.")
@@ -173,7 +200,7 @@ def run_vision_pipeline(job: dict, model: YOLO):
     if not final_detections:
         return { "total_cards_detected": 0, "summary_image_path": None }
 
-    summary_image = fixed_image.copy()
+    summary_image = img.copy()
     draw = ImageDraw.Draw(summary_image)
     try:
       font = ImageFont.truetype("arial.ttf", size=max(15, int(w/100)))
@@ -215,7 +242,7 @@ def main():
             upload_id = job['binder_page_upload_id']
             logger.info(f"⚙️  Processing job {job_id} for upload {upload_id}")
             try:
-                pipeline_results = run_vision_pipeline(job, yolo_model)
+                pipeline_results = whole_image_pipeline(job)
                 update_job_and_upload(job_id, upload_id, 'completed', results=pipeline_results)
                 logger.info(f"✅ Job {job_id} completed successfully.")
             except Exception as e:

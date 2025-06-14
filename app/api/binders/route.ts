@@ -9,26 +9,11 @@ export async function POST(request: NextRequest) {
   const file = formData.get('file') as File;
   const userId = formData.get('user_id') as string;
 
-  // --- Start of New Debugging ---
-  console.log('--- API /api/binders RECEIVED ---');
-  console.log('Title from form:', title);
-  console.log('File name from form:', file?.name);
-  console.log('User ID from form:', userId);
-  // --- End of New Debugging ---
-
   if (!title || !file || !userId) {
     return NextResponse.json({ error: 'Title, file, and user_id are required' }, { status: 400 });
   }
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-
-  // Debug logging
-  console.log('Environment check:', {
-    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    urlPrefix: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 20),
-    keyPrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20)
-  });
 
   try {
     // Generate content hash for deduplication

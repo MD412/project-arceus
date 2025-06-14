@@ -1,222 +1,176 @@
 #!/usr/bin/env python3
 """
 Local development worker for Project Arceus - Full ML pipeline
-Runs the complete vision pipeline with YOLO model for local testing
 """
-
-import time
 import io
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+import os
+import time
 from pathlib import Path
+
+import pillow_heif
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from ultralytics import YOLO
 from config import supabase_client
 
-# --- Configuration ---
+# --- Model and Configuration ---
 CONFIDENCE_THRESHOLD = 0.25
 MAX_IMAGE_SIZE = 2048
 MAX_REASONABLE_CARDS = 18
 
 def get_yolo_model(model_path='worker/pokemon_cards_trained.pt'):
-    """
-    Load and return the trained YOLO model.
-    """
-    print(f"📊 Loading trained model from: {model_path}")
-    
-    # Check from project root, which is the CWD for the worker
     if not Path(model_path).exists():
-         print(f"❌ Trained model not found at: {model_path}")
-         print("Please ensure the model file is in the correct location.")
-         exit(1)
-
+        print(f"❌ Trained model not found at: {model_path}")
+        exit(1)
     try:
         model = YOLO(model_path)
-        print("✅ YOLO model loaded (TRAINED VERSION).")
+        print("✅ YOLO model loaded.")
         return model
     except Exception as e:
         print(f"🔥 Failed to load YOLO model: {e}")
         exit(1)
 
-# Initialize model for local use
 yolo_model = get_yolo_model()
 
+# --- Image Processing Pipeline ---
+
 def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
-    """Resize image for faster processing while maintaining aspect ratio."""
     w, h = image.size
     if max(w, h) <= max_size:
         return image, 1.0
-    
     scale = max_size / max(w, h)
-    new_w, new_h = int(w * scale), int(h * scale)
-    return image.resize((new_w, new_h), Image.Resampling.LANCZOS), scale
+    return image.resize((int(w * scale), int(h * scale)), Image.Resampling.LANCZOS), scale
 
-def whole_image_pipeline(job):
-    """Run YOLO on the entire binder image."""
-    print(f"🚀 Running WHOLE IMAGE Pipeline for job: {job['id']}")
+def run_pipeline(job: dict, model: YOLO):
+    """Main processing pipeline for a single job."""
+    upload_id = job['binder_page_upload_id']
+    storage_path = job.get('payload', {}).get('storage_path')
+    if not storage_path:
+        raise ValueError(f"Job {job['id']} is missing 'storage_path' in payload.")
+
+    print(f"⬇️ Downloading image: {storage_path}")
+    image_bytes = supabase_client.storage.from_("binders").download(storage_path)
+
+    try:
+        original_image = Image.open(io.BytesIO(image_bytes))
+    except Exception:
+        print("⚠️ Standard open failed, attempting HEIC conversion...")
+        try:
+            heif_file = pillow_heif.read_heif(io.BytesIO(image_bytes))
+            original_image = Image.frombytes(heif_file.mode, heif_file.size, heif_file.data, "raw")
+            print("✅ HEIC conversion successful.")
+        except Exception as heic_error:
+            raise Exception(f"Pillow and pillow-heif failed. Error: {heic_error}")
+
+    image = ImageOps.exif_transpose(original_image)
+    w, h = image.size
+    print(f"📐 Image size: {w}x{h}")
+
+    detection_image, scale = resize_for_detection(image)
+    print(f"🔬 Detecting on resized {detection_image.size}...")
     
-    input_path = job.get('input_image_path')
-    if not input_path:
-        raise ValueError("Job missing 'input_image_path'")
-
-    # 1. Download and orient image
-    print(f"Downloading image from: {input_path}")
-    response = supabase_client.storage.from_("binders").download(input_path)
-    original_image = Image.open(io.BytesIO(response))
-    fixed_image = ImageOps.exif_transpose(original_image)
-    w, h = fixed_image.size
-    print(f"📐 Original size: {w}x{h}")
-
-    # 2. Resize for detection
-    detection_image, scale_factor = resize_for_detection(fixed_image)
-    det_w, det_h = detection_image.size
-    print(f"🔍 Detecting on resized image: {det_w}x{det_h}")
-
-    # 3. Run YOLO on the ENTIRE image
-    print("🧠 Running YOLO on whole image...")
-    results = yolo_model.predict(detection_image, conf=CONFIDENCE_THRESHOLD, verbose=False)
-    
-    # Extract detections
+    results = model.predict(detection_image, conf=CONFIDENCE_THRESHOLD, verbose=False)
     detections = []
-    for res in results:
-        if res.boxes is not None:
-            for box_data in res.boxes:
-                x1, y1, x2, y2 = box_data.xyxy[0].tolist()
-                confidence = box_data.conf[0].item()
+    for r in results:
+        for box_data in r.boxes:
+            x1, y1, x2, y2 = box_data.xyxy[0].tolist()
+            if scale != 1.0:
+                x1, y1, x2, y2 = x1/scale, y1/scale, x2/scale, y2/scale
+            detections.append({'box': [x1, y1, x2, y2], 'confidence': box_data.conf[0].item()})
 
-                if scale_factor != 1.0:
-                    x1 /= scale_factor; y1 /= scale_factor
-                    x2 /= scale_factor; y2 /= scale_factor
-                
-                detections.append({'box': [x1, y1, x2, y2], 'confidence': confidence})
+    final_detections = sorted(detections, key=lambda x: x['confidence'], reverse=True)[:MAX_REASONABLE_CARDS]
+    print(f"Found {len(final_detections)} cards.")
 
-    # NEW: Safety net - auto-relax confidence if recall is too low
-    if len(detections) < 4:
-        print("⚠️ Low detection count - running 2nd pass with gentler confidence...")
-        results = yolo_model.predict(detection_image, conf=0.15, verbose=False)
-        
-        # Re-extract detections
-        detections = []
-        for res in results:
-            if res.boxes is not None:
-                for box_data in res.boxes:
-                    x1, y1, x2, y2 = box_data.xyxy[0].tolist()
-                    confidence = box_data.conf[0].item()
-                    
-                    if scale_factor != 1.0:
-                        x1 /= scale_factor; y1 /= scale_factor
-                        x2 /= scale_factor; y2 /= scale_factor
-                    
-                    detections.append({'box': [x1, y1, x2, y2], 'confidence': confidence})
-    
-    print(f"📊 Total detections: {len(detections)}")
-
-    # 4. Filter tiny boxes and take top detections
-    min_card_area = (w * h) * 0.002
-    filtered_detections = [d for d in detections if ((d['box'][2] - d['box'][0]) * (d['box'][3] - d['box'][1])) >= min_card_area]
-    final_detections = sorted(filtered_detections, key=lambda x: x['confidence'], reverse=True)[:MAX_REASONABLE_CARDS]
-    print(f"🎯 Found {len(final_detections)} final detections")
-
-    # 5. Create crops and summary image
+    summary_image_path = None
     detected_card_paths = []
-    summary_image = fixed_image.copy()
-    draw = ImageDraw.Draw(summary_image)
-    font = ImageFont.load_default()
+    if final_detections:
+        summary_img = image.copy()
+        draw = ImageDraw.Draw(summary_img)
+        font = ImageFont.load_default()
 
-    for i, detection in enumerate(final_detections):
-        box = detection['box']
-        card_crop = fixed_image.crop(box)
-        card_buffer = io.BytesIO()
-        card_crop.save(card_buffer, format='JPEG', quality=95)
+        print(f"🖼️ Creating crops and summary image...")
+        for i, det in enumerate(final_detections):
+            # Draw on summary image
+            draw.rectangle(det['box'], outline="red", width=3)
+            draw.text((det['box'][0] + 5, det['box'][1] + 5), f"Card {i+1}", fill="red", font=font)
+            
+            # Create and upload individual card crop
+            card_crop = image.crop(det['box'])
+            card_buffer = io.BytesIO()
+            card_crop.save(card_buffer, format='JPEG', quality=95)
+            card_buffer.seek(0)
+            card_path = f"{upload_id}/card_{i+1}.jpeg"
+            supabase_client.storage.from_("binders").upload(
+                path=card_path, file=card_buffer.getvalue(), file_options={"content-type": "image/jpeg", "upsert": "true"}
+            )
+            detected_card_paths.append(card_path)
         
-        card_path = f"results/{job['id']}/card_{i}.jpg"
-        supabase_client.storage.from_("binders").upload(card_path, card_buffer.getvalue(), {"content-type": "image/jpeg", "x-upsert": "true"})
-        detected_card_paths.append(card_path)
-        
-        draw.rectangle(box, outline="red", width=5)
-        label = f"Card {i+1}: {detection['confidence']:.2f}"
-        draw.text((box[0], box[1] - 15), label, fill="red", font=font)
-
-    # 6. Upload summary image
-    summary_buffer = io.BytesIO()
-    summary_image.save(summary_buffer, format='JPEG', quality=95)
-    summary_path = f"results/{job['id']}/summary.jpg"
-    supabase_client.storage.from_("binders").upload(summary_path, summary_buffer.getvalue(), {"content-type": "image/jpeg", "x-upsert": "true"})
+        # Upload summary image
+        summary_buffer = io.BytesIO()
+        summary_img.save(summary_buffer, format='JPEG', quality=90)
+        summary_buffer.seek(0)
+        summary_image_path = f"{upload_id}/summary.jpeg"
+        supabase_client.storage.from_("binders").upload(
+            path=summary_image_path, file=summary_buffer.getvalue(), file_options={"content-type": "image/jpeg", "upsert": "true"}
+        )
+        print("✅ Summary image and crops uploaded.")
 
     return {
-        "summary_image_path": summary_path,
-        "total_cards_detected": len(final_detections),
-        "detected_card_paths": detected_card_paths,
-        "processed_at": time.time(),
-        "original_image_width": w,
-        "original_image_height": h
+        "total_cards_detected": len(final_detections), 
+        "summary_image_path": summary_image_path,
+        "detected_card_paths": detected_card_paths
     }
 
+# --- Worker Loop ---
+
 def fetch_and_lock_job():
-    """Atomically fetch and lock the next pending job."""
     try:
-        response = supabase_client.rpc("fetch_and_lock_job").execute()
+        response = supabase_client.rpc("dequeue_and_start_job").execute()
         return response.data[0] if response.data else None
     except Exception as e:
         print(f"🔥 Error fetching job: {e}")
         return None
 
-def main():
-    """Main worker loop with startup health check."""
-    print("🚀 LOCAL Worker (Whole-Image) starting...")
-    
-    # --- Startup Health Check ---
-    print("🩺 Running startup health check...")
+def update_job_status(job_id, upload_id, status, error_message=None, results=None):
     try:
-        # Check Supabase connection
-        _ = supabase_client.auth.get_user()
-        print("✅ Supabase connection successful.")
+        # First update the job queue itself
+        job_update_data = {"status": status}
+        if status in ['completed', 'failed']:
+             job_update_data['finished_at'] = 'now()'
+        supabase_client.from_("job_queue").update(job_update_data).eq("id", job_id).execute()
         
-        # Check model loading
-        _ = yolo_model
-        print("✅ YOLO model loaded successfully.")
-        
+        # Then update the parent upload record
+        upload_update_data = {"processing_status": status}
+        if error_message:
+            upload_update_data["error_message"] = error_message
+        if results:
+            upload_update_data["results"] = results
+        supabase_client.from_("binder_page_uploads").update(upload_update_data).eq("id", upload_id).execute()
+        print(f"🔔 Status for job {job_id} updated to {status}.")
     except Exception as e:
-        print(f"🔥 Startup health check FAILED: {e}")
-        print("Worker will not start. Please resolve the issue.")
-        exit(1)
-        
-    print("✅ Health checks passed. Worker is ready.")
-    
-    print(f"🎯 Confidence: {CONFIDENCE_THRESHOLD}, Max Size: {MAX_IMAGE_SIZE}px")
-    
+        print(f"🔥 Failed to update job/upload status for job {job_id}: {e}")
+
+def main():
+    print("🚀 Worker starting...")
     while True:
         job = fetch_and_lock_job()
-        if job:
-            try:
-                results = whole_image_pipeline(job)
-                
-                # Update job_queue table
-                supabase_client.from_("job_queue").update({
-                    "status": "completed"
-                }).eq("id", job["id"]).execute()
-                
-                # Update binder_page_uploads table
-                supabase_client.from_("binder_page_uploads").update({
-                    "processing_status": "completed",
-                    "results": results
-                }).eq("id", job["binder_page_upload_id"]).execute()
-                
-                print(f"✅ Job {job['id']} completed successfully")
-            except Exception as e:
-                print(f"🔥 Job {job['id']} failed: {e}")
-                
-                # Update job_queue table
-                supabase_client.from_("job_queue").update({
-                    "status": "failed"
-                }).eq("id", job["id"]).execute()
-                
-                # Update binder_page_uploads table
-                supabase_client.from_("binder_page_uploads").update({
-                    "processing_status": "failed",
-                    "error_message": str(e)
-                }).eq("id", job["binder_page_upload_id"]).execute()
-        else:
+        if not job:
             print("💤 No jobs found, waiting...")
             time.sleep(10)
+            continue
+
+        upload_id = job.get('binder_page_upload_id')
+        job_id = job.get('id')
+        print(f"⚙️ Processing job: {job_id} for upload: {upload_id}")
+
+        try:
+            pipeline_results = run_pipeline(job, yolo_model)
+            update_job_status(job_id, upload_id, 'completed', results=pipeline_results)
+            print(f"✅ Job {job_id} completed successfully.")
+        except Exception as e:
+            import traceback
+            print(f"🔥 Job {job_id} failed: {e}")
+            traceback.print_exc() # Print full stack trace
+            update_job_status(job_id, upload_id, 'failed', error_message=str(e))
 
 if __name__ == "__main__":
-    main() 
+    main()

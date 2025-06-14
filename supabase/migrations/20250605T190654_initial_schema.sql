@@ -1,5 +1,3 @@
-
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -47,73 +45,38 @@ CREATE TYPE "public"."processing_status_enum" AS ENUM (
 ALTER TYPE "public"."processing_status_enum" OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character) RETURNS "json"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
+CREATE OR REPLACE FUNCTION "public"."enqueue_binder_upload"(
+    p_user_id uuid,
+    p_storage_path text,
+    p_content_hash text,
+    p_binder_title text
+)
+RETURNS TABLE(job_id uuid, upload_id uuid)
+LANGUAGE plpgsql
+AS $$
 DECLARE
-  v_id uuid;
-  v_existing_status public.processing_status_enum; -- Make sure this ENUM type exists from stage1_migrations.sql
-  v_job_enqueued boolean := false;
+    v_upload_id uuid;
+    v_job_id uuid;
 BEGIN
-  -- Try to get the existing record's ID and status if it matches user_id and content_hash
-  -- and its status is not 'failed' (due to the unique index WHERE clause)
-  SELECT id, processing_status INTO v_id, v_existing_status
-  FROM public.binder_page_uploads
-  WHERE user_id = p_user_id AND content_hash = p_content_hash;
+    -- Insert the new upload record and get its ID
+    INSERT INTO public.binder_page_uploads (user_id, storage_path, content_hash, binder_title, processing_status)
+    VALUES (p_user_id, p_storage_path, p_content_hash, p_binder_title, 'queued')
+    RETURNING id INTO v_upload_id;
 
-  IF v_id IS NULL THEN
-    -- No existing record (or existing one was 'failed' and unique index allowed new insert path),
-    -- so insert a new one.
-    INSERT INTO public.binder_page_uploads (user_id, storage_path, content_hash, processing_status)
-    VALUES (p_user_id, p_storage_path, p_content_hash, 'queued'::public.processing_status_enum)
-    RETURNING id INTO v_id;
-    v_job_enqueued := true; -- A new upload always gets a new job initially
-  ELSE
-    -- Existing record found (and its status was not 'failed' when the calling Edge Function tried to insert/conflict)
-    IF v_existing_status = 'failed'::public.processing_status_enum THEN
-      -- This case handles if a previous attempt failed, and we want to re-queue.
-      -- The unique index WHERE processing_status <> 'failed' means an INSERT would create a NEW row
-      -- if the only match had processing_status = 'failed'.
-      -- So, if v_id is NOT NULL here, it means the conflict was on a non-failed record.
-      -- However, to be extremely robust for a direct RPC call that might want to re-queue a 'failed' one:
-      UPDATE public.binder_page_uploads
-      SET processing_status = 'queued'::public.processing_status_enum,
-          storage_path = p_storage_path, -- Update storage_path in case it changed
-          upload_timestamp = now()      -- Reset upload timestamp
-      WHERE id = v_id;
-      v_job_enqueued := true; -- Re-queue a job for the failed item
-    ELSE
-      -- If status is not 'failed' (e.g., 'queued', 'processing', 'review_pending'),
-      -- it's already being handled or was successfully processed. Do not create a new job.
-      v_job_enqueued := false;
-    END IF;
-  END IF;
+    -- Insert a job into the queue for the new upload, including storage_path in the payload
+    INSERT INTO public.job_queue (binder_page_upload_id, status, payload)
+    VALUES (v_upload_id, 'pending', jsonb_build_object(
+        'storage_path', p_storage_path
+    ))
+    RETURNING id INTO v_job_id;
 
-  -- If a job needs to be enqueued (either for a new record or a re-queued 'failed' one)
-  -- AND there isn't already a 'pending' or 'processing' job for this binder_page_upload_id
-  IF v_job_enqueued THEN
-    IF NOT EXISTS (
-      SELECT 1 FROM public.job_queue
-      WHERE binder_page_upload_id = v_id
-      AND (status = 'pending'::public.job_status_enum OR status = 'processing'::public.job_status_enum)
-    ) THEN
-      INSERT INTO public.job_queue (binder_page_upload_id, status)
-      VALUES (v_id, 'pending'::public.job_status_enum);
-      -- v_job_enqueued remains true
-    ELSE
-      v_job_enqueued := false; -- A pending/processing job already exists, so don't mark this call as having enqueued a new one
-    END IF;
-  END IF;
-
-  RETURN json_build_object(
-    'binder_page_upload_id', v_id,
-    'job_enqueued', v_job_enqueued
-  );
+    -- Return the ID of the created job and upload
+    RETURN QUERY SELECT v_job_id, v_upload_id;
 END;
 $$;
 
 
-ALTER FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character) OWNER TO "postgres";
+ALTER FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character, "p_binder_title" text) OWNER TO "postgres";
 
 
 CREATE OR REPLACE FUNCTION "public"."handle_updated_at"() RETURNS "trigger"
@@ -330,9 +293,9 @@ GRANT ALL ON TYPE "public"."processing_status_enum" TO "authenticated";
 
 
 
-GRANT ALL ON FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character) TO "anon";
-GRANT ALL ON FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character) TO "service_role";
+GRANT ALL ON FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character, "p_binder_title" text) TO "anon";
+GRANT ALL ON FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character, "p_binder_title" text) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."enqueue_binder_upload"("p_user_id" "uuid", "p_storage_path" "text", "p_content_hash" character, "p_binder_title" text) TO "service_role";
 
 
 
