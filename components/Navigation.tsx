@@ -1,6 +1,9 @@
 'use client';
 
 import AppNavigation, { type NavigationConfigItem } from '@/components/ui/AppNavigation';
+import { useRouter } from 'next/navigation';
+import { signOut } from '@/lib/supabase/browser';
+import Link from 'next/link';
 
 // Original NavItem structure (can be removed or kept for reference if needed)
 // interface NavItem {
@@ -11,7 +14,7 @@ import AppNavigation, { type NavigationConfigItem } from '@/components/ui/AppNav
 const navigationConfig: NavigationConfigItem[] = [
   // This first set of links appears under the main title.
   { type: 'link', label: 'Collection', href: '/' },
-  { type: 'link', label: 'My Binders', href: '/binders' },
+  { type: 'link', label: 'My Scans', href: '/binders' },
 
   // This creates a new group with a heading, providing visual separation.
   {
@@ -29,18 +32,29 @@ const navigationConfig: NavigationConfigItem[] = [
 // const navigationConfig: NavigationConfigItem[] = appNavItems.map(item => ({ ...item, type: 'link' }));
 
 export default function Navigation() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const error = await signOut();
+    if (!error) {
+      router.push('/login');
+    }
+  };
+
   return (
-    <AppNavigation
-      navTitle="Project Arceus"
-      items={navigationConfig}
-      baseNavClass="circuit-sidebar"
-      // Rely on AppNavigation.css defaults for these:
-      // headerClass="circuit-sidebar-header"
-      // titleClass="subtitle"
-      // navListClass="circuit-nav-list"
-      // navItemClass="circuit-nav-item"
-      // navLinkClass="circuit-nav-link"
-      // navLinkActiveClass="circuit-nav-link-active"
-    />
+    <div className="circuit-sidebar">
+      <AppNavigation
+        navTitle={<h2 className="sidebar-nav-title"><Link href="/">Project Arceus</Link></h2>}
+        items={navigationConfig}
+        // Use default sidebar-nav classes for internal elements
+      />
+      <button
+        className="sidebar-logout-button"
+        onClick={handleLogout}
+        aria-label="Logout"
+      >
+        Logout
+      </button>
+    </div>
   );
 } 

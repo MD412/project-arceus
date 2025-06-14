@@ -26,8 +26,8 @@ export const RenameBinderModal: React.FC<RenameBinderModalProps> = ({ currentTit
   return (
     <div className="modal-backdrop">
       <div className="modal-content">
-        <h2 className="modal-title">Rename Binder</h2>
-        <p>Enter a new title for your binder:</p>
+        <h2 className="modal-title">Rename Scan</h2>
+        <p>Enter a new title for your scan:</p>
         
         <Input
           type="text"

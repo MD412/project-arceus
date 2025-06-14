@@ -5,7 +5,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   // Get user_id from request headers (set by frontend)
   const userId = request.headers.get('x-user-id');
-  
+
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized - User ID required' }, { status: 401 });
   }
@@ -46,7 +46,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   // Get user_id from request headers (set by frontend)
   const userId = request.headers.get('x-user-id');
-  
+
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized - User ID required' }, { status: 401 });
   }
@@ -67,7 +67,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       
     if (fetchError) {
       console.error('Fetch error:', fetchError);
-      return NextResponse.json({ error: 'Binder not found or you do not have permission to delete it.' }, { status: 404 });
+        return NextResponse.json({ error: 'Binder not found or you do not have permission to delete it.' }, { status: 404 });
     }
     
     if (!uploadData) {

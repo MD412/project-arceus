@@ -7,15 +7,13 @@ import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
 
 interface BinderPageProps {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }> | { id: string };
 }
 
 const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 export default function BinderDetailPage({ params }: BinderPageProps) {
-  const { id } = React.use(params);
+  const { id } = (React.use(params as any) as { id: string });
   const { data: job, isLoading, isError, error } = useJob(id);
   
   // NEW: State for manual corrections
@@ -63,7 +61,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
   if (isLoading) {
     // Placeholder UI: Loading state
     return (
-        <PageLayout title="Loading Binder..." description="Fetching the details of your processed binder.">
+        <PageLayout title="Loading Scan..." description="Fetching the details of your processed scan.">
             <div className="placeholder">Loading...</div>
         </PageLayout>
     );
@@ -72,9 +70,9 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
   if (isError || !job) {
     // Placeholder UI: Error state
     return (
-        <PageLayout title="Error" description="Could not load binder details.">
+        <PageLayout title="Error" description="Could not load scan details.">
             <div className="placeholder error">
-                <p>Couldn't load binder details.</p>
+                <p>Couldn't load scan details.</p>
                 <p>{(error as Error)?.message || 'Job not found.'}</p>
             </div>
         </PageLayout>
@@ -83,8 +81,8 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
 
   return (
     <PageLayout
-      title={job.binder_title || 'Binder Details'}
-      description={`Review the results for binder processed on ${new Date(job.created_at).toLocaleDateString()}`}
+      title={job.binder_title || 'Scan Details'}
+      description={`Review the results for scan processed on ${new Date(job.created_at).toLocaleDateString()}`}
     >
       <ContentSection title="Processing Summary" headingLevel={2}>
         <div className="summary-card">
@@ -114,7 +112,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
             <div className="cards-header">
               <div className="cards-header-content">
                 <p className="cards-help-text">
-                  Cards are positioned to match their location in your binder. 
+                  Cards are positioned to match their location in your scan. 
                   Click "Fix" if any identification looks incorrect.
                 </p>
                 <button 
@@ -242,7 +240,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
               ) : (
                 // Fallback to grid layout for legacy detections
                 <div className="fallback-grid">
-                  {job.results.detected_card_paths.map((path: string, index: number) => (
+                  {job.results?.detected_card_paths?.map((path: string, index: number) => (
                     <div key={path} className="card-slot">
                       <Image
                         src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${path}`}

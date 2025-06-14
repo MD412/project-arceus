@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/browser';
-import './login.css'; // Import the CSS file
+import './login.css'; // Existing styles for header, footer, etc.
+import '../login-vGlass/login-vGlass.css'; // Glassmorphism container styles
 import { Input } from '@/components/forms/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -107,66 +108,68 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <h1>Welcome Back</h1>
-          <p>Sign in to your account to continue</p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="login-form">
-          {errors.general && (
-            <div className="error-message general-error">
-              {errors.general}
-            </div>
-          )}
+    <div className="vglass-container">
+      <div className="vglass-login-card">
+        <div className="vglass-content">
+          <div className="login-header">
+            <h1>Welcome Back</h1>
+            <p>Sign in to your account to continue</p>
+          </div>
           
-          <Input
-            type="email"
-            id="email"
-            name="email"
-            label="Email Address"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Enter your email"
-            disabled={isLoading}
-            error={errors.email}
-            required
-          />
+          <form onSubmit={handleSubmit} className="login-form">
+            {errors.general && (
+              <div className="error-message general-error">
+                {errors.general}
+              </div>
+            )}
+            
+            <Input
+              type="email"
+              id="email"
+              name="email"
+              label="Email Address"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="Enter your email"
+              disabled={isLoading}
+              error={errors.email}
+              required
+            />
+            
+            <Input
+              type="password"
+              id="password"
+              name="password"
+              label="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+              placeholder="Enter your password"
+              disabled={isLoading}
+              error={errors.password}
+              required
+            />
+            
+            <Button
+              type="submit"
+              disabled={isLoading}
+              variant="primary"
+              className="login-form-button"
+            >
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
           
-          <Input
-            type="password"
-            id="password"
-            name="password"
-            label="Password"
-            value={formData.password}
-            onChange={handleInputChange}
-            placeholder="Enter your password"
-            disabled={isLoading}
-            error={errors.password}
-            required
-          />
-          
-          <Button
-            type="submit"
-            disabled={isLoading}
-            variant="primary"
-            className="login-form-button"
-          >
-            {isLoading ? 'Signing in...' : 'Sign In'}
-          </Button>
-        </form>
-        
-        <div className="login-footer">
-          <p>
-            Don't have an account?{' '}
-            <Link href="/signup" className="auth-link">
-              Sign up
+          <div className="login-footer">
+            <p>
+              Don't have an account?{' '}
+              <Link href="/signup" className="auth-link">
+                Sign up
+              </Link>
+            </p>
+            <Link href="/forgot-password" className="auth-link">
+              Forgot your password?
             </Link>
-          </p>
-          <Link href="/forgot-password" className="auth-link">
-            Forgot your password?
-          </Link>
+          </div>
         </div>
       </div>
     </div>

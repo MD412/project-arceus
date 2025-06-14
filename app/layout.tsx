@@ -34,12 +34,7 @@ export default function RootLayout({
         <QueryProvider>
           <ToastProvider />
           <ErrorBoundary>
-            <div className="app-layout">
-              <GlobalNavigationWrapper />
-              <main id="main-content" className="app-content">
-                {children}
-              </main>
-            </div>
+            {children}
             <div id="modal-root" />
           </ErrorBoundary>
         </QueryProvider>

@@ -6,8 +6,8 @@ export default function UploadPage() {
   return (
     <div className="container">
       <header className="header">
-        <h1>Upload New Binder</h1>
-        <p>Upload a photo of your binder to start processing.</p>
+        <h1>Upload New Scan</h1>
+        <p>Upload a photo of your cards to start processing.</p>
       </header>
       <section>
         <BinderUploadForm />

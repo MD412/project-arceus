@@ -62,18 +62,18 @@ export default function BindersPage() {
   };
 
   if (isLoading) {
-    return <div className="container"><p>Loading your binders...</p></div>;
+    return <div className="container"><p>Loading your scans...</p></div>;
   }
 
   if (isError) {
-    return <div className="container"><p>Error loading binders: {(error as Error).message}</p></div>;
+    return <div className="container"><p>Error loading scans: {(error as Error).message}</p></div>;
   }
 
   return (
     <div className="container">
       <header className="header">
-        <h1>My Processed Binders</h1>
-        <p>Here are the results of your submitted binder scans.</p>
+        <h1>My Processed Scans</h1>
+        <p>Here are the results of your submitted card scans.</p>
       </header>
 
       {uploads && uploads.length > 0 ? (
@@ -82,7 +82,7 @@ export default function BindersPage() {
             <div key={upload.id} className="binder-card-wrapper">
               <Link href={`/binders/${upload.id}`} className="binder-card-link">
                 <div className="binder-card">
-                  <h3>{upload.binder_title || 'Untitled Binder'}</h3>
+                  <h3>{upload.binder_title || 'Untitled Scan'}</h3>
                   <div className="status-chip" style={{ backgroundColor: getStatusChipColor(upload.processing_status) }}>
                     {upload.processing_status}
                   </div>
@@ -100,8 +100,8 @@ export default function BindersPage() {
                     </div>
                   )}
                   
-                  {upload.processing_status === 'processing' && <p>Your binder is currently being processed...</p>}
-                  {upload.processing_status === 'queued' && <p>This binder is in the queue and will be processed shortly.</p>}
+                  {upload.processing_status === 'processing' && <p>Your scan is currently being processed...</p>}
+                  {upload.processing_status === 'queued' && <p>This scan is in the queue and will be processed shortly.</p>}
                   {upload.processing_status === 'failed' && <p className="error-text">Processing failed: {upload.error_message}</p>}
 
                   <p className="timestamp">Uploaded: {new Date(upload.created_at).toLocaleString()}</p>
@@ -109,17 +109,17 @@ export default function BindersPage() {
               </Link>
               <div className="binder-actions">
                 <Button variant="ghost" size="sm" onClick={() => setRenamingUpload(upload)}>Rename</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(upload.id, upload.binder_title || 'Untitled Binder')}>Delete</Button>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(upload.id, upload.binder_title || 'Untitled Scan')}>Delete</Button>
               </div>
             </div>
           ))}
         </div>
       ) : (
         <div className="empty-state">
-          <h2>No binders found.</h2>
-          <p>You haven't uploaded any binders for processing yet.</p>
+          <h2>No scans found.</h2>
+          <p>You haven't uploaded any card scans for processing yet.</p>
           <Link href="/upload" className="button-primary">
-            Upload Your First Binder
+            Upload Your First Scan
           </Link>
         </div>
       )}

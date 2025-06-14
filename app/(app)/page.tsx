@@ -2,14 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 
-import { getCurrentUser, signOut } from '@/lib/supabase/browser';
+import { getCurrentUser } from '@/lib/supabase/browser';
 import { useCards } from '@/hooks/useCards';
 
 import { SimpleCardGrid } from '@/components/simple-card-grid';
-import UploadCardForm from '@/components/UploadCardForm';
-import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { MetricCard } from '@/components/ui/MetricCard';
@@ -17,7 +14,6 @@ import { User } from '@supabase/supabase-js';
 
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
-  const [showForm, setShowForm] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const router = useRouter();
 
@@ -37,14 +33,6 @@ export default function HomePage() {
 
   // Data Fetching via Custom Hook
   const { cards, isLoading: areCardsLoading, deleteCard } = useCards(user?.id);
-
-  const handleLogout = async () => {
-    const error = await signOut();
-    if (!error) {
-      setUser(null);
-      router.push('/login');
-    }
-  };
 
   const handleDeleteCard = (cardId: string, cardName: string) => {
     if (window.confirm(`Are you sure you want to delete ${cardName}?`)) {
@@ -73,24 +61,8 @@ export default function HomePage() {
       {/* Header Section */}
       <header className="header">
         <div className="header-left">
-          <h1>Project Arceus Collection</h1>
+          <h1>My Collection</h1>  
           <p className="user-info">Welcome back, {user.email}!</p>
-        </div>
-        <div className="header-right">
-          <Link href="/upload">
-            <Button>+ Process Binder</Button>
-          </Link>
-          <Button onClick={() => setShowForm(true)}>+ Add Card</Button>
-          <Button
-            onClick={handleLogout}
-            style={{
-              background: '#ef4444',
-              marginLeft: '0.5rem',
-              border: '1px solid #dc2626',
-            }}
-          >
-            Logout
-          </Button>
         </div>
       </header>
 
@@ -123,17 +95,6 @@ export default function HomePage() {
         </Card>
       </section>
 
-      {showForm && (
-        <UploadCardForm
-          close={() => setShowForm(false)}
-          onAdded={() => {
-            // Invalidation is handled by the hook, but we could explicitly refetch here if needed
-            // For now, closing the form is enough as the list will be stale for a moment
-            setShowForm(false);
-          }}
-        />
-      )}
-
       <style jsx>{`
         .header {
           display: flex;
@@ -151,11 +112,6 @@ export default function HomePage() {
           color: var(--text-secondary);
           font-size: 0.875rem;
           margin: 0;
-        }
-        .header-right {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-2);
         }
       `}</style>
     </main>

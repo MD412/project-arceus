@@ -92,7 +92,7 @@ export async function deleteJob(jobId: string) {
   if (!response.ok) {
     let errorMessage = 'Failed to delete binder';
     try {
-      const errorData = await response.json();
+    const errorData = await response.json();
       errorMessage = errorData.error || errorMessage;
     } catch (e) {
       // Response might not be JSON (500 error, etc.)

@@ -1,0 +1,334 @@
+/* Import Monda font */
+@import url('https://fonts.googleapis.com/css2?family=Monda:wght@400;600;700&display=swap');
+
+/* Container and layout */
+.vglass-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0F2B29;
+  font-family: 'Monda', sans-serif;
+  padding: 24px;
+}
+
+/* Dual-card glassmorphism approach */
+.vglass-login-card {
+  width: 100%;
+  max-width: 421px;
+  min-height: 518px;
+  position: relative;
+  border-radius: 60.452491760253906px;
+  padding: 4.533936500549316px;
+  overflow: hidden;
+  display: flex;
+}
+
+/* Back card - with background blur for depth */
+.vglass-login-card::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 60.452491760253906px;
+  stroke: rgba(52, 255, 238, 0.249) solid;
+  stroke-width: 2px;
+  background: radial-gradient(
+    ellipse at 45.872641352651544% 103.79939048077649%, 
+    rgba(45, 106, 101, 0.08) 0%, 
+    rgba(26, 74, 71, 0.08) 100%
+  );
+  backdrop-filter: blur(4.8px);
+  box-shadow: 0px 27px 63.599998474121094px 0px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Front card - base glass surface */
+.vglass-login-card::after {
+  content: '';
+  position: absolute;
+  inset: 1.5113122463226318px;
+  border-radius: 58.94px;
+  background: radial-gradient(
+    ellipse at 45.872641352651544% 103.79939048077649%, 
+    rgba(45, 106, 101, 0.519) 0%, 
+    rgba(26, 74, 71, 0.08) 100%
+  );
+  border: 1px solid transparent;
+  border-color: #4a9b947a;
+  background-image: 
+    radial-gradient(ellipse at 45.872641352651544% 103.79939048077649%, rgba(45, 106, 101, 0.034) 0%, rgba(26, 74, 71, 0.08) 100%),
+    linear-gradient(
+      42.21697864071039deg,
+      rgba(24, 137, 128, 0.03) 0%,
+      rgba(50, 255, 238, 0.193) 100%
+    );
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Inner content card - Enhanced glassmorphism */
+.vglass-content {
+  width: 100%;
+  flex-grow: 1;
+  position: relative;
+  border-radius: 56px;
+  padding: 50px 45px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  z-index: 20; /* Ensure content is above pseudo-elements and card layers */
+}
+
+/* Inner back card - frosted glass depth */
+.vglass-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 54.40724182128906px 58.94117736816406px 54.40724182128906px 54.40724182128906px;
+  /* Remove blur so only outer card applies backdrop blur */
+  backdrop-filter: none;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Inner front card - subtle stroke only */
+.vglass-content::after {
+  content: '';
+  position: absolute;
+  inset: 1.5113122463226318px;
+  border-radius: 52.9px 57.4px 52.9px 52.9px;
+  border: 1.5113122463226318px solid transparent;
+  background-image: 
+    linear-gradient(-3.227716593440122deg, transparent, transparent),
+    linear-gradient(
+      51.79426102049802deg,
+      rgba(27, 58, 54, 0.193) 0%,
+      rgba(95, 155, 136, 0.12) 100%
+    );
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  /* Remove blend mode to prevent extra glow */
+  /* mix-blend-mode: soft-light; */
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Header section */
+.vglass-header {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  position: relative;
+  z-index: 20;
+}
+
+.vglass-title {
+  font-family: 'Monda', sans-serif;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 1.4;
+  color: #FFCF60;
+  margin: 0;
+  text-align: left;
+}
+
+.vglass-subtitle {
+  font-family: 'Monda', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.4;
+  color: #FFF2D1;
+  margin: 0;
+  text-align: left;
+}
+
+/* Form styles */
+.vglass-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  position: relative;
+  z-index: 20;
+}
+
+/* CircuitDS Input styling for glassmorphism */
+.vglass-input-field .circuit-field {
+  width: 100%;
+  position: relative;
+  z-index: 25; /* Ensure inputs are above glass effects */
+}
+
+.vglass-input-field .circuit-label {
+  font-family: 'Monda', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #FFF2D1;
+  margin: 0 0 8px 0;
+}
+
+.vglass-input-field .circuit-input {
+  width: 100%;
+  background: #3B847E;
+  border: 1px solid #4A9B94;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'Monda', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #FFF2D1;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.vglass-input-field .circuit-input::placeholder {
+  color: #FFF2D1;
+  opacity: 0.7;
+}
+
+.vglass-input-field .circuit-input:focus {
+  border-color: #5DBFB7;
+  box-shadow: 0 0 0 2px rgba(93, 191, 183, 0.2);
+}
+
+.vglass-input-field .circuit-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Password input specific styling */
+.vglass-input-field .circuit-input[type="password"] {
+  background: #2D6A65;
+}
+
+.vglass-input-field .circuit-input[type="password"]::placeholder {
+  color: rgba(255, 242, 209, 0.5);
+}
+
+/* Error states */
+.vglass-input-field .circuit-input.error {
+  border-color: #ff6b6b !important;
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2) !important;
+}
+
+.vglass-input-field .circuit-error-text {
+  font-family: 'Monda', sans-serif;
+  font-size: 14px;
+  color: #ff6b6b;
+  margin-top: 4px;
+}
+
+/* Submit button */
+.vglass-submit-button {
+  width: 100%;
+  background: linear-gradient(135deg, #FFCF60 0%, #FFB82E 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-family: 'Monda', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: #0F2B29;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.vglass-submit-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #FFB82E 0%, #FF9F00 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 207, 96, 0.3);
+}
+
+.vglass-submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Error message */
+.vglass-error-message {
+  width: 100%;
+  padding: 12px;
+  background: rgba(255, 87, 87, 0.1);
+  border: 1px solid rgba(255, 87, 87, 0.3);
+  border-radius: 8px;
+  color: #FF5757;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Footer section */
+.vglass-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  margin-top: auto;
+}
+
+.vglass-footer-text {
+  color: #FFF2D1;
+  font-size: 14px;
+  margin: 0;
+}
+
+.vglass-link {
+  color: #FFF2D1;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.vglass-link-accent {
+  color: #FFCF60;
+}
+
+.vglass-link:hover {
+  color: #FFCF60;
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .vglass-container {
+    padding: 16px;
+  }
+  
+  .vglass-content {
+    padding: 40px 30px;
+  }
+  
+  .vglass-title {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vglass-content {
+    padding: 30px 20px;
+  }
+  
+  .vglass-title {
+    font-size: 28px;
+  }
+  
+  .vglass-subtitle {
+    font-size: 14px;
+  }
+}
+
+/* Ensure inputs and CTA button sit above all decorative layers */
+.vglass-input-field,
+.vglass-submit-button {
+  position: relative;
+  z-index: 30; /* highest interactive layer */
+} 

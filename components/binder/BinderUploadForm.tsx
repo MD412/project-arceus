@@ -31,13 +31,17 @@ async function createBinder(data: any) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to create binder');
+    throw new Error(errorData.error || 'Failed to process scan');
   }
 
   return response.json();
 }
 
-export default function BinderUploadForm() {
+interface BinderUploadFormProps {
+  close?: () => void;
+}
+
+export default function BinderUploadForm({ close }: BinderUploadFormProps) {
   const queryClient = useQueryClient();
 
   const {
@@ -52,12 +56,13 @@ export default function BinderUploadForm() {
   const mutation = useMutation({
     mutationFn: createBinder,
     onSuccess: () => {
-      toast.success('Binder created successfully! Processing will begin shortly.');
+      toast.success('Scan created successfully! Processing will begin shortly.');
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       reset();
+      close?.();
     },
     onError: (error: Error) => {
-      toast.error(`Failed to create binder: ${error.message}`);
+      toast.error(`Failed to process scan: ${error.message}`);
     },
   });
 
@@ -68,16 +73,16 @@ export default function BinderUploadForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="form-container">
-      <h2>Upload New Binder</h2>
+      <h2>Upload New Scan</h2>
 
       <div className="form-group">
-        <label htmlFor="title">Binder Title</label>
+        <label htmlFor="title">Scan Title</label>
         <input id="title" type="text" {...register('title')} />
         {errors.title && <p className="form-error">{errors.title.message}</p>}
       </div>
 
       <div className="form-group">
-        <label htmlFor="file">Binder Photo</label>
+        <label htmlFor="file">Card Photo</label>
         <input id="file" type="file" {...register('file')} />
         {errors.file && (
           <p className="form-error">{errors.file.message as string}</p>
@@ -85,7 +90,7 @@ export default function BinderUploadForm() {
       </div>
 
       <button type="submit" className="button-primary" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Uploading...' : 'Upload Binder'}
+        {mutation.isPending ? 'Uploading...' : 'Upload Scan'}
       </button>
 
     </form>

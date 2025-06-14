@@ -12,18 +12,42 @@
 
 /* Sidebar Container - styles specific to the main app's sidebar */
 .circuit-sidebar {
-  width: var(--sds-size-width-sidebar);
+  width: 240px; /* Reduced width */
   flex-shrink: 0;
-  height: 100vh;
+  height: 100vh; /* Fill viewport vertically */
   position: fixed;
   top: 0;
   left: 0;
   display: flex; /* This ensures the sidebar is visible and uses flex for internal layout */
   flex-direction: column;
   gap: var(--sds-size-space-400); /* Gap between header and list, etc. */
-  padding: var(--sds-size-space-400);
+  padding: 0;
   background: var(--surface-background);
   border-right: 1px solid var(--border-default);
+}
+
+/* Ensure the nav inside takes up remaining space to push logout to bottom */
+.circuit-sidebar nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logout-button {
+  width: 100%;
+  padding: var(--sds-size-space-200) var(--sds-size-space-300);
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  background: transparent;
+  font: var(--font-body-strong);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.sidebar-logout-button:hover {
+  background-color: var(--surface-background-hover);
 }
 
 /* 
@@ -43,16 +67,80 @@
   margin-left: var(--sds-size-width-sidebar); /* Make space for the now visible sidebar */
 }
 
+.main-content-area {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.top-toolbar {
+  height: 48px;
+  flex-shrink: 0; /* Prevents the toolbar from shrinking */
+  background-color: var(--circuit-mid-teal);
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Push items to the right */
+}
+
+.toolbar-status {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sds-size-space-400);
+  border-left: 1px solid var(--circuit-light-teal);
+}
+
+.toolbar-action-button {
+  width: 48px;
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  border-left: 1px solid var(--circuit-light-teal);
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 24px;
+  line-height: 48px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar-action-button:hover {
+  background-color: var(--circuit-dark-teal);
+}
+
+.toolbar-action-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Text variant of the toolbar button */
+.toolbar-action-button.with-text {
+  width: auto;
+  padding: 0 24px;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* 
-  When .app-content from the root layout contains the .circuitds-layout-container, 
-  OR the .login-container (or future .signup-container etc. for auth pages),
-  it means we are on a page where the GlobalNavigationWrapper hides the main application sidebar. 
-  Therefore, the .app-content wrapper should not have a left margin or specific padding,
-  allowing these specific layouts to occupy the full width they define.
+  The conditional margin logic below is no longer needed because we are using
+  separate layouts for the main app and other pages like auth or the design system.
+  The .app-content class will only exist within the app layout where the sidebar is always present.
 */
+/*
 .app-content:has(> .circuitds-layout-container),
 .app-content:has(> .login-container),
 .app-content:has(> .signup-container) {
   margin-left: 0;
-  padding: 0; /* Reset padding as these containers will manage their own */
+  padding: 0; 
 } 
+*/ 
