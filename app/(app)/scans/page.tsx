@@ -90,7 +90,7 @@ export default function BindersPage() {
                   {upload.processing_status === 'completed' && upload.results?.summary_image_path && (
                     <div className="image-container">
                       <img
-                        src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${upload.results.summary_image_path}`}
+                        src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/scans/${upload.results.summary_image_path}`}
                         alt={`Processed view of ${upload.binder_title}`}
                         className="result-image"
                       />

@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-// This is a Route Handler for the endpoint POST /api/binders
+// This is a Route Handler for the endpoint POST /api/scans
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const title = formData.get('title') as string;
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     
     // Upload file to storage
     const filePath = `${userId}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('binders').upload(filePath, file);
+    const { error: uploadError } = await supabase.storage.from('scans').upload(filePath, file);
     if (uploadError) throw uploadError;
 
     // Create binder upload record and enqueue job using the new, correctly named stored procedure
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
 
     if (enqueueError) {
       // Clean up uploaded file if job creation fails
-      await supabase.storage.from('binders').remove([filePath]);
+      await supabase.storage.from('scans').remove([filePath]);
       throw enqueueError;
     }
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
     
   } catch (error: any) {
-    console.error('Error in POST /api/binders:', error);
+    console.error('Error in POST /api/scans:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 } 

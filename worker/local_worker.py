@@ -16,7 +16,7 @@ from config import supabase_client
 CONFIDENCE_THRESHOLD = 0.25
 MAX_IMAGE_SIZE = 2048
 MAX_REASONABLE_CARDS = 18
-STORAGE_BUCKET = "binders"  # TODO: rename to "scans" after bucket migration
+STORAGE_BUCKET = "scans"  # TODO: rename to "scans" after bucket migration
 
 def get_yolo_model(model_path='worker/pokemon_cards_trained.pt'):
     if not Path(model_path).exists():

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
 
-// PATCH /api/binders/[id] - for renaming
+// PATCH /api/scans/[id] - for renaming
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   // Get user_id from request headers (set by frontend)
   const userId = request.headers.get('x-user-id');
@@ -42,7 +42,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   }
 }
 
-// DELETE /api/binders/[id]
+// DELETE /api/scans/[id]
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   // Get user_id from request headers (set by frontend)
   const userId = request.headers.get('x-user-id');
@@ -81,7 +81,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     if (uploadData.storage_path) {
         console.log(`🗂️ Deleting storage file: ${uploadData.storage_path}`);
         const { error: storageError } = await supabase.storage
-            .from('binders')
+            .from('scans')
             .remove([uploadData.storage_path]);
 
         if (storageError) {

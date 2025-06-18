@@ -98,7 +98,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
             )}
             {job.results?.summary_image_path && (
                 <img
-                    src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${job.results.summary_image_path}`}
+                    src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/scans/${job.results.summary_image_path}`}
                     alt={`Summary view of ${job.binder_title}`}
                     className="summary-image"
                 />
@@ -154,7 +154,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                     >
                       <div className={`enriched-card-slot ${enrichedCard.enrichment_success ? 'identified' : 'unknown'}`}>
                         <Image
-                          src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${enrichedCard.cropped_image_path}`}
+                          src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/scans/${enrichedCard.cropped_image_path}`}
                           alt={enrichedCard.card_name || `Detected card ${cardIndex + 1}`}
                           width={240}
                           height={336}
@@ -243,7 +243,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                   {job.results?.detected_card_paths?.map((path: string, index: number) => (
                     <div key={path} className="card-slot">
                       <Image
-                        src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/binders/${path}`}
+                        src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/scans/${path}`}
                         alt={`Detected card ${index + 1}`}
                         width={240}
                         height={336}

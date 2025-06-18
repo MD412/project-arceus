@@ -23,7 +23,7 @@ async function createBinder(data: any) {
   formData.append('file', data.file);
   formData.append('user_id', userId);
 
-  const response = await fetch('/api/binders', {
+  const response = await fetch('/api/scans', {
     method: 'POST',
     body: formData,
     credentials: 'include',

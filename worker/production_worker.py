@@ -29,7 +29,7 @@ MAX_REASONABLE_CARDS = 18
 MODEL_REPO_ID = "zanzoy/alkzm" # Your Hugging Face repo ID
 MODEL_FILENAME = "pokemon_cards_trained.pt"
 LOCAL_MODEL_PATH = Path("worker") / MODEL_FILENAME
-STORAGE_BUCKET = "binders"
+STORAGE_BUCKET = "scans"
 
 def download_model_if_needed():
     """Downloads the YOLO model from Hugging Face if it doesn't exist locally."""

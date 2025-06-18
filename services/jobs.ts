@@ -57,7 +57,7 @@ export async function renameJob(jobId: string, newTitle: string) {
     throw new Error('User not authenticated');
   }
 
-  const response = await fetch(`/api/binders/${jobId}`, {
+  const response = await fetch(`/api/scans/${jobId}`, {
     method: 'PATCH',
     headers: { 
       'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ export async function deleteJob(jobId: string) {
     throw new Error('User not authenticated');
   }
 
-  const response = await fetch(`/api/binders/${jobId}`, {
+  const response = await fetch(`/api/scans/${jobId}`, {
     method: 'DELETE',
     headers: {
       'x-user-id': user.id
