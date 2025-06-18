@@ -30,8 +30,8 @@ export default function HandbookHomePage() {
             <strong>Current Functionality:</strong> Upload binder photos → automatic card detection → high-quality individual crops
             <ul className="list-disc pl-6 body-small space-y-1 mt-2">
               <li>Navigate to <code>/upload</code> to submit new binder photos</li>
-              <li>View processing results at <code>/binders</code></li>
-              <li>Review individual detected cards at <code>/binders/[id]</code></li>
+              <li>View processing results at <code>/scans</code></li>
+              <li>Review individual detected cards at <code>/scans/[id]</code></li>
             </ul>
           </li>
           <li>
@@ -156,7 +156,7 @@ export default function HandbookHomePage() {
               <h4>Key Changes</h4>
               <ul className="list-disc pl-6 space-y-1">
                 <li><strong>Single-source Supabase setup:</strong> <code>browser.ts</code>, <code>server.ts</code>, plus <code>middleware.ts</code> built with <code>@supabase/auth-helpers-nextjs</code>.</li>
-                <li><strong>Binder Upload API:</strong> Consolidated to one <code>/api/binders</code> route; service-role client writes files to <code>binders/&lt;user_id&gt;/…</code> and inserts a job row.</li>
+                <li><strong>Scan Upload API:</strong> Consolidated to one <code>/api/scans</code> route; service-role client writes files to <code>scans/&lt;user_id&gt;/…</code> and inserts a job row.</li>
                 <li><strong>Frontend Form:</strong> Zod-validated, now posts <code>user_id</code> in <code>FormData</code>; uses <code>credentials:"include"</code>.</li>
                 <li><strong>Model Hosting:</strong> 22 MB YOLO weights moved to Hugging Face Hub; repo no longer bloated.</li>
                 <li><strong>CI Pipeline:</strong> GitHub Action downloads models via <code>worker/download_models.py</code> before tests.</li>
@@ -482,7 +482,7 @@ results = MODEL.predict(detection_image, conf=0.3, verbose=False)
                   <strong>New Features & UI:</strong>
                   <ul className="list-disc pl-6">
                     <li>Created the `/upload` page with a type-safe form for submitting new binders.</li>
-                    <li>Built the `/binders` page to display the status and results of processed binders, closing the user feedback loop.</li>
+                    <li>Built the `/scans` page to display the status and results of processed scans, closing the user feedback loop.</li>
                   </ul>
                 </li>
                 <li>
