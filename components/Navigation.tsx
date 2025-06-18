@@ -14,7 +14,7 @@ import Link from 'next/link';
 const navigationConfig: NavigationConfigItem[] = [
   // This first set of links appears under the main title.
   { type: 'link', label: 'Collection', href: '/' },
-  { type: 'link', label: 'My Scans', href: '/binders' },
+  { type: 'link', label: 'My Scans', href: '/scans' },
 
   // This creates a new group with a heading, providing visual separation.
   {

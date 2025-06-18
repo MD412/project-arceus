@@ -80,7 +80,7 @@ export default function BindersPage() {
         <div className="binders-grid">
           {(uploads as BinderPageUpload[]).map((upload) => (
             <div key={upload.id} className="binder-card-wrapper">
-              <Link href={`/binders/${upload.id}`} className="binder-card-link">
+              <Link href={`/scans/${upload.id}`} className="binder-card-link">
                 <div className="binder-card">
                   <h3>{upload.binder_title || 'Untitled Scan'}</h3>
                   <div className="status-chip" style={{ backgroundColor: getStatusChipColor(upload.processing_status) }}>
