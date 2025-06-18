@@ -51,7 +51,7 @@ def process_job(sb_client, job, model):
     Processes a single job from the queue, performing the 3x3 slice and detection pipeline.
     """
     job_id = job['id']
-    upload_id = job['binder_page_upload_id']
+    upload_id = job['scan_upload_id']
     storage_path = job['payload']['storage_path'] # Assuming storage_path is in the payload
 
     print(f"[Info] Picked job {job_id} (page {upload_id})")

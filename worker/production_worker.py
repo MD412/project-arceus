@@ -95,7 +95,7 @@ def get_next_job():
         supabase_client.from_("job_queue").update({"status": "processing", "started_at": "now()"}).eq("id", job['id']).execute()
         
         # Also update the related binder page upload
-        supabase_client.from_("scan_uploads").update({"processing_status": "processing"}).eq("id", job['binder_page_upload_id']).execute()
+        supabase_client.from_("scan_uploads").update({"processing_status": "processing"}).eq("id", job['scan_upload_id']).execute()
 
         return job
     except Exception as e:
@@ -240,7 +240,7 @@ def main():
         job = get_next_job()
         if job:
             job_id = job['id']
-            upload_id = job['binder_page_upload_id']
+            upload_id = job['scan_upload_id']
             logger.info(f"⚙️  Processing job {job_id} for upload {upload_id}")
             try:
                 pipeline_results = whole_image_pipeline(job)

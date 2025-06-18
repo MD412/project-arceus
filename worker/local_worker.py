@@ -43,7 +43,7 @@ def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
 
 def run_pipeline(job: dict, model: YOLO):
     """Main processing pipeline for a single job."""
-    upload_id = job['binder_page_upload_id']
+    upload_id = job['scan_upload_id']
     storage_path = job.get('payload', {}).get('storage_path')
     if not storage_path:
         raise ValueError(f"Job {job['id']} is missing 'storage_path' in payload.")
@@ -159,7 +159,7 @@ def main():
             time.sleep(10)
             continue
 
-        upload_id = job.get('binder_page_upload_id')
+        upload_id = job.get('scan_upload_id')
         job_id = job.get('id')
         print(f"⚙️ Processing job: {job_id} for upload: {upload_id}")
 

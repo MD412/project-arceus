@@ -98,13 +98,13 @@ def run_once(max_jobs: int | None = None):
 
 
 def _handle_job(conn, cur, job):
-    print(f"⚙️  Working on job {job['id']} → upload {job['binder_page_upload_id']}")
+    print(f"⚙️  Working on job {job['id']} → upload {job['scan_upload_id']}")
     try:
-        mark_upload(cur, job["binder_page_upload_id"], "processing")
+        mark_upload(cur, job["scan_upload_id"], "processing")
         conn.commit()
         time.sleep(SIMULATED_WORK_SECS)
         outcome = "completed" if random.random() > 0.05 else "failed"
-        mark_upload(cur, job["binder_page_upload_id"], outcome)
+        mark_upload(cur, job["scan_upload_id"], outcome)
         mark_job(cur, job["id"], outcome)
         conn.commit()
         print(f"✅ Job {job['id']} {outcome}")
@@ -112,7 +112,7 @@ def _handle_job(conn, cur, job):
         conn.rollback()
         print(f"🔥 Job {job['id']} crashed → {exc}")
         with pg_conn() as c2, c2.cursor() as c2cur:
-            mark_upload(c2cur, job["binder_page_upload_id"], "failed")
+            mark_upload(c2cur, job["scan_upload_id"], "failed")
             mark_job(c2cur, job["id"], "failed")
             c2.commit()
 
