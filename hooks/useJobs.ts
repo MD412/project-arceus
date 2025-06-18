@@ -9,21 +9,21 @@ export function useJobs() {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['binder_page_uploads'], // A unique key for this query
+    queryKey: ['scan_uploads'], // A unique key for this query
     queryFn: getJobs,   // The function that will be called to fetch the data
   });
 
   const renameJobMutation = useMutation({
     mutationFn: ({ jobId, newTitle }: { jobId: string; newTitle: string }) => renameJob(jobId, newTitle),
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['binder_page_uploads'] });
+      queryClient.invalidateQueries({ queryKey: ['scan_uploads'] });
     },
   });
 
   const deleteJobMutation = useMutation({
     mutationFn: (jobId: string) => deleteJob(jobId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['binder_page_uploads'] });
+      queryClient.invalidateQueries({ queryKey: ['scan_uploads'] });
     },
     onError: (error) => {
       console.error('❌ Delete failed:', error);

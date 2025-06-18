@@ -145,7 +145,7 @@ def update_job_status(job_id, upload_id, status, error_message=None, results=Non
             upload_update_data["error_message"] = error_message
         if results:
             upload_update_data["results"] = results
-        supabase_client.from_("binder_page_uploads").update(upload_update_data).eq("id", upload_id).execute()
+        supabase_client.from_("scan_uploads").update(upload_update_data).eq("id", upload_id).execute()
         print(f"🔔 Status for job {job_id} updated to {status}.")
     except Exception as e:
         print(f"🔥 Failed to update job/upload status for job {job_id}: {e}")

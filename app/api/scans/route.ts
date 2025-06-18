@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     if (uploadError) throw uploadError;
 
     // Create binder upload record and enqueue job using the new, correctly named stored procedure
-    const { data, error: enqueueError } = await supabase.rpc('create_binder_and_enqueue_job', {
+    const { data, error: enqueueError } = await supabase.rpc('create_scan_and_enqueue_job', {
       p_user_id: userId,
       p_storage_path: filePath,
       p_content_hash: contentHash,
@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
       throw enqueueError;
     }
 
-    console.log('Binder upload enqueued:', data);
+    console.log('Scan upload enqueued:', data);
     return NextResponse.json({ 
-      message: 'Binder uploaded and queued for processing',
+      message: 'Scan uploaded and queued for processing',
       job_id: data?.[0]?.job_id
     }, { status: 201 });
     

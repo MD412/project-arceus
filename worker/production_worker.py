@@ -95,7 +95,7 @@ def get_next_job():
         supabase_client.from_("job_queue").update({"status": "processing", "started_at": "now()"}).eq("id", job['id']).execute()
         
         # Also update the related binder page upload
-        supabase_client.from_("binder_page_uploads").update({"processing_status": "processing"}).eq("id", job['binder_page_upload_id']).execute()
+        supabase_client.from_("scan_uploads").update({"processing_status": "processing"}).eq("id", job['binder_page_upload_id']).execute()
 
         return job
     except Exception as e:
@@ -111,13 +111,13 @@ def update_job_and_upload(job_id, upload_id, status, results=None, error_message
             job_update['error_message'] = error_message
         supabase_client.from_("job_queue").update(job_update).eq("id", job_id).execute()
 
-        # Update binder_page_uploads
+        # Update scan_uploads
         upload_update = {"processing_status": status}
         if results:
             upload_update['results'] = results
         if error_message:
             upload_update['error_message'] = error_message
-        supabase_client.from_("binder_page_uploads").update(upload_update).eq("id", upload_id).execute()
+        supabase_client.from_("scan_uploads").update(upload_update).eq("id", upload_id).execute()
 
     except Exception as e:
         logger.error(f"🔥 Failed to update job/upload status for job {job_id}: {e}")

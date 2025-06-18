@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
   try {
     const { data, error } = await supabase
-      .from('binder_page_uploads')
+      .from('scan_uploads')
       .update({ binder_title })
       .eq('id', id)
       .eq('user_id', userId) // Ensure user can only update their own binders
@@ -59,7 +59,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     
     // First, get the storage_path of the binder to delete the file
     const { data: uploadData, error: fetchError } = await supabase
-      .from('binder_page_uploads')
+      .from('scan_uploads')
       .select('storage_path')
       .eq('id', id)
       .eq('user_id', userId)
@@ -96,7 +96,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // The CASCADE on job_queue will delete the associated job.
     console.log(`🗄️ Deleting database record: ${id}`);
     const { error: deleteError } = await supabase
-      .from('binder_page_uploads')
+      .from('scan_uploads')
       .delete()
       .eq('id', id);
 
