@@ -29,6 +29,7 @@ MAX_REASONABLE_CARDS = 18
 MODEL_REPO_ID = "zanzoy/alkzm" # Your Hugging Face repo ID
 MODEL_FILENAME = "pokemon_cards_trained.pt"
 LOCAL_MODEL_PATH = Path("worker") / MODEL_FILENAME
+STORAGE_BUCKET = "binders"
 
 def download_model_if_needed():
     """Downloads the YOLO model from Hugging Face if it doesn't exist locally."""
@@ -135,7 +136,7 @@ def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
 def download_image(storage_path):
     """Downloads an image from Supabase storage."""
     try:
-        response = supabase_client.storage.from_("binders").download(storage_path)
+        response = supabase_client.storage.from_(STORAGE_BUCKET).download(storage_path)
         return response
     except Exception as e:
         logger.error(f"Failed to download {storage_path}: {e}")
@@ -216,7 +217,7 @@ def whole_image_pipeline(job):
     summary_buffer = io.BytesIO()
     summary_image.save(summary_buffer, format='JPEG', quality=90)
     summary_path = f"results/{job['id']}/summary.jpg"
-    supabase_client.storage.from_("binders").upload(summary_path, summary_buffer.getvalue(), {"content-type": "image/jpeg", "x-upsert": "true"})
+    supabase_client.storage.from_(STORAGE_BUCKET).upload(summary_path, summary_buffer.getvalue(), {"content-type": "image/jpeg", "x-upsert": "true"})
     
     return {
         "summary_image_path": summary_path,

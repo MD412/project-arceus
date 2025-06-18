@@ -16,6 +16,7 @@ from config import supabase_client
 CONFIDENCE_THRESHOLD = 0.25
 MAX_IMAGE_SIZE = 2048
 MAX_REASONABLE_CARDS = 18
+STORAGE_BUCKET = "binders"  # TODO: rename to "scans" after bucket migration
 
 def get_yolo_model(model_path='worker/pokemon_cards_trained.pt'):
     if not Path(model_path).exists():
@@ -48,7 +49,7 @@ def run_pipeline(job: dict, model: YOLO):
         raise ValueError(f"Job {job['id']} is missing 'storage_path' in payload.")
 
     print(f"⬇️ Downloading image: {storage_path}")
-    image_bytes = supabase_client.storage.from_("binders").download(storage_path)
+    image_bytes = supabase_client.storage.from_(STORAGE_BUCKET).download(storage_path)
 
     try:
         original_image = Image.open(io.BytesIO(image_bytes))
@@ -99,7 +100,7 @@ def run_pipeline(job: dict, model: YOLO):
             card_crop.save(card_buffer, format='JPEG', quality=95)
             card_buffer.seek(0)
             card_path = f"{upload_id}/card_{i+1}.jpeg"
-            supabase_client.storage.from_("binders").upload(
+            supabase_client.storage.from_(STORAGE_BUCKET).upload(
                 path=card_path, file=card_buffer.getvalue(), file_options={"content-type": "image/jpeg", "upsert": "true"}
             )
             detected_card_paths.append(card_path)
@@ -109,7 +110,7 @@ def run_pipeline(job: dict, model: YOLO):
         summary_img.save(summary_buffer, format='JPEG', quality=90)
         summary_buffer.seek(0)
         summary_image_path = f"{upload_id}/summary.jpeg"
-        supabase_client.storage.from_("binders").upload(
+        supabase_client.storage.from_(STORAGE_BUCKET).upload(
             path=summary_image_path, file=summary_buffer.getvalue(), file_options={"content-type": "image/jpeg", "upsert": "true"}
         )
         print("✅ Summary image and crops uploaded.")
