@@ -15,6 +15,7 @@ const navigationConfig: NavigationConfigItem[] = [
   // This first set of links appears under the main title.
   { type: 'link', label: 'Collection', href: '/' },
   { type: 'link', label: 'My Scans', href: '/scans' },
+  { type: 'link', label: 'UI Playground', href: '/ui-playground' },
 
   // This creates a new group with a heading, providing visual separation.
   {
