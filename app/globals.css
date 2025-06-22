@@ -1,9 +1,13 @@
+@import './styles/circuit.css';
 @import './styles/typography.css';
 @import './styles/page-layout.css';
 @import './styles/content-section.css';
 @import './styles/example-showcase.css';
 @import './styles/circuitds-layout.css';
 @import './styles/spacing-page.css';
+@import './styles/form.css';
+@import './styles/button.css';
+@import './styles/search-bar.css';
 
 /* Reset */
 * {

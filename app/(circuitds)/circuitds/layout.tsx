@@ -48,6 +48,7 @@ const circuitDSNavItems: NavigationConfigItem[] = [
     children: [
       { type: 'link', label: 'Buttons', href: '/circuitds/buttons' },
       { type: 'link', label: 'Input', href: '/circuitds/forms/input' }, 
+      { type: 'link', label: 'SearchBar', href: '/circuitds/search' },
       { type: 'link', label: 'MenuSidebar', href: '/circuitds/menusidebar' },
       // Add Button, Card etc. here as NavLinkItem
     ],
