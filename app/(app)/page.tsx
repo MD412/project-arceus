@@ -10,6 +10,7 @@ import { SimpleCardGrid } from '@/components/simple-card-grid';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { MetricCard } from '@/components/ui/MetricCard';
+import { SearchBar } from '@/components/ui/SearchBar';
 import { User } from '@supabase/supabase-js';
 
 export default function HomePage() {
@@ -75,6 +76,14 @@ export default function HomePage() {
             <MetricCard title="Trading" value={3} />
           </div>
         </Card>
+      </section>
+
+      {/* Search Section */}
+      <section className="search-section" style={{ marginBottom: 'var(--spacing-6)' }}>
+        <SearchBar 
+          placeholder="Search your collection by name, set, or number..." 
+          onSearch={(query) => console.log('Searching for:', query)}
+        />
       </section>
 
       {/* Cards Grid Section */}

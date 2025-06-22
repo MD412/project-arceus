@@ -1,5 +1,39 @@
 /* ===== CIRCUIT BUTTON COMPONENT ===== */
 
+/* Standard Circuit Button Classes (non-module) */
+.circuit-button {
+  padding: var(--sds-size-space-200) var(--sds-size-space-400);
+  border: var(--sds-size-stroke-border) solid transparent;
+  gap: var(--sds-size-space-200);
+  display: inline-flex;
+  min-height: var(--sds-size-height-40);
+  align-items: center;
+  justify-content: center;
+  font: var(--font-body-strong);
+  cursor: pointer;
+  transition: all .2s ease;
+  user-select: none;
+  border-radius: var(--sds-size-radius-100);
+}
+
+.circuit-button.primary {
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
+  border-color: var(--interactive-primary);
+}
+
+.circuit-button.primary:hover:not(:disabled) {
+  background-color: var(--interactive-primary-hover);
+  border-color: var(--interactive-primary-hover);
+}
+
+.circuit-button.primary:focus-visible {
+  outline: var(--sds-size-stroke-focus-ring) solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* CSS Module Classes */
+
 .button_button_uCVc {
   padding: var(--sds-size-space-200) var(--sds-size-space-400); /* 8px vertical, 16px horizontal */
   margin: var(--sds-size-space-400);
