@@ -1,6 +1,7 @@
 import GlobalNavigationWrapper from "@/components/layout/GlobalNavigationWrapper";
 import React from "react";
 import ToolbarActions from '@/components/ToolbarActions';
+import { Toaster } from 'sonner';
 
 export default function AppLayout({
     children,
@@ -10,15 +11,13 @@ export default function AppLayout({
     return (
         <div className="app-layout">
             <GlobalNavigationWrapper />
-            <div className="main-content-area">
+            <main className="main-content-area">
                 <div className="top-toolbar">
                     <ToolbarActions />
-                    <div className="toolbar-status"></div>
                 </div>
-                <main id="main-content" className="app-content">
-                    {children}
-                </main>
-            </div>
+                <div className="app-content">{children}</div>
+            </main>
+            <Toaster />
         </div>
     );
 } 

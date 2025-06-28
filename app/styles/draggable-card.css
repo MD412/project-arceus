@@ -1,0 +1,123 @@
+/* Draggable Card Wrapper */
+.draggable-card-wrapper {
+  position: relative;
+  cursor: grab;
+  touch-action: none;
+  transition: none; /* No transitions during drag */
+  width: 100%; /* Ensure wrapper fills grid cell */
+  min-width: 0; /* Allow shrinking to fit grid */
+}
+
+.draggable-card-wrapper:active {
+  cursor: grabbing;
+}
+
+/* Placeholder state - THE EMPTY SPOT WHERE CARD WAS */
+.draggable-card-wrapper--dragging {
+  opacity: 0.3;
+  pointer-events: none;
+  
+  /* Alternative placeholder effects: */
+  /* opacity: 0.1; */
+  /* filter: blur(2px); */
+}
+
+.draggable-card-wrapper--dragging .circuit-trading-card {
+  border: 2px dashed var(--border-strong);
+  background: var(--surface-subtle);
+  
+  /* Alternative placeholder styles: */
+  /* border: 1px dashed var(--circuit-mid-teal); */
+  /* background: transparent; */
+  /* opacity: 0.2; */
+}
+
+/* Drop target state - FINE TUNE HERE! */
+.draggable-card-wrapper--drop-target {
+  position: relative;
+  /* Subtle lift effect: */
+  /* transform: translateY(-2px); */
+  
+  /* Smooth transition for hover: */
+  /* transition: transform 0.15s ease; */
+}
+
+.draggable-card-wrapper--drop-target .circuit-trading-card {
+  border: 1px solid var(--circuit-mid-teal);
+  
+  /* Alternative border styles: */
+  /* border: 2px solid var(--circuit-light-teal); */
+  /* border: 1px solid var(--circuit-bright-teal); */
+  
+  /* Semi-transparent borders: */
+  /* border: 1px solid rgba(45, 106, 101, 0.5); */ /* 50% mid-teal */
+  /* border: 1px solid rgba(74, 155, 148, 0.3); */ /* 30% light-teal */
+  
+  /* Subtle glow effect: */
+  /* box-shadow: 0 0 8px rgba(93, 191, 183, 0.3); */
+  
+  /* Background tint: */
+  /* background: rgba(45, 106, 101, 0.05); */
+  
+  /* Outline instead of border: */
+  /* outline: 1px solid var(--circuit-mid-teal); */
+  /* outline-offset: 2px; */
+}
+
+/* Optional: Add a pseudo-element for more complex effects */
+/*
+.draggable-card-wrapper--drop-target::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, 
+    transparent 0%, 
+    rgba(93, 191, 183, 0.1) 50%, 
+    transparent 100%
+  );
+  border-radius: var(--sds-size-radius-200);
+  pointer-events: none;
+  z-index: -1;
+}
+*/
+
+/* Optional: Different effect for when hovering with a card */
+/*
+.draggable-card-wrapper--drop-target:not(.draggable-card-wrapper--dragging) {
+  transform: scale(1.01);
+}
+*/
+
+/* Dragging overlay - THE FLOATING CARD BEING DRAGGED */
+.dragging-card-overlay {
+  opacity: 0.95;
+  transform: scale(1.02);
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+  pointer-events: none;
+  
+  /* Alternative effects for the dragged card: */
+  /* transform: scale(1.05) rotate(2deg); */
+  /* filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.3)); */
+  /* opacity: 0.9; */
+}
+
+.dragging-card-overlay .circuit-trading-card {
+  border: 1px solid var(--circuit-mid-teal);
+  background: var(--surface-background);
+  
+  /* Make it glow while dragging: */
+  /* box-shadow: 0 0 20px rgba(93, 191, 183, 0.4); */
+  
+  /* Slight tilt effect: */
+  /* transform: rotate(-2deg); */
+  
+  /* Brighter background: */
+  /* filter: brightness(1.1); */
+}
+
+/* Placeholder state for the actual card */
+.circuit-trading-card--placeholder {
+  opacity: 0;
+}
+
+ 

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { useState } from 'react';
 
 // Define the types for navigation items
 export interface NavLinkItem {
@@ -17,6 +17,8 @@ export interface NavGroupItem {
   heading: string;
   icon?: React.ReactNode; // Optional icon for the group heading
   children: NavLinkItem[]; // Groups contain a list of NavLinkItem
+  collapsible?: boolean; // Whether the group can be collapsed
+  defaultOpen?: boolean; // Whether the group is open by default
 }
 
 export type NavigationConfigItem = NavLinkItem | NavGroupItem;
@@ -25,6 +27,7 @@ export type NavigationConfigItem = NavLinkItem | NavGroupItem;
 interface AppNavigationProps {
   navTitle?: string | React.ReactNode;
   items: NavigationConfigItem[];
+  isMinimized?: boolean;
   baseNavClass?: string;
   headerClass?: string;
   titleClass?: string;
@@ -41,6 +44,7 @@ interface AppNavigationProps {
 export default function AppNavigation({
   navTitle,
   items,
+  isMinimized = false,
   baseNavClass = 'sidebar-nav',
   headerClass = 'sidebar-nav-header',
   titleClass = 'sidebar-nav-title',
@@ -54,6 +58,29 @@ export default function AppNavigation({
   navSubLinkClass, // Defaults to undefined, logic below will handle fallback
 }: AppNavigationProps) {
   const pathname = usePathname();
+  
+  // State for collapsible groups
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(() => {
+    const collapsed = new Set<string>();
+    items.forEach(item => {
+      if (item.type === 'group' && item.collapsible && !item.defaultOpen) {
+        collapsed.add(item.heading);
+      }
+    });
+    return collapsed;
+  });
+
+  const toggleGroup = (groupHeading: string) => {
+    setCollapsedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupHeading)) {
+        newSet.delete(groupHeading);
+      } else {
+        newSet.add(groupHeading);
+      }
+      return newSet;
+    });
+  };
 
   const renderLink = (link: NavLinkItem, isSubLink: boolean = false) => {
     const currentLinkClass = isSubLink ? (navSubLinkClass || navLinkClass) : navLinkClass;
@@ -65,9 +92,10 @@ export default function AppNavigation({
           pathname === link.href && navLinkActiveClass
         )}
         aria-current={pathname === link.href ? 'page' : undefined}
+        title={isMinimized ? link.label : undefined}
       >
         {link.icon && <span className="sidebar-nav-icon">{link.icon}</span>}
-        {link.label}
+        {!isMinimized && link.label}
       </Link>
     );
   };
@@ -94,11 +122,31 @@ export default function AppNavigation({
               ) : (
                 <>
                   {item.heading && (
-                    <h3 className={navGroupHeadingClass}>
+                    item.collapsible ? (
+                      <button
+                        className={clsx(navGroupHeadingClass, 'sidebar-nav-group-toggle')}
+                        onClick={() => toggleGroup(item.heading)}
+                        aria-expanded={!collapsedGroups.has(item.heading)}
+                        title={isMinimized ? item.heading : undefined}
+                      >
+                        {item.icon && <span className="sidebar-nav-icon">{item.icon}</span>}
+                        {!isMinimized && <span className="sidebar-nav-group-title">{item.heading}</span>}
+                        {!isMinimized && (
+                          <span className={clsx('sidebar-nav-group-arrow', {
+                            'sidebar-nav-group-arrow--collapsed': collapsedGroups.has(item.heading)
+                          })}>
+                            ▼
+                          </span>
+                        )}
+                      </button>
+                    ) : (
+                    <h3 className={navGroupHeadingClass} title={isMinimized ? item.heading : undefined}>
                       {item.icon && <span className="sidebar-nav-icon">{item.icon}</span>}
-                      {item.heading}
+                      {!isMinimized && item.heading}
                     </h3>
+                    )
                   )}
+                  {(!item.collapsible || !collapsedGroups.has(item.heading)) && (
                   <ul className={navSubListClass}>
                     {item.children.map((childLink) => (
                       <li key={childLink.href} className={navSubItemClass || navItemClass}>
@@ -106,6 +154,7 @@ export default function AppNavigation({
                       </li>
                     ))}
                   </ul>
+                  )}
                 </>
               )}
             </li>

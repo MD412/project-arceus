@@ -8,7 +8,7 @@ interface TradingCardProps {
   name: string;
   /** Main card image */
   imageUrl: string;
-  /** Quantity owned – shows as a pill in the top-left; optional */
+  /** Quantity owned - not currently displayed; optional */
   quantity?: number;
   /** Card condition (e.g., mint, near_mint, played) */
   condition?: string;
@@ -18,8 +18,8 @@ interface TradingCardProps {
   setCode?: string;
   /** Optional extra class names */
   className?: string;
-  /** Optional delete handler – renders an overlay "×" button when provided */
-  onDelete?: () => void;
+  /** Click handler for opening modal or other actions */
+  onClick?: () => void;
 }
 
 export function TradingCard({
@@ -30,7 +30,7 @@ export function TradingCard({
   number,
   setCode,
   className,
-  onDelete,
+  onClick,
 }: TradingCardProps) {
   /** Format snake_case condition into "Title Case" for display */
   const formatCondition = (value?: string) =>
@@ -41,31 +41,42 @@ export function TradingCard({
           .join(' ')
       : undefined;
 
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (onClick) {
+      onClick();
+      // Blur the element after click to prevent focus from getting stuck
+      // This prevents the yellow border from persisting after interaction
+      (e.currentTarget as HTMLElement).blur();
+    }
+  };
+
   return (
-    <div className={clsx('circuit-trading-card', className)}>
+    <div 
+      className={clsx('circuit-trading-card', onClick && 'circuit-trading-card--clickable', className)}
+      onClick={handleClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      } : undefined}
+    >
       <div className="circuit-trading-card-image-wrapper">
-        {onDelete && (
-          <button
-            type="button"
-            className="circuit-trading-card-delete"
-            onClick={onDelete}
-            title={`Delete ${name}`}
-          >
-            ×
-          </button>
+        {imageUrl && imageUrl.trim() !== '' ? (
+          <Image
+            src={imageUrl}
+            alt={name}
+            width={300}
+            height={420}
+            className="circuit-trading-card-img"
+          />
+        ) : (
+          <div className="circuit-trading-card-img circuit-trading-card-placeholder">
+            <span>No Image</span>
+          </div>
         )}
-        {quantity !== undefined && (
-          <span className="circuit-trading-card-quantity-pill">
-            {quantity}×
-          </span>
-        )}
-        <Image
-          src={imageUrl}
-          alt={name}
-          width={300}
-          height={420}
-          className="circuit-trading-card-img"
-        />
       </div>
 
       {/* Card Meta */}

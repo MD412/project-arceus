@@ -44,8 +44,8 @@ BEGIN
     returning id into v_upload_id;
 
   -- Enqueue job
-  insert into job_queue(scan_upload_id, status)
-    values (v_upload_id, 'pending')
+  insert into job_queue(scan_upload_id, status, job_type)
+    values (v_upload_id, 'pending', 'process_scan_page')
     returning id into job_id;
 
   RETURN;

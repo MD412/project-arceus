@@ -2,28 +2,106 @@
 
 :root {
   --sidebar-width: var(--sds-size-width-sidebar);
+  --sidebar-width-minimized: 60px;
 }
 
 .app-layout {
-  display: flex;
-  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 240px 1fr; /* Sidebar width, then remaining space */
+  height: 100vh; /* Changed from min-height to constrain grid */
   width: 100%;
+  transition: grid-template-columns 0.2s ease;
+  overflow: visible; /* Allow sidebar button to extend outside */
 }
 
-/* Sidebar Container - styles specific to the main app's sidebar */
-.circuit-sidebar {
-  width: 240px; /* Reduced width */
-  flex-shrink: 0;
-  height: 100vh; /* Fill viewport vertically */
+/* When sidebar is minimized */
+.app-layout:has(.sidebar--minimized) {
+  grid-template-columns: var(--sidebar-width-minimized) 1fr;
+}
+
+/* Floating toggle button - appears attached to top toolbar */
+.sidebar-floating-toggle {
   position: fixed;
   top: 0;
-  left: 0;
-  display: flex; /* This ensures the sidebar is visible and uses flex for internal layout */
+  left: 240px; /* Position at edge of sidebar */
+  height: 48px; /* Match toolbar height */
+  width: 32px;
+  background-color: var(--circuit-mid-teal); /* Match toolbar background */
+  border: none;
+  border-right: 1px solid var(--circuit-light-teal);
+  border-bottom: 1px solid var(--border-default);
+  border-radius: 0; /* Plain square - no rounded corners */
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999; /* Below mobile toggle but above content */
+  transition: all 0.2s ease;
+  box-shadow: none; /* No shadow for flat appearance */
+}
+
+.sidebar-floating-toggle:hover {
+  background-color: var(--circuit-dark-teal);
+}
+
+/* Adjust position when sidebar is minimized */
+.app-layout:has(.sidebar--minimized) .sidebar-floating-toggle {
+  left: var(--sidebar-width-minimized);
+}
+
+/* Sidebar Container - now uses CSS Grid, no fixed positioning needed */
+.circuit-sidebar {
+  position: relative; /* For minimize button positioning */
+  display: flex;
   flex-direction: column;
-  gap: var(--sds-size-space-400); /* Gap between header and list, etc. */
+  gap: var(--sds-size-space-400);
   padding: 0;
   background: var(--surface-background);
   border-right: 1px solid var(--border-default);
+  /* No width, position, or height needed - Grid handles it! */
+  overflow: hidden; /* Prevent scrollbars */
+  transition: all 0.2s ease;
+}
+
+/* When minimized, hide text and center icon */
+.circuit-sidebar.sidebar--minimized {
+  width: var(--sidebar-width-minimized);
+}
+
+/* Override the nav container padding when minimized */
+.circuit-sidebar.sidebar--minimized .sidebar-nav {
+  padding: var(--sds-size-space-200);
+}
+
+.circuit-sidebar.sidebar--minimized .sidebar-nav-header {
+  padding: var(--sds-size-space-400) var(--sds-size-space-200);
+}
+
+.circuit-sidebar.sidebar--minimized .sidebar-nav-title {
+  font-size: var(--font-size-125);
+  text-align: center;
+}
+
+.circuit-sidebar.sidebar--minimized .sidebar-nav-link,
+.circuit-sidebar.sidebar--minimized .sidebar-nav-group-heading,
+.circuit-sidebar.sidebar--minimized .sidebar-nav-group-toggle {
+  padding: var(--sds-size-space-200);
+  justify-content: center;
+}
+
+.circuit-sidebar.sidebar--minimized .sidebar-nav-icon {
+  margin: 0;
+}
+
+.circuit-sidebar.sidebar--minimized .sidebar-nav-sublist {
+  display: none; /* Hide subitems when minimized */
+}
+
+.circuit-sidebar.sidebar--minimized .sidebar-logout-button {
+  padding: var(--sds-size-space-200);
+  text-align: center;
+  font-size: var(--font-size-150);
 }
 
 /* Ensure the nav inside takes up remaining space to push logout to bottom */
@@ -31,23 +109,32 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto; /* Allow nav content to scroll */
+  overflow-x: hidden;
 }
 
+/* Ensure the navigation content stretches to fill available space */
+.circuit-sidebar .sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.circuit-sidebar .sidebar-nav-list {
+  flex: 1;
+  overflow-y: auto; /* Allow list to scroll if needed */
+  overflow-x: hidden;
+}
+
+/* Logout button - inherits nav link styling but overrides button-specific properties */
 .sidebar-logout-button {
   width: 100%;
-  padding: var(--sds-size-space-200) var(--sds-size-space-300);
   border: none;
-  border-top: 1px solid var(--border-subtle);
   background: transparent;
-  font: var(--font-body-strong);
-  color: var(--text-primary);
   text-align: left;
-  cursor: pointer;
-  transition: background-color 0.15s ease-in-out;
-}
-
-.sidebar-logout-button:hover {
-  background-color: var(--surface-background-hover);
+  margin: 0; /* Remove default margins */
+  margin-top: auto; /* Push to bottom of sidebar */
+  /* All other styling inherited from .sidebar-nav-link */
 }
 
 /* 
@@ -59,46 +146,47 @@
   they would be added here with more specific selectors, e.g., .circuit-sidebar .sidebar-nav-link { ... }
 */
 
-/* Main content area */
+/* Main content area - no margin needed, Grid handles layout! */
+.main-content-area {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-y: auto;
+  position: relative; /* Establish stacking context */
+  z-index: 1;
+}
+
 .app-content {
   flex: 1;
   padding: var(--sds-size-space-400) var(--sds-size-space-600);
   overflow-x: hidden;
-  margin-left: var(--sds-size-width-sidebar); /* Make space for the now visible sidebar */
-}
-
-.main-content-area {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  height: 100vh;
-  overflow-y: auto;
+  position: relative;
+  z-index: 1; /* Below top-toolbar */
 }
 
 .top-toolbar {
   height: 48px;
-  flex-shrink: 0; /* Prevents the toolbar from shrinking */
+  flex-shrink: 0;
   background-color: var(--circuit-mid-teal);
   border-bottom: 1px solid var(--border-default);
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Push items to the right */
+  justify-content: flex-end;
+  position: sticky; /* Stick to top of scroll area */
+  top: 0;
+  z-index: 10; /* Above app-content (z-index: 1) */
 }
 
-.toolbar-status {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0 var(--sds-size-space-400);
-  border-left: 1px solid var(--circuit-light-teal);
-}
+/* Removed unused .toolbar-status - the empty div was deleted */
 
-.toolbar-action-button {
+/* Toolbar action buttons - specific to the main app toolbar */
+.top-toolbar .toolbar-action-button {
   width: 48px;
   height: 100%;
   background-color: transparent;
+  /* Reset base button border - NO bottom border needed since toolbar provides it */
   border: none;
-  border-left: 1px solid var(--circuit-light-teal);
+  border-left: 1px solid var(--circuit-light-teal); /* Only left border to separate buttons */
   border-radius: 0;
   padding: 0;
   margin: 0;
@@ -112,8 +200,11 @@
   justify-content: center;
 }
 
-.toolbar-action-button:hover {
+.top-toolbar .toolbar-action-button:hover {
   background-color: var(--circuit-dark-teal);
+  /* Maintain the same border - NO bottom border needed */
+  border: none;
+  border-left: 1px solid var(--circuit-light-teal); /* Only left border to separate buttons */
 }
 
 .toolbar-action-button svg {
@@ -122,13 +213,16 @@
 }
 
 /* Text variant of the toolbar button */
-.toolbar-action-button.with-text {
+.top-toolbar .toolbar-action-button.with-text {
   width: auto;
-  padding: 0 24px;
+  padding: 0 20px; /* Decreased from 22px to 20px (2px less on each side) */
   font-size: 14px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  /* Reset base button borders - NO bottom border needed since toolbar provides it */
+  border: none;
+  border-left: 1px solid var(--circuit-light-teal); /* Only left border to separate buttons */
 }
 
 /* 
@@ -144,3 +238,488 @@
   padding: 0; 
 } 
 */ 
+
+/* Mobile Navigation Styles */
+@media (max-width: 767px) {
+  .app-layout {
+    display: block; /* Remove grid on mobile */
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden; /* Prevent horizontal scroll from off-screen sidebar */
+  }
+  
+  /* Main content takes full height without grid */
+  .main-content-area {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+  }
+  
+  /* Mobile toolbar buttons need bottom border since mobile doesn't have toolbar container border */
+  .top-toolbar .toolbar-action-button {
+    border-bottom: 1px solid var(--circuit-light-teal);
+  }
+  
+  .top-toolbar .toolbar-action-button:hover {
+    border-bottom: 1px solid var(--circuit-light-teal);
+  }
+  
+  .top-toolbar .toolbar-action-button.with-text {
+    border-bottom: 1px solid var(--circuit-light-teal);
+  }
+  
+  .circuit-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(280px, 85vw); /* Responsive width, max 85% of viewport */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    /* Prevent scrolling when sidebar is open */
+    overscroll-behavior: contain;
+  }
+  
+  .circuit-sidebar.sidebar--open {
+    transform: translateX(0);
+    box-shadow: 2px 0 24px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Mobile navigation toggle button - styled like toolbar */
+  .nav-toggle-btn {
+    position: fixed;
+    top: env(safe-area-inset-top, 0);
+    left: 0;
+    z-index: 1100;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-right: 1px solid var(--circuit-light-teal);
+    border-bottom: 1px solid var(--circuit-light-teal);
+    border-radius: 0;
+    background: var(--circuit-mid-teal); /* Match toolbar background */
+    color: var(--text-primary); /* Contrasting icon color */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none; /* Remove shadow to match toolbar */
+    /* Improved touch target */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 2-bar menu icon */
+  .nav-toggle-icon {
+    width: 22px; /* Even number for better pixel alignment */
+    height: 8px; /* Even number for better pixel alignment */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch; /* Ensure bars stretch to full width */
+    position: relative;
+  }
+
+  .nav-toggle-bar {
+    width: 100%;
+    height: 2px;
+    background: var(--text-primary);
+    border-radius: 0; /* Remove border-radius for crisp edges */
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+    display: block;
+    /* Force hardware acceleration for consistent rendering */
+    will-change: transform;
+    backface-visibility: hidden;
+    /* Ensure crisp pixel rendering */
+    transform: translateZ(0);
+  }
+
+  /* Animate to X when open */
+  .nav-toggle-btn.is-open .nav-toggle-bar:first-child {
+    transform: translateY(3px) rotate(45deg) translateZ(0); /* Even spacing for pixel alignment */
+  }
+
+  .nav-toggle-btn.is-open .nav-toggle-bar:last-child {
+    transform: translateY(-3px) rotate(-45deg) translateZ(0); /* Even spacing for pixel alignment */
+  }
+  
+  .nav-toggle-btn:hover {
+    background: var(--circuit-dark-teal); /* Match toolbar hover */
+    border-right: 1px solid var(--circuit-light-teal); /* Explicitly maintain border */
+    border-bottom: 1px solid var(--circuit-light-teal); /* Explicitly maintain border */
+  }
+  
+  .nav-toggle-btn:active {
+    background: var(--circuit-dark-teal);
+    border-right: 1px solid var(--circuit-light-teal); /* Explicitly maintain border */
+    border-bottom: 1px solid var(--circuit-light-teal); /* Explicitly maintain border */
+    transform: none; /* Remove scale for toolbar consistency */
+  }
+  
+  /* When sidebar is open, show close button with subtle styling */
+  .nav-toggle-btn.is-open {
+    left: calc(min(280px, 85vw) + 0px); /* Align with sidebar edge */
+    background: var(--circuit-mid-teal);
+    color: var(--text-primary);
+    border-right: 1px solid var(--circuit-light-teal);
+    border-bottom: 1px solid var(--circuit-light-teal);
+    border-left: none; /* Remove left border when open */
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1); /* Subtle shadow when floating */
+  }
+  
+  .nav-toggle-btn.is-open:hover {
+    background: var(--circuit-dark-teal);
+    border-right: 1px solid var(--circuit-light-teal); /* Explicitly maintain border */
+    border-bottom: 1px solid var(--circuit-light-teal); /* Explicitly maintain border */
+    border-left: none; /* Explicitly maintain no left border */
+  }
+  
+  /* Mobile overlay */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 900;
+    opacity: 0;
+    animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+  
+  /* Prevent body scroll when mobile menu is open */
+  body:has(.sidebar--open) {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    top: 0;
+    left: 0;
+  }
+  
+  /* Mobile content adjustments */
+  .app-content {
+    padding: calc(env(safe-area-inset-top, 0px) + 48px) var(--sds-size-space-400) var(--sds-size-space-400);
+    /* Add top padding for toolbar-integrated toggle button */
+    height: calc(100vh - 48px); /* Account for toolbar height */
+    overflow-y: auto; /* Allow content scrolling */
+  }
+  
+  /* Improve mobile navigation links */
+  .circuit-sidebar .sidebar-nav-link {
+    padding: var(--sds-size-space-300) var(--sds-size-space-400);
+    font-size: var(--font-size-100);
+    min-height: 48px; /* Better touch target */
+    display: flex;
+    align-items: center;
+  }
+  
+  .circuit-sidebar .sidebar-nav-group-toggle {
+    min-height: 48px; /* Better touch target */
+    padding: var(--sds-size-space-300) var(--sds-size-space-400);
+  }
+  
+  /* Mobile accordion animation improvements */
+  .circuit-sidebar .sidebar-nav-sublist {
+    margin-left: var(--sds-size-space-200); /* Less indentation on mobile */
+  }
+  
+  /* CRITICAL: Prevent sidebar minimization on mobile - override all minimized styles */
+  .circuit-sidebar.sidebar--minimized {
+    width: min(280px, 85vw) !important; /* Force normal width */
+  }
+  
+  .circuit-sidebar.sidebar--minimized .sidebar-nav-link,
+  .circuit-sidebar.sidebar--minimized .sidebar-nav-group-heading,
+  .circuit-sidebar.sidebar--minimized .sidebar-nav-group-toggle {
+    padding: var(--sds-size-space-300) var(--sds-size-space-400) !important;
+    justify-content: flex-start !important;
+  }
+  
+  .circuit-sidebar.sidebar--minimized .sidebar-nav-icon {
+    margin-right: var(--sds-size-space-300) !important;
+  }
+  
+  .circuit-sidebar.sidebar--minimized .sidebar-nav-sublist {
+    display: block !important;
+  }
+  
+  .circuit-sidebar.sidebar--minimized .sidebar-nav-title {
+    font-size: var(--font-size-150) !important;
+    text-align: left !important;
+  }
+  
+  .circuit-sidebar.sidebar--minimized .sidebar-logout-button {
+    padding: var(--sds-size-space-300) var(--sds-size-space-400) !important;
+    text-align: left !important;
+    font-size: var(--font-size-100) !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .nav-toggle-btn {
+    display: none;
+  }
+  
+  .sidebar-overlay {
+    display: none;
+  }
+}
+
+/* Hide minimize toggles on mobile */
+@media (max-width: 767px) {
+  .sidebar-floating-toggle {
+    display: none !important; /* Ensure it's hidden even if JS tries to show it */
+  }
+}
+
+/* Landscape mobile adjustments */
+@media (max-width: 767px) and (orientation: landscape) {
+  .circuit-sidebar {
+    width: min(320px, 70vw); /* Wider sidebar in landscape */
+  }
+  
+  .nav-toggle-btn.is-open {
+    left: calc(min(320px, 70vw) + 0px); /* Align with sidebar edge */
+  }
+  
+  /* Override minimized state in landscape too */
+  .circuit-sidebar.sidebar--minimized {
+    width: min(320px, 70vw) !important;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .circuit-sidebar {
+    width: min(260px, 90vw); /* Smaller sidebar on very small screens */
+  }
+  
+  .nav-toggle-btn.is-open {
+    left: calc(min(260px, 90vw) + 0px); /* Align with sidebar edge */
+  }
+  
+  .app-content {
+    padding: calc(env(safe-area-inset-top, 0px) + 48px) var(--sds-size-space-300) var(--sds-size-space-300);
+    /* Adjust padding for toolbar-integrated button */
+  }
+  
+  /* Override minimized state on small screens too */
+  .circuit-sidebar.sidebar--minimized {
+    width: min(260px, 90vw) !important;
+  }
+}
+
+/* ============================================
+   Mobile Sheet Navigation (replacing old sidebar)
+   ============================================ */
+
+/* Mobile menu button */
+.mobile-menu-button {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100; /* Normal button level, below overlays */
+  background: var(--circuit-mid-teal);
+  border: none;
+  border-right: 1px solid var(--circuit-light-teal);
+  border-bottom: 1px solid var(--circuit-light-teal);
+  border-radius: 0; /* No rounded corners */
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.mobile-menu-button:hover {
+  background: var(--circuit-dark-teal);
+}
+
+.mobile-menu-button:active {
+  transform: none; /* No scale for toolbar consistency */
+}
+
+/* Icon styling for mobile menu button */
+.mobile-menu-button svg {
+  color: var(--text-primary);
+  width: 24px;
+  height: 24px;
+}
+
+/* Mobile nav close button - positioned to look like part of toolbar */
+.mobile-nav-close-button {
+  position: fixed;
+  top: 0;
+  left: 240px; /* Position at edge of nav */
+  z-index: 1101; /* Above the nav */
+  background: var(--circuit-mid-teal);
+  border: none;
+  border-right: 1px solid var(--circuit-light-teal);
+  border-bottom: 1px solid var(--circuit-light-teal);
+  border-radius: 0; /* No rounded corners */
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  transition: background-color 0.2s ease; /* Only transition bg color on hover */
+  cursor: pointer;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1); /* Subtle shadow to float above nav */
+  animation: slide-in-from-left 200ms ease-out; /* Animate in with nav */
+}
+
+.mobile-nav-close-button:hover {
+  background: var(--circuit-dark-teal);
+}
+
+.mobile-nav-close-button:active {
+  transform: none; /* No scale for toolbar consistency */
+}
+
+/* Icon styling for close button */
+.mobile-nav-close-button svg {
+  color: var(--text-primary);
+  width: 24px;
+  height: 24px;
+}
+
+/* Hide desktop-specific elements on mobile */
+@media (max-width: 767px) {
+  .sidebar-floating-toggle {
+    display: none !important;
+  }
+  
+  /* Hide the old mobile nav toggle */
+  .nav-toggle-btn {
+    display: none !important;
+  }
+  
+  /* Hide the old sidebar on mobile */
+  .circuit-sidebar {
+    display: none !important;
+  }
+}
+
+/* Hide mobile menu button and close button on desktop */
+@media (min-width: 768px) {
+  .mobile-menu-button,
+  .mobile-nav-close-button {
+    display: none;
+  }
+}
+
+/* Mobile Navigation Sheet styles */
+.sheet-content .circuit-sidebar {
+  position: static !important;
+  transform: none !important;
+  display: flex !important;
+  height: 100%;
+  width: 100% !important;
+  box-shadow: none;
+  background: var(--surface-background);
+  border-right: 1px solid var(--border-default); /* Keep desktop border */
+  z-index: auto;
+}
+
+/* Make mobile nav look exactly like desktop un-minimized */
+.sheet-content .circuit-sidebar.sidebar--minimized {
+  width: 100% !important;
+}
+
+.sheet-content .sidebar-nav {
+  height: 100%;
+  padding: var(--sds-size-space-400); /* Same padding as desktop */
+}
+
+.sheet-content .sidebar-nav-header {
+  padding: 0 0 var(--sds-size-space-400) 0; /* Same as desktop */
+}
+
+.sheet-content .sidebar-nav-title {
+  font-size: var(--font-size-150) !important;
+  text-align: left !important;
+}
+
+.sheet-content .sidebar-nav-link,
+.sheet-content .sidebar-nav-group-heading,
+.sheet-content .sidebar-nav-group-toggle {
+  padding: var(--sds-size-space-150) var(--sds-size-space-400) !important;
+  justify-content: flex-start !important;
+}
+
+.sheet-content .sidebar-nav-icon {
+  width: 24px;
+  margin-right: var(--sds-size-space-300) !important;
+}
+
+.sheet-content .sidebar-nav-sublist {
+  display: block !important;
+  margin-left: calc(24px + var(--sds-size-space-300)); /* Align with parent icon */
+}
+
+.sheet-content .sidebar-logout-button {
+  padding: var(--sds-size-space-150) var(--sds-size-space-400) !important;
+  text-align: left !important;
+  font-size: var(--font-size-100) !important;
+}
+
+/* Ensure proper scrolling in sheet */
+.sheet-content .sidebar-nav-list {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+}
+
+/* Override any minimized states in mobile sheet */
+.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-link,
+.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-group-heading,
+.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-group-toggle {
+  padding: var(--sds-size-space-150) var(--sds-size-space-400) !important;
+  justify-content: flex-start !important;
+}
+
+.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-icon {
+  margin-right: var(--sds-size-space-300) !important;
+}
+
+.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-sublist {
+  display: block !important;
+}
+
+/* Fix main content padding on mobile to prevent push down */
+@media (max-width: 767px) {
+  .app-content {
+    padding: var(--sds-size-space-400) !important; /* Normal padding all around */
+  }
+  
+  .main-content-area {
+    padding-top: 0; /* Remove any top padding that might push content */
+  }
+  
+  /* Ensure app layout takes full viewport on mobile */
+  .app-layout {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  
+  /* Ensure main content stays below navigation overlays */
+  .main-content-area {
+    position: relative;
+    z-index: 1; /* Base level, below all overlays */
+  }
+} 

@@ -1,0 +1,137 @@
+/* Control Bar Component */
+.control-bar {
+  height: 32px;
+  background-color: var(--surface-background);
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-150);
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-100);
+  padding: var(--sds-size-space-100);
+  margin-bottom: var(--sds-size-space-400);
+}
+
+.control-bar__button {
+  width: 24px;
+  height: 24px;
+  background-color: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--sds-size-radius-100);
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+}
+
+.control-bar__button:hover {
+  background-color: var(--surface-background-hover);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+.control-bar__button:active {
+  background-color: var(--surface-background-pressed);
+  border-color: var(--border-default);
+  transform: scale(0.95);
+}
+
+.control-bar__button--active {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary);
+  color: var(--text-inverse);
+}
+
+.control-bar__button--active:hover {
+  background-color: var(--interactive-primary-hover);
+  border-color: var(--interactive-primary-hover);
+}
+
+.control-bar__button--primary {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary);
+  color: var(--text-inverse);
+}
+
+.control-bar__button--primary:hover {
+  background-color: var(--interactive-primary-hover);
+  border-color: var(--interactive-primary-hover);
+}
+
+.control-bar__button--secondary {
+  background-color: var(--surface-background);
+  border-color: var(--border-interactive);
+  color: var(--text-primary);
+}
+
+.control-bar__button--secondary:hover {
+  background-color: var(--surface-background-hover);
+  border-color: var(--border-interactive-hover);
+}
+
+.control-bar__button--destructive {
+  background-color: var(--status-error);
+  border-color: var(--status-error);
+  color: var(--text-inverse);
+}
+
+.control-bar__button--destructive:hover {
+  background-color: var(--status-error-hover);
+  border-color: var(--status-error-hover);
+}
+
+.control-bar__divider {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border-subtle);
+  margin: 0 var(--sds-size-space-100);
+}
+
+.control-bar__label {
+  font-size: var(--font-size-50);
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-right: var(--sds-size-space-200);
+}
+
+/* Focus state */
+.control-bar__button:focus-visible {
+  outline: var(--sds-size-stroke-focus-ring) solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+/* Disabled state */
+.control-bar__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  background-color: var(--surface-background-disabled);
+  border-color: var(--border-disabled);
+  color: var(--text-disabled);
+}
+
+.control-bar__button:disabled:hover {
+  background-color: var(--surface-background-disabled);
+  border-color: var(--border-disabled);
+  color: var(--text-disabled);
+  transform: none;
+}
+
+.control-bar__section {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-100);
+}
+
+/* Add spacing between groups */
+.control-bar__section + .control-bar__section {
+  margin-left: var(--sds-size-space-200);
+} 

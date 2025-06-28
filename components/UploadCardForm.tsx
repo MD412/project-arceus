@@ -114,8 +114,9 @@ export default function UploadCardForm({ close, onAdded }: Props) {
 
   // Restore Modal usage, removing the temporary inline div wrapper
   return (
-    <Modal open={true} onClose={close} title="Add Card">
+    <Modal isOpen={true} onClose={close}>
       {/* The Modal component now handles the title via its 'title' prop */}
+      <h2 className="circuit-form-title">Add Card</h2>
       <form onSubmit={handleSubmit} className="circuit-form">
         <Input
           ref={fileRef}

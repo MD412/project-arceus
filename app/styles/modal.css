@@ -1,0 +1,246 @@
+/* Modal Base Styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 9998;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sds-size-space-400);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.modal-content {
+  position: relative;
+  width: 100%;
+  max-width: 1200px; /* Large default size */
+  max-height: 90vh;
+  background: var(--surface-background);
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-300);
+  overflow: hidden;
+  pointer-events: auto;
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Close button */
+.modal-close {
+  position: absolute;
+  top: var(--sds-size-space-300);
+  right: var(--sds-size-space-300);
+  z-index: 10;
+  padding: var(--sds-size-space-200);
+  background: var(--surface-background);
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+/* Card Info Modal Specific Styles */
+.modal-card-info .card-info-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  height: 85vh;
+}
+
+.card-info-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sds-size-space-600);
+  background: var(--surface-subtle);
+  border-right: 1px solid var(--border-default);
+}
+
+.card-image-full {
+  width: 100%;
+  height: auto;
+  max-width: 400px;
+  border-radius: var(--sds-size-radius-200);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Placeholder for missing card images in modal */
+.card-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-subtle);
+  border: 2px dashed var(--border-default);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-100);
+  text-align: center;
+  aspect-ratio: 2.5 / 3.5; /* Match trading card ratio */
+  min-height: 400px;
+}
+
+.card-info-details {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sds-size-space-600);
+  overflow-y: auto;
+}
+
+.card-info-header {
+  margin-bottom: var(--sds-size-space-600);
+  padding-bottom: var(--sds-size-space-400);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.card-info-title {
+  margin: 0 0 var(--sds-size-space-200) 0;
+  font-size: var(--font-size-400);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.card-info-meta {
+  margin: 0;
+  font-size: var(--font-size-150);
+  color: var(--text-secondary);
+}
+
+.card-info-content {
+  flex: 1;
+}
+
+.info-section {
+  margin-bottom: var(--sds-size-space-600);
+}
+
+.info-section h3 {
+  margin: 0 0 var(--sds-size-space-200) 0;
+  font-size: var(--font-size-150);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-section p {
+  margin: 0;
+  font-size: var(--font-size-125);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.action-buttons {
+  display: flex;
+  gap: var(--sds-size-space-200);
+  flex-wrap: wrap;
+}
+
+/* Button styles for modal */
+.modal-content .btn {
+  padding: var(--sds-size-space-200) var(--sds-size-space-400);
+  border-radius: var(--sds-size-radius-100);
+  font-size: var(--font-size-100);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.modal-content .btn--primary {
+  background: var(--interactive-primary);
+  color: var(--text-on-primary);
+  border-color: var(--interactive-primary);
+}
+
+.modal-content .btn--secondary {
+  background: var(--surface-background);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.modal-content .btn--danger {
+  background: var(--status-error);
+  color: white;
+  border-color: var(--status-error);
+}
+
+.modal-content .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .modal-container {
+    padding: 0;
+  }
+  
+  .modal-content {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+  
+  .modal-card-info .card-info-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: 100vh;
+  }
+  
+  .card-info-image {
+    padding: var(--sds-size-space-400);
+    border-right: none;
+    border-bottom: 1px solid var(--border-default);
+  }
+  
+  .card-image-full {
+    max-width: 300px;
+  }
+  
+  .card-info-details {
+    padding: var(--sds-size-space-400);
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .modal-content .btn {
+    width: 100%;
+  }
+} 

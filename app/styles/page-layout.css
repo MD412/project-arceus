@@ -8,6 +8,7 @@
 
 .page-layout-header {
   margin-bottom: var(--sds-size-space-600); /* 24px - Default content spacing */
+  margin-top: var(--sds-size-space-600); /* 24px - Default content spacing */
   padding-bottom: var(--sds-size-space-400); /* 16px - Some spacing for a potential border */
   border-bottom: var(--sds-size-stroke-border) solid var(--border-subtle);
 }
@@ -20,6 +21,8 @@
   font-weight: 700;
   color: var(--text-primary); /* Ensure color is set if not inherited */
   margin-bottom: var(--sds-size-space-200); /* 8px space between title and description */
+  word-wrap: break-word; /* Prevent overflow on small screens */
+  hyphens: auto; /* Enable hyphenation for long words */
 }
 
 .page-description {
@@ -40,14 +43,35 @@
 @media (max-width: 768px) {
   .page-layout-header {
     margin-bottom: var(--sds-size-space-400); /* 16px on smaller screens */
+    margin-top: var(--sds-size-space-400); /* 16px on smaller screens */
     padding-bottom: var(--sds-size-space-300); /* 12px on smaller screens */
   }
 
   .page-title {
     font-size: var(--font-size-500); /* Slightly smaller title on mobile */
+    line-height: var(--line-height-normal); /* More relaxed line height on mobile */
   }
 
   .page-description {
     font-size: var(--font-size-100); /* Slightly smaller description on mobile */
+    line-height: var(--line-height-relaxed); /* More breathing room on mobile */
+    max-width: none; /* Remove max-width constraint on mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .page-layout-header {
+    margin-bottom: var(--sds-size-space-300);
+    margin-top: var(--sds-size-space-300);
+    padding-bottom: var(--sds-size-space-200);
+  }
+
+  .page-title {
+    font-size: var(--font-size-400);
+    letter-spacing: var(--letter-spacing-normal); /* Relax tight spacing on small screens */
+  }
+
+  .page-description {
+    font-size: var(--font-size-75);
   }
 } 

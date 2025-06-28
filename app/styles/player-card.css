@@ -1,0 +1,312 @@
+/* Player Card Component Styles */
+.player-card {
+  min-height: 240px;
+  min-width: 80px; /* Prevent over-shrinking in dense layouts */
+  width: 100%;
+  border-radius: var(--sds-size-radius-200);
+  background: var(--surface-background);
+  color: var(--text-primary);
+  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+  overflow: hidden;
+  position: relative; /* Added for menu positioning */
+  cursor: grab; /* Added for drag indication */
+  touch-action: none; /* Better touch support */
+}
+
+.player-card:active {
+  cursor: grabbing;
+}
+
+/* Disable transitions during drag for smoother experience */
+.player-card--placeholder,
+.player-card--drop-target {
+  transition: none;
+}
+
+/* Drag and Drop States */
+.player-card--dragging {
+  /* Keep the card at original size; just elevate it */
+  z-index: 1000;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  cursor: grabbing;
+  opacity: 1 !important; /* ensure full opacity */
+}
+
+.player-card--drag-placeholder {
+  border: 2px dashed var(--border-default);
+  background: transparent;
+}
+
+.player-card--drag-placeholder .player-card__header,
+.player-card--drag-placeholder .player-card__content,
+.player-card--drag-placeholder .player-card__menu {
+  opacity: 0.3; /* dim content rather than hide to keep drag image */
+}
+
+.player-card--drop-target {
+  position: relative;
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
+.player-card--drop-target::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: var(--interactive-primary);
+  border-radius: var(--sds-size-radius-200);
+  opacity: 0.2;
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+.player-card--drop-target::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--interactive-primary);
+  border-radius: var(--sds-size-radius-200);
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.05); opacity: 0.3; }
+  100% { transform: scale(1); opacity: 0.2; }
+}
+
+/* Player Card Variants */
+.player-card--default {
+  border: 1px solid var(--border-default);
+}
+
+.player-card--elevated {
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+}
+
+.player-card--elevated:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.player-card--outlined {
+  border: 2px solid var(--border-strong);
+}
+
+/* Three-dot menu */
+.player-card__menu {
+  position: absolute;
+  top: var(--sds-size-space-200);
+  right: var(--sds-size-space-200);
+  width: 24px;
+  height: 24px;
+  background: rgba(15, 43, 41, 0.65); /* dark teal overlay for better theme consistency */
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, opacity 0.2s ease-in-out;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  color: var(--interactive-primary); /* bright yellow dots */
+}
+
+.player-card:hover .player-card__menu {
+  opacity: 1;
+  visibility: visible;
+}
+
+.player-card__menu:hover {
+  background: rgba(15, 43, 41, 0.85);
+  border-color: var(--interactive-primary);
+}
+
+.player-card__menu:active {
+  background: rgba(15, 43, 41, 1);
+}
+
+.player-card__menu-icon {
+  color: currentColor; /* inherit bright yellow */
+  font-size: 14px;
+  line-height: 1;
+  font-weight: bold;
+}
+
+/* Drag handle area */
+.player-card__drag-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  cursor: grab;
+  z-index: 5;
+  background: transparent;
+}
+
+.player-card__drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Player Card Header Image */
+.player-card__header {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  /* Rounded only on top corners */
+  border-radius: var(--sds-size-radius-150) var(--sds-size-radius-150) 0 0;
+  margin-bottom: var(--sds-size-space-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.player-card__icon {
+  width: 48px;
+  height: 48px;
+  filter: brightness(0) invert(1);
+  z-index: 2;
+}
+
+/* Player Card Content */
+.player-card__content {
+  padding: var(--sds-size-space-400);
+  padding-top: 0; /* Header already provides top spacing */
+}
+
+.player-card__title {
+  margin: 0 0 4px 0;
+  color: var(--text-primary);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-75); /* 14px */
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+
+.player-card__description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-50); /* 12px */
+  line-height: var(--line-height-normal);
+}
+
+/* Gradient Themes */
+.player-card__header--theme-arceus {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.player-card__header--theme-global {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.player-card__header--theme-file {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.player-card__header--theme-window {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.player-card__header--theme-frame {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.player-card__header--theme-next {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.player-card__header--theme-deploy {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+.player-card__header--theme-network {
+  background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+}
+
+.player-card__header--theme-evolution {
+  background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .player-card {
+    min-width: 280px;
+  }
+  
+  /* Always show menu on mobile for better accessibility */
+  .player-card__menu {
+    opacity: 0.7;
+    visibility: visible;
+  }
+}
+
+/* Placeholder for dragged card - Hearthstone style */
+.player-card--placeholder {
+  position: relative;
+  background: var(--surface-subtle);
+  border: 2px dashed var(--border-strong);
+  opacity: 0.5;
+}
+
+.player-card--placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255, 255, 255, 0.03) 10px,
+    rgba(255, 255, 255, 0.03) 20px
+  );
+  pointer-events: none;
+}
+
+.player-card--placeholder .player-card__header,
+.player-card--placeholder .player-card__content,
+.player-card--placeholder .player-card__menu {
+  opacity: 0.2;
+}
+
+/* Player grid responsive columns */
+.player-grid {
+  display: grid;
+  gap: var(--sds-size-space-400);
+  justify-content: center;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* Default – 2 cols on small screens */
+}
+
+@media (min-width: 768px) {
+  .player-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr)); /* Tablet – 8 cols */
+  }
+}
+
+@media (min-width: 1440px) {
+  .player-grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr)); /* Desktop – 12 cols */
+  }
+}
+
+/* List view overrides */
+.player-grid--list {
+  grid-template-columns: 1fr !important;
+}
+
+@media (max-width: 639px) {
+  .player-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .player-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+} 

@@ -2,7 +2,6 @@
 
 .button_button_uCVc {
   padding: var(--sds-size-space-200) var(--sds-size-space-400); /* 8px vertical, 16px horizontal */
-  margin: var(--sds-size-space-400);
   border: var(--sds-size-stroke-border) solid transparent;
   gap: var(--sds-size-space-200);
   display: inline-flex;
@@ -11,9 +10,12 @@
   justify-content: center;
   font: var(--font-body-strong);
   cursor: pointer;
-  transition: all .2s ease;
+  /* Lightning-fast transitions - matching navigation */
+  transition: background-color 0.12s ease-linear, color 0.12s ease-linear, border-color 0.12s ease-linear;
   user-select: none;
-  border-radius: var(--sds-size-radius-100);
+  border-radius: var(--sds-size-radius-150); /* Slightly more rounded like nav */
+  /* Clean mobile interaction */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Primary Button */
@@ -65,21 +67,22 @@
   background-color: var(--interactive-primary-subtle-pressed);
 }
 
-/* Destructive Button */
+/* Destructive Button - Modern styling */
 .button_button_destructive_uCVc {
-  background-color: var(--status-error);
-  color: var(--text-inverse);
-  border-color: var(--status-error);
+  background-color: #dc2626; /* Modern red-600 */
+  color: white;
+  border-color: #dc2626;
+  font-weight: 500;
 }
 
 .button_button_destructive_uCVc:hover:not(:disabled) {
-  background-color: var(--status-error-hover);
-  border-color: var(--status-error-hover);
+  background-color: #b91c1c; /* red-700 */
+  border-color: #b91c1c;
 }
 
 .button_button_destructive_uCVc:active:not(:disabled) {
-  background-color: var(--status-error-pressed);
-  border-color: var(--status-error-pressed);
+  background-color: #991b1b; /* red-800 - instant feedback */
+  border-color: #991b1b;
 }
 
 /* Info Button */
@@ -125,4 +128,187 @@
   padding: var(--sds-size-space-400) var(--sds-size-space-800);
   min-height: var(--sds-size-height-48);
   font-size: var(--font-size-300); /* 16px */
+}
+
+/* === Button Styles === */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sds-size-space-200); /* 8px */
+  padding: var(--sds-size-space-200) var(--sds-size-space-400); /* 8px vertical, 16px horizontal */
+  border: var(--sds-size-stroke-border) solid var(--border-default);
+  border-radius: var(--sds-size-radius-150); /* 6px */
+  background: var(--surface-background);
+  color: var(--text-primary);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-75); /* 14px */
+  font-weight: 500;
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-wide);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.1s ease-linear;
+  /* Clean mobile interaction */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  
+  /* Ensure proper touch target size */
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.btn:hover {
+  background: var(--surface-background-hover);
+  border-color: var(--border-hover);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.btn:active {
+  background: var(--surface-background-pressed);
+  border-color: var(--border-pressed);
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Primary button variant */
+.btn-primary {
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
+  border-color: var(--interactive-primary);
+}
+
+.btn-primary:hover {
+  background: var(--interactive-primary-hover);
+  border-color: var(--interactive-primary-hover);
+}
+
+.btn-primary:active {
+  background: var(--interactive-primary-pressed);
+  border-color: var(--interactive-primary-pressed);
+}
+
+/* Secondary button variant */
+.btn-secondary {
+  background: var(--interactive-secondary);
+  color: var(--text-primary);
+  border-color: var(--interactive-secondary);
+}
+
+.btn-secondary:hover {
+  background: var(--interactive-secondary-hover);
+  border-color: var(--interactive-secondary-hover);
+}
+
+.btn-secondary:active {
+  background: var(--interactive-secondary-pressed);
+  border-color: var(--interactive-secondary-pressed);
+}
+
+/* Danger button variant */
+.btn-danger {
+  background: var(--interactive-danger);
+  color: var(--text-inverse);
+  border-color: var(--interactive-danger);
+}
+
+.btn-danger:hover {
+  background: var(--interactive-danger-hover);
+  border-color: var(--interactive-danger-hover);
+}
+
+.btn-danger:active {
+  background: var(--interactive-danger-pressed);
+  border-color: var(--interactive-danger-pressed);
+}
+
+/* Size variants */
+.btn-sm {
+  padding: var(--sds-size-space-100) var(--sds-size-space-300); /* 4px vertical, 12px horizontal */
+  font-size: var(--font-size-50); /* 12px */
+  min-height: 36px;
+  min-width: 36px;
+}
+
+.btn-lg {
+  padding: var(--sds-size-space-300) var(--sds-size-space-600); /* 12px vertical, 24px horizontal */
+  font-size: var(--font-size-100); /* 16px */
+  min-height: 52px;
+  min-width: 52px;
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+  .btn {
+    /* Larger touch targets on mobile */
+    min-height: 48px;
+    min-width: 48px;
+    padding: var(--sds-size-space-300) var(--sds-size-space-500);
+    font-size: var(--font-size-100); /* 16px for better readability */
+  }
+  
+  .btn-sm {
+    min-height: 40px;
+    min-width: 40px;
+    padding: var(--sds-size-space-200) var(--sds-size-space-400);
+    font-size: var(--font-size-75);
+  }
+  
+  .btn-lg {
+    min-height: 56px;
+    min-width: 56px;
+    padding: var(--sds-size-space-400) var(--sds-size-space-700);
+    font-size: var(--font-size-150);
+  }
+  
+  /* Improved mobile interaction feedback */
+  .btn:active {
+    transform: scale(0.98);
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    /* Even larger touch targets on small screens */
+    min-height: 52px;
+    padding: var(--sds-size-space-400) var(--sds-size-space-600);
+  }
+  
+  .btn-sm {
+    min-height: 44px;
+    padding: var(--sds-size-space-300) var(--sds-size-space-500);
+  }
+  
+  .btn-lg {
+    min-height: 60px;
+    padding: var(--sds-size-space-500) var(--sds-size-space-800);
+  }
+}
+
+/* Button groups for mobile */
+.btn-group {
+  display: flex;
+  gap: var(--sds-size-space-200);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .btn-group {
+    flex-direction: column;
+    gap: var(--sds-size-space-300);
+  }
+  
+  .btn-group .btn {
+    width: 100%;
+  }
 } 

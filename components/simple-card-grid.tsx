@@ -12,6 +12,7 @@ interface CardEntry {
   image_url: string;
   user_id: string;
   created_at: string;
+  quantity: number;
 }
 
 interface SimpleCardGridProps {

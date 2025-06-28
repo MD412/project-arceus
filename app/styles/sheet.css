@@ -1,0 +1,137 @@
+/* Sheet animations */
+@keyframes slide-in-from-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in-0 {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation-duration: 200ms;
+  animation-fill-mode: both;
+}
+
+.fade-in-0 {
+  animation-name: fade-in-0;
+}
+
+.slide-in-from-left {
+  animation-name: slide-in-from-left;
+}
+
+.slide-in-from-right {
+  animation-name: slide-in-from-right;
+}
+
+.slide-in-from-top {
+  animation-name: slide-in-from-top;
+}
+
+.slide-in-from-bottom {
+  animation-name: slide-in-from-bottom;
+}
+
+/* Sheet backdrop */
+.sheet-overlay {
+  backdrop-filter: blur(8px);
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1099 !important; /* Below nav (1100) and close button (1101) */
+}
+
+/* Mobile navigation sheet specific styles */
+.sheet-nav-content {
+  width: 240px !important; /* Match desktop sidebar width */
+  padding: 0;
+  background: var(--surface-background);
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 1100 !important; /* Above overlay (1099) but below close button (1101) */
+  box-shadow: 2px 0 24px rgba(0, 0, 0, 0.15); /* Add shadow to confirm visibility */
+}
+
+/* Make the mobile nav look exactly like desktop */
+.sheet-nav-content .circuit-sidebar {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important; /* Ensure proper stacking context */
+  z-index: auto !important; /* Don't interfere with parent z-index */
+}
+
+/* Ensure content doesn't get pushed down */
+body.sheet-open {
+  overflow: hidden;
+}
+
+/* Ensure button styles don't affect mobile menu button */
+.mobile-menu-button,
+.mobile-nav-close-button {
+  font-family: inherit !important;
+  line-height: 1 !important;
+  font-weight: normal !important;
+}
+
+/* Ensure Sheet components don't affect document flow */
+.sheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1098; /* Base container below all sheet elements */
+  pointer-events: none;
+}
+
+.sheet-root > * {
+  pointer-events: auto;
+}
+
+/* Ensure sheet content is above everything */
+.sheet-content {
+  z-index: 1100 !important; /* Above overlay but below close button */
+}
+
+/* Adjust main content when sheet is open */
+@media (max-width: 767px) {
+  .app-content {
+    padding-top: var(--sds-size-space-400); /* Normal padding, no extra space for button */
+  }
+} 

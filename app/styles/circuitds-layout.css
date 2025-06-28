@@ -1,39 +1,15 @@
 /* === CircuitDS Layout Styles === */
 
 .circuitds-layout-container {
-  display: flex;
-  height: calc(100vh - var(--header-height, 0px));
+  display: grid;
+  grid-template-columns: 240px 1fr; /* Sidebar width, then remaining space */
+  height: 100vh;
   width: 100vw;
   margin: 0;
   padding: 0;
-  overflow: hidden;
-  /* If this layout is meant to be full viewport height and the root layout already has a header, 
-     you might need to subtract that header's height. 
-     Or, ensure the root layout provides a container that this can fill. */
 }
 
-/* CircuitDS Sidebar Container - styles specific to the DS sidebar */
-.circuitds-sidebar {
-  width: 260px; /* Slightly wider for better readability of nav items */
-  flex-shrink: 0;
-  padding: var(--sds-size-space-600); /* 24px */
-  background-color: var(--surface-background);
-  overflow-y: auto; /* Allow sidebar to scroll if content is too long */
-  margin: 0;
-  border-right: var(--sds-size-stroke-border) solid var(--border-default); /* Light teal border using semantic token */
-  /* display: flex; flex-direction: column; gap: ...; are implicitly handled by AppNavigation's internal structure or default styles */
-}
-
-/* CircuitDS specific title style - passed as titleClass to AppNavigation */
-.circuitds-sidebar-title {
-  font: var(--font-heading-3); /* Example: use a typography token */
-  /* Adjust actual token based on desired appearance, e.g. heading-2 or heading-3 from typography.css */
-  font-size: var(--font-size-400); /* Overriding for specific size if needed */
-  font-weight: 600;
-  color: var(--text-primary); /* Was --text-heading-strong, adjust as needed */
-  margin-bottom: 0; /* Removed large margin, was var(--sds-size-space-500) */
-  padding-bottom: var(--sds-size-space-200);
-}
+/* CircuitDS now uses the same .circuit-sidebar styling as product navigation */
 
 /* 
   .circuitds-nav-list (and its li),
@@ -47,10 +23,62 @@
 */
 
 .circuitds-main-content {
-  flex: 1;
   padding: var(--sds-size-space-800); /* 32px */
   overflow-y: auto; /* Allow main content to scroll independently */
   background-color: var(--surface-background-subtle);
   min-width: 0; /* Prevents flexbox overflow issues */
-  margin: 0;
+  /* No margin-left needed! Grid automatically handles the space */
+}
+
+/* Mobile responsive behavior */
+@media (max-width: 767px) {
+  .circuitds-layout-container {
+    grid-template-columns: 1fr; /* Single column on mobile */
+    height: auto; /* Allow natural height on mobile */
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height */
+  }
+  
+  .circuitds-main-content {
+    padding: calc(env(safe-area-inset-top, 0px) + 48px) var(--sds-size-space-400) var(--sds-size-space-400);
+    /* Add top padding for toolbar-integrated navigation toggle */
+  }
+  
+  /* CircuitDS mobile navigation improvements */
+  .circuit-sidebar {
+    /* Mobile sidebar styles for CircuitDS */
+    width: min(300px, 85vw); /* Slightly wider for CircuitDS content */
+  }
+  
+  /* Responsive code blocks and examples */
+  .circuitds-main-content pre {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Responsive component examples */
+  .circuitds-main-content .example-showcase {
+    margin: var(--sds-size-space-400) 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .circuitds-main-content {
+    padding: calc(env(safe-area-inset-top, 0px) + 48px) var(--sds-size-space-300) var(--sds-size-space-300);
+  }
+  
+  .circuit-sidebar {
+    width: min(280px, 90vw);
+  }
+}
+
+/* Landscape mobile adjustments for CircuitDS */
+@media (max-width: 767px) and (orientation: landscape) {
+  .circuit-sidebar {
+    width: min(340px, 70vw); /* Wider sidebar in landscape for more content */
+  }
+  
+  .circuitds-main-content {
+    padding: calc(env(safe-area-inset-top, 0px) + 48px) var(--sds-size-space-600) var(--sds-size-space-400);
+  }
 } 

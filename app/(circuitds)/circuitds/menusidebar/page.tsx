@@ -113,6 +113,78 @@ const groupedNavItems: NavigationConfigItem[] = [
         <p>Refer to the <code>AppNavigationProps</code> in <code>components/ui/AppNavigation.tsx</code> for a full list of customizable class props.</p>
       </ContentSection>
       
+      <ContentSection title="Documentation Variants">
+        <p>For documentation and design system contexts, the navigation can be adapted with different styling and content structure.</p>
+        
+        <ExampleShowcase
+          title="Documentation Navigation"
+          headingLevel={3}
+          description="A navigation structure optimized for documentation with deeper hierarchy and more descriptive labels."
+          preview={
+            <div style={{ border: '1px solid var(--border-default)', borderRadius: 'var(--sds-size-radius-200)', overflow: 'hidden' }}>
+              <AppNavigation 
+                navTitle="Design System"
+                items={[
+                  { type: 'link', label: 'Getting Started', href: '#getting-started' },
+                  { type: 'link', label: 'Installation', href: '#installation' },
+                  {
+                    type: 'group',
+                    heading: 'Foundations',
+                    children: [
+                      { type: 'link', label: 'Design Tokens', href: '#tokens' },
+                      { type: 'link', label: 'Typography', href: '#typography' },
+                      { type: 'link', label: 'Color System', href: '#colors' },
+                      { type: 'link', label: 'Spacing Scale', href: '#spacing' },
+                    ],
+                  },
+                  {
+                    type: 'group',
+                    heading: 'Components',
+                    children: [
+                      { type: 'link', label: 'Button', href: '#button' },
+                      { type: 'link', label: 'Input Field', href: '#input' },
+                      { type: 'link', label: 'Navigation', href: '#navigation' },
+                      { type: 'link', label: 'Modal Dialog', href: '#modal' },
+                    ],
+                  },
+                  {
+                    type: 'group',
+                    heading: 'Patterns',
+                    children: [
+                      { type: 'link', label: 'Form Layouts', href: '#forms' },
+                      { type: 'link', label: 'Data Display', href: '#data' },
+                      { type: 'link', label: 'Feedback', href: '#feedback' },
+                    ],
+                  },
+                ]} 
+                baseNavClass="circuitds-example-sidebar"
+              />
+            </div>
+          }
+          code={`// Documentation-focused navigation structure
+const docsNavItems: NavigationConfigItem[] = [
+  { type: 'link', label: 'Getting Started', href: '#getting-started' },
+  { type: 'link', label: 'Installation', href: '#installation' },
+  {
+    type: 'group',
+    heading: 'Foundations',
+    children: [
+      { type: 'link', label: 'Design Tokens', href: '#tokens' },
+      { type: 'link', label: 'Typography', href: '#typography' },
+      { type: 'link', label: 'Color System', href: '#colors' },
+      { type: 'link', label: 'Spacing Scale', href: '#spacing' },
+    ],
+  },
+  // ... more groups
+];
+
+<AppNavigation 
+  navTitle="Design System"
+  items={docsNavItems}
+/>`}
+        />
+      </ContentSection>
+
       <ContentSection title="Accessibility">
         <p>The <code>AppNavigation</code> component is designed with accessibility in mind:</p>
         <ul>

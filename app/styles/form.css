@@ -189,25 +189,306 @@ input.circuit-input[type="file"]:hover:not(:disabled) {
   gap: var(--sds-size-space-100); /* 4px between description elements */
 }
 
+/* === Form Styles === */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-200); /* 8px */
+  margin-bottom: var(--sds-size-space-500); /* 20px */
+}
+
+.form-label {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-75); /* 14px */
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: var(--sds-size-space-300) var(--sds-size-space-400); /* 12px vertical, 16px horizontal */
+  border: var(--sds-size-stroke-border) solid var(--border-default);
+  border-radius: var(--sds-size-radius-150); /* 6px */
+  background: var(--surface-background);
+  color: var(--text-primary);
+  font-family: var(--font-family-sans);
+  font-size: var(--font-size-100); /* 16px */
+  line-height: var(--line-height-normal);
+  transition: all 0.15s ease;
+  
+  /* Mobile optimization */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Ensure proper touch target size */
+  min-height: 48px;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--interactive-primary);
+  box-shadow: 0 0 0 3px rgba(26, 74, 71, 0.1);
+}
+
+.form-input:hover,
+.form-textarea:hover,
+.form-select:hover {
+  border-color: var(--border-hover);
+}
+
+.form-input:disabled,
+.form-textarea:disabled,
+.form-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--surface-background-disabled);
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right var(--sds-size-space-300) center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: var(--sds-size-space-800); /* 32px - room for arrow */
+}
+
+.form-error {
+  font-size: var(--font-size-75); /* 14px */
+  color: var(--interactive-danger);
+  margin-top: var(--sds-size-space-100); /* 4px */
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-100);
+}
+
+.form-help {
+  font-size: var(--font-size-50); /* 12px */
+  color: var(--text-secondary);
+  margin-top: var(--sds-size-space-100); /* 4px */
+}
+
+/* Form layouts */
+.form-row {
+  display: flex;
+  gap: var(--sds-size-space-400); /* 16px */
+  align-items: end;
+}
+
+.form-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-300); /* 12px */
+}
+
+/* Input states */
+.form-input--error,
+.form-textarea--error,
+.form-select--error {
+  border-color: var(--interactive-danger);
+}
+
+.form-input--success,
+.form-textarea--success,
+.form-select--success {
+  border-color: var(--interactive-success);
+}
+
+/* Checkbox and Radio styles */
+.form-checkbox,
+.form-radio {
+  width: 20px;
+  height: 20px;
+  border: var(--sds-size-stroke-border) solid var(--border-default);
+  background: var(--surface-background);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Better touch target */
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-checkbox {
+  border-radius: var(--sds-size-radius-100); /* 4px */
+}
+
+.form-radio {
+  border-radius: 50%;
+}
+
+.form-checkbox:checked,
+.form-radio:checked {
+  background: var(--interactive-primary);
+  border-color: var(--interactive-primary);
+}
+
+.form-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  color: var(--text-inverse);
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.form-radio:checked::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-inverse);
+}
+
+.form-check-group {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-300); /* 12px */
+  cursor: pointer;
+}
+
+.form-check-label {
+  cursor: pointer;
+  user-select: none;
+  flex: 1;
+}
+
+/* File input */
+.form-file {
+  border: 2px dashed var(--border-default);
+  border-radius: var(--sds-size-radius-200);
+  padding: var(--sds-size-space-600);
+  text-align: center;
+  background: var(--surface-background-subtle);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sds-size-space-300);
+}
+
+.form-file:hover {
+  border-color: var(--interactive-primary);
+  background: var(--surface-background-hover);
+}
+
+.form-file-input {
+  display: none;
+}
+
+/* Search input */
+.form-search {
+  position: relative;
+}
+
+.form-search-input {
+  padding-left: var(--sds-size-space-800); /* 32px - room for icon */
+}
+
+.form-search-icon {
+  position: absolute;
+  left: var(--sds-size-space-300); /* 12px */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
 /* Responsive */
-@media (max-width: 640px) {
-  .circuit-form {
+@media (max-width: 768px) {
+  .form-group {
+    gap: var(--sds-size-space-300); /* Increase to 12px on mobile */
+    margin-bottom: var(--sds-size-space-600); /* Increase to 24px on mobile */
+  }
+
+  .form-input,
+  .form-textarea,
+  .form-select {
+    padding: var(--sds-size-space-400) var(--sds-size-space-500); /* Larger padding on mobile */
+    font-size: var(--font-size-100); /* Ensure 16px to prevent zoom */
+    min-height: 52px; /* Larger touch target */
+  }
+
+  .form-textarea {
+    min-height: 140px; /* Larger on mobile */
+  }
+
+  .form-label {
+    font-size: var(--font-size-100); /* Larger on mobile */
+  }
+
+  .form-row {
+    flex-direction: column;
     gap: var(--sds-size-space-400); /* Reduce to 16px on mobile */
   }
   
-  .circuit-form-row {
+  .form-inline {
     flex-direction: column;
-    gap: var(--sds-size-space-300); /* Reduce to 12px on mobile */
-  }
-  
-  .circuit-form-actions {
-    flex-direction: column-reverse;
+    align-items: stretch;
     gap: var(--sds-size-space-200); /* Reduce to 8px on mobile */
-    margin-top: var(--sds-size-space-600); /* Reduce to 24px on mobile */
-    padding-top: var(--sds-size-space-400); /* Reduce to 16px on mobile */
+  }
+
+  .form-checkbox,
+  .form-radio {
+    min-width: 48px; /* Larger touch target on mobile */
+    min-height: 48px;
+  }
+
+  .form-file {
+    min-height: 140px;
+    padding: var(--sds-size-space-800);
+  }
+}
+
+@media (max-width: 480px) {
+  .form-group {
+    margin-bottom: var(--sds-size-space-700); /* Even more space on small screens */
   }
   
-  .circuit-input {
-    font-size: 16px; /* Prevent zoom on iOS */
+  .form-input,
+  .form-textarea,
+  .form-select {
+    min-height: 56px; /* Even larger touch target */
+    padding: var(--sds-size-space-500) var(--sds-size-space-600);
+  }
+
+  .form-textarea {
+    min-height: 160px;
+  }
+
+  .form-file {
+    min-height: 160px;
+    padding: var(--sds-size-space-900);
+  }
+}
+
+/* Focus improvements for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .form-input:focus,
+  .form-textarea:focus,
+  .form-select:focus {
+    /* More prominent focus on touch devices */
+    box-shadow: 0 0 0 4px rgba(26, 74, 71, 0.15);
   }
 } 

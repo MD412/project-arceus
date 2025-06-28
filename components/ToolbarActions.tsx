@@ -9,8 +9,8 @@ import BinderUploadForm from '@/components/binder/BinderUploadForm';
 /**
  * Centralised toolbar actions that appear in the main app layout.
  * Handles interaction logic for:
- *  • “Add Card” – opens UploadCardForm modal.
- *  • “Process Scan” – opens BinderUploadForm modal.
+ *  • "Add Card" – opens UploadCardForm modal.
+ *  • "Process Scan" – opens BinderUploadForm modal.
  */
 export default function ToolbarActions() {
   const router = useRouter();
@@ -23,7 +23,10 @@ export default function ToolbarActions() {
       <button
         className="toolbar-action-button with-text"
         aria-label="Add Card"
-        onClick={() => setShowAddCard(true)}
+        onClick={() => {
+          console.log('Add Card button clicked, setting state to true.');
+          setShowAddCard(true);
+        }}
       >
         + Add Card
       </button>
@@ -32,7 +35,10 @@ export default function ToolbarActions() {
       <button
         className="toolbar-action-button with-text"
         aria-label="Process Scan"
-        onClick={() => setShowScanModal(true)}
+        onClick={() => {
+          console.log('Process Scan button clicked, setting state to true.');
+          setShowScanModal(true);
+        }}
       >
         + Process Scan
       </button>
@@ -51,7 +57,7 @@ export default function ToolbarActions() {
 
       {/* Modal – Process Scan */}
       {showScanModal && (
-        <Modal open={true} onClose={() => setShowScanModal(false)} title="Upload New Scan">
+        <Modal isOpen={true} onClose={() => setShowScanModal(false)}>
           <BinderUploadForm close={() => {
             setShowScanModal(false);
             router.refresh();

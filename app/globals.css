@@ -1,21 +1,67 @@
+@import './styles/circuit.css';
 @import './styles/typography.css';
+@import './styles/navigation.css';
+@import '../components/ui/AppNavigation.css';
 @import './styles/page-layout.css';
 @import './styles/content-section.css';
 @import './styles/example-showcase.css';
 @import './styles/circuitds-layout.css';
 @import './styles/spacing-page.css';
+@import './styles/player-card.css';
+@import './styles/control-bar.css';
+@import './styles/search-bar.css';
+@import './styles/radius-page.css';
+@import './styles/metric-card.css';
+@import './styles/form.css';
+@import './styles/button.css';
+@import './styles/dropdown.css';
+@import './styles/accordion.css';
+@import './styles/action-toolbar.css';
+@import './styles/trading-card.css';
+@import './styles/draggable-card.css';
+@import './styles/modal.css';
+@import './styles/scans-page.css';
+@import './(app)/playground-card-component/playground-card-states.css';
+@import './styles/sheet.css';
 
 /* Reset */
-* {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Mobile-first touch optimization */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection where needed */
+p, span, div, h1, h2, h3, h4, h5, h6, input, textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 /* Scrollbar Customization */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
+}
+
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
 }
 
 ::-webkit-scrollbar-track {
@@ -39,37 +85,49 @@
   scrollbar-color: var(--circuit-dark-teal) var(--background);
 }
 
-/* Base styles */
+/* Legacy fallbacks - use CircuitDS tokens in new code */
 :root {
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* DEPRECATED: Use CircuitDS design tokens instead */
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
   
-  /* Basic spacing */
-  --spacing-1: 0.25rem;
-  --spacing-2: 0.5rem;
-  --spacing-3: 0.75rem;
-  --spacing-4: 1rem;
-  --spacing-6: 1.5rem;
-  --spacing-8: 2rem;
+  /* DEPRECATED: Use --sds-size-space-* tokens instead */
+  --spacing-1: var(--sds-size-space-050);
+  --spacing-2: var(--sds-size-space-100);
+  --spacing-3: var(--sds-size-space-150);
+  --spacing-4: var(--sds-size-space-400);
+  --spacing-6: var(--sds-size-space-600);
+  --spacing-8: var(--sds-size-space-800);
   
-  /* Basic colors */
-  --color-text: #000;
-  --color-background: #fff;
-  --color-border: #e5e5e5;
+  /* DEPRECATED: Use semantic color tokens instead */
+  --color-text: var(--text-primary);
+  --color-background: var(--background);
+  --color-border: var(--border-default);
+  --max-width: 1100px;
+  --border-radius: var(--sds-size-radius-200);
 }
 
 body {
-  font-family: var(--font-sans);
-  line-height: 1.5;
+  font-family: var(--font-family-display);
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
-  background: var(--color-background);
-  color: var(--color-text);
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--background);
+  color: var(--text-primary);
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
 }
 
 /* Layout */
 .container {
   width: 100%;
-  padding: var(--spacing-4);
+  padding: var(--sds-size-space-400);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--sds-size-space-300);
+  }
 }
 
 /* Header */
@@ -77,88 +135,76 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-8);
+  margin-bottom: var(--sds-size-space-800);
+  flex-wrap: wrap;
+  gap: var(--sds-size-space-400);
+}
+
+@media (max-width: 768px) {
+  .header {
+    margin-bottom: var(--sds-size-space-600);
+    gap: var(--sds-size-space-300);
+  }
 }
 
 /* Sections */
 .stats-section,
 .cards-section {
-  margin-bottom: var(--spacing-8);
+  margin-bottom: var(--sds-size-space-800);
+}
+
+@media (max-width: 768px) {
+  .stats-section,
+  .cards-section {
+    margin-bottom: var(--sds-size-space-600);
+  }
 }
 
 /* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-4);
+  gap: var(--sds-size-space-400);
 }
 
-/* Card Grid */
-.card-grid {
-  display: grid;
-  gap: var(--spacing-4);
-  grid-template-columns: repeat(auto-fill, minmax(var(--sds-size-width-card-min), 1fr));
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--sds-size-space-300);
+}
 }
 
-.card-item {
-  position: relative;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: var(--spacing-4);
-}
+/* Card Grid - See trading-card.css for implementation */
 
-.card-image {
-  width: 100%;
-  height: auto;
-  margin-bottom: var(--spacing-4);
-}
-
-.card-name {
-  font-weight: 600;
-  margin-bottom: var(--spacing-2);
-}
-
-.card-details {
-  color: #666;
-  font-size: 0.875rem;
-  margin-bottom: var(--spacing-2);
-}
-
-.card-stats {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  font-size: 0.875rem;
-}
-
-.delete-button {
-  position: absolute;
-  top: var(--spacing-2);
-  right: var(--spacing-2);
-  width: var(--sds-size-icon-small);
-  height: var(--sds-size-icon-small);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background: white;
-  cursor: pointer;
-}
-
-/* Basic Button */
+/* Basic Button - DEPRECATED: Use Button component instead */
 button {
-  padding: var(--spacing-2) var(--spacing-4);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background: white;
+  padding: var(--sds-size-space-200) var(--sds-size-space-400);
+  border: var(--sds-size-stroke-border) solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  background: var(--surface-background);
+  color: var(--text-primary);
   cursor: pointer;
+  font-family: var(--font-family-display);
+  /* Mobile touch target */
+  min-height: 44px;
+  min-width: 44px;
 }
 
-/* Basic Card */
-.card {
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: var(--spacing-4);
-  background: white;
+@media (max-width: 768px) {
+button {
+    min-height: 48px;
+    min-width: 48px;
+  }
 }
+
+/* Mobile safe area handling for devices with notches */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+}
+
+

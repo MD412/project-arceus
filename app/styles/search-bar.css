@@ -1,0 +1,85 @@
+/* Search Bar Component */
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-bar__icon {
+  position: absolute;
+  left: var(--sds-size-space-300);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.search-bar__input {
+  width: 100%;
+  padding: var(--sds-size-space-200) var(--sds-size-space-300);
+  padding-left: calc(var(--sds-size-space-300) + 20px); /* Icon space */
+  padding-right: calc(var(--sds-size-space-300) + 20px); /* Clear button space */
+  background: var(--surface-background);
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  font-size: var(--font-size-100);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.search-bar__input:hover {
+  border-color: var(--border-strong);
+}
+
+.search-bar__input:focus {
+  outline: none;
+  border-color: var(--interactive-primary);
+  box-shadow: 0 0 0 3px var(--interactive-primary-subtle);
+}
+
+.search-bar__input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.search-bar__clear {
+  position: absolute;
+  right: var(--sds-size-space-300);
+  padding: var(--sds-size-space-100);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sds-size-radius-50);
+  transition: all 0.2s ease;
+}
+
+.search-bar__clear:hover {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+.search-bar__clear:active {
+  transform: scale(0.95);
+}
+
+.search-bar__filter-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  background: var(--surface-background);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+.search-bar__filter-btn:hover {
+  background: var(--surface-background-hover);
+  border-color: var(--border-hover);
+} 

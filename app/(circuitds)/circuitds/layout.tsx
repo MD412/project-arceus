@@ -1,7 +1,9 @@
-import React from 'react';
-// Removed Link import as AppNavigation handles it
-// import Link from 'next/link'; 
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import AppNavigation, { NavigationConfigItem } from '@/components/ui/AppNavigation';
+import clsx from 'clsx';
 
 // You might want to import global styles for the DS if they are not already in the root layout
 // import '@/app/globals.css'; // Assuming circuit.css is imported here or in root layout
@@ -32,6 +34,8 @@ const circuitDSNavItems: NavigationConfigItem[] = [
   {
     type: 'group',
     heading: 'Foundations',
+    collapsible: true,
+    defaultOpen: true,
     children: [
       { type: 'link', label: 'Product Summary', href: '/circuitds/product-summary' },
       { type: 'link', label: 'Developer Guide', href: '/circuitds/developer-guide' },
@@ -45,23 +49,59 @@ const circuitDSNavItems: NavigationConfigItem[] = [
   {
     type: 'group',
     heading: 'Components',
+    collapsible: true,
+    defaultOpen: true,
     children: [
       { type: 'link', label: 'Buttons', href: '/circuitds/buttons' },
+      { type: 'link', label: 'Dropdown', href: '/circuitds/components/dropdown' },
+      { type: 'link', label: 'Accordion', href: '/circuitds/components/accordion' },
       { type: 'link', label: 'Input', href: '/circuitds/forms/input' }, 
-      { type: 'link', label: 'MenuSidebar', href: '/circuitds/menusidebar' },
       // Add Button, Card etc. here as NavLinkItem
     ],
   },
   {
     type: 'group',
+    heading: 'Interactions',
+    collapsible: true,
+    defaultOpen: false,
+    children: [
+      { type: 'link', label: 'Drag & Drop', href: '/circuitds/drag-and-drop' },
+    ],
+  },
+  {
+    type: 'group',
+    heading: 'Navigation Patterns',
+    collapsible: true,
+    defaultOpen: false,
+    children: [
+      { type: 'link', label: 'Sidebar Navigation', href: '/circuitds/menusidebar' },
+      { type: 'link', label: 'Horizontal Navigation', href: '/circuitds/navigation-menu' },
+      { type: 'link', label: 'Action Toolbar', href: '/circuitds/action-toolbar' },
+    ],
+  },
+  {
+    type: 'group',
     heading: 'AI Operations',
+    collapsible: true,
+    defaultOpen: false,
     children: [
       { type: 'link', label: 'Change Propagation', href: '/circuitds/ai-ops' },
     ],
   },
   {
     type: 'group',
+    heading: 'Experience',
+    collapsible: true,
+    defaultOpen: false,
+    children: [
+      { type: 'link', label: 'Mobile Experience', href: '/circuitds/mobile-experience' },
+    ],
+  },
+  {
+    type: 'group',
     heading: 'Development',
+    collapsible: true,
+    defaultOpen: false,
     children: [
       { type: 'link', label: 'Component Preview', href: '/circuitds/component-preview' },
       { type: 'link', label: 'Container Test', href: '/circuitds/container-test' },
@@ -74,17 +114,41 @@ export default function CircuitDSLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  // Close drawer on route change
+  useEffect(() => { setOpen(false); }, [pathname]);
+
   return (
-    <div className="circuitds-layout-container">
-      <AppNavigation
-        navTitle="CircuitDS"
-        items={circuitDSNavItems}
-        baseNavClass="circuitds-sidebar"
-        titleClass="circuitds-sidebar-title"
-      />
-      <main className="circuitds-main-content">
-        {children}
-      </main>
-    </div>
+    <>
+      {/* Mobile navigation toggle button */}
+      <button
+        className={clsx('nav-toggle-btn', open && 'is-open')}
+        aria-label="Toggle navigation"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="nav-toggle-icon">
+          <span className="nav-toggle-bar"></span>
+          <span className="nav-toggle-bar"></span>
+        </div>
+      </button>
+
+      {/* Mobile overlay */}
+      {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
+
+      <div className="circuitds-layout-container">
+        <div className={clsx('circuit-sidebar', open && 'sidebar--open')}>
+          <AppNavigation
+            navTitle="CircuitDS"
+            items={circuitDSNavItems}
+            // Using default classes for consistency with product navigation
+          />
+        </div>
+        <main className="circuitds-main-content">
+          {children}
+        </main>
+      </div>
+    </>
   );
 } 

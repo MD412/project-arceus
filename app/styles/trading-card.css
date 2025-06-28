@@ -3,41 +3,72 @@
 .circuit-trading-card {
   display: flex;
   flex-direction: column;
-  background: var(--surface-background);
-  border: 1px solid var(--border-default);
+  background: transparent; /* 0% opacity */
+  border: 1px solid transparent; /* 0% opacity */
   border-radius: var(--sds-size-radius-200);
   padding: var(--sds-size-space-200);
+  width: 100%; /* Fill grid cell */
+  min-width: 0; /* Allow card to shrink to fit grid */
+  height: 100%;
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .circuit-trading-card:hover {
-  border-color: var(--border-hover);
   transform: translateY(var(--sds-size-space-negative-050));
+  background: var(--circuit-mid-teal);
+}
+
+/* Clickable card styles */
+.circuit-trading-card--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Use focus-visible instead of focus to only show outline for keyboard navigation */
+.circuit-trading-card--clickable:focus-visible {
+  outline: 2px solid var(--circuit-mid-teal);
+  outline-offset: 2px;
+}
+
+/* Remove focus outline when clicking (mouse/touch) */
+.circuit-trading-card--clickable:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.circuit-trading-card--clickable:active {
+  transform: scale(0.98);
 }
 
 .circuit-trading-card-image-wrapper {
   position: relative;
   width: 100%;
+  min-width: 0; /* Prevent image from breaking grid */
+  aspect-ratio: 2.5 / 3.5; /* Standard trading card ratio */
   margin-bottom: var(--sds-size-space-200);
+  overflow: hidden;
+  border-radius: var(--sds-size-radius-300);
 }
 
 .circuit-trading-card-img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover; /* Ensure image fills the aspect ratio box */
   display: block;
-  border-radius: var(--sds-size-radius-100);
 }
 
-.circuit-trading-card-quantity-pill {
-  position: absolute;
-  top: var(--sds-size-space-100);
-  left: var(--sds-size-space-100);
-  background: var(--interactive-primary);
-  color: var(--text-inverse);
-  padding: 0 var(--sds-size-space-100);
-  border-radius: var(--sds-size-radius-full);
-  font: var(--font-body-small-strong-single);
+/* Placeholder for missing images */
+.circuit-trading-card-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-subtle);
+  border: 1px dashed var(--border-default);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-75);
+  text-align: center;
 }
+
+
 
 .circuit-trading-card-info {
   display: flex;
@@ -48,38 +79,139 @@
 .circuit-trading-card-name {
   font: var(--font-body-strong);
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .circuit-trading-card-meta {
   font: var(--font-body-small);
   color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.circuit-trading-card-delete {
-  position: absolute;
-  top: var(--sds-size-space-100);
-  right: var(--sds-size-space-100);
-  width: var(--sds-size-icon-small);
-  height: var(--sds-size-icon-small);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--border-default);
-  border-radius: var(--sds-size-radius-100);
-  background: var(--surface-background);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.circuit-trading-card-delete:hover {
-  background: var(--surface-background-hover);
-  border-color: var(--border-hover);
-}
-
-/* Grid utility override */
+/* Responsive card grid with perfect scaling */
 .card-grid {
   display: grid;
   gap: var(--sds-size-space-400);
-  grid-template-columns: repeat(auto-fill, minmax(var(--sds-size-width-card-min), 1fr));
+  /* Default: 2 columns for smallest screens */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: auto;
+}
+
+/* Viewport-based column adjustments for better ratios */
+
+/* Small to medium mobile: 2 columns */
+@media (max-width: 592px) {
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sds-size-space-200);
+  }
+  
+  /* Smaller border radius on mobile */
+  .circuit-trading-card-image-wrapper {
+    border-radius: var(--sds-size-radius-200);
+  }
+}
+
+/* Larger mobile to tablet: 3 columns */
+@media (min-width: 593px) and (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sds-size-space-300);
+  }
+}
+
+/* Tablet to small desktop transition: 3 columns with larger cards */
+@media (min-width: 769px) and (max-width: 960px) {
+  .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sds-size-space-400);
+  }
+}
+
+/* Small desktop: 4 columns */
+@media (min-width: 961px) and (max-width: 1280px) {
+  .card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Medium desktop: 5 columns */
+@media (min-width: 1281px) and (max-width: 1366px) {
+  .card-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Large desktop: 5 columns */
+@media (min-width: 1367px) and (max-width: 1680px) {
+  .card-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* XL desktop: 6 columns */
+@media (min-width: 1681px) and (max-width: 1920px) {
+  .card-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* 2K displays: 7 columns */
+@media (min-width: 1921px) and (max-width: 2560px) {
+  .card-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+/* Ultrawide/4K+: Auto-fill with infinite columns */
+@media (min-width: 2561px) {
+  .card-grid {
+    /* Cards at 240px minimum - allows more columns on ultrawide displays */
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--sds-size-space-600);
+  }
+}
+
+/* Mobile card adjustments for smaller viewports */
+@media (max-width: 592px) {
+  .circuit-trading-card {
+    padding: var(--sds-size-space-100); /* Smaller padding */
+  }
+  
+  .circuit-trading-card-name {
+    font-size: 12px; /* Smaller text */
+    line-height: 1.2;
+  }
+  
+  .circuit-trading-card-meta {
+    font-size: 10px; /* Tiny meta text */
+  }
+}
+
+/* Ultra-small screens: minimal card display */
+@media (max-width: 320px) {
+  .circuit-trading-card {
+    padding: var(--sds-size-space-050); /* Minimal padding */
+  }
+  
+  .circuit-trading-card-image-wrapper {
+    margin-bottom: var(--sds-size-space-100);
+  }
+  
+  .circuit-trading-card-name {
+    font-size: 11px; /* Even smaller */
+  }
+  
+  /* Hide meta info on ultra-small screens */
+  .circuit-trading-card-meta {
+    display: none;
+  }
+}
+
+:root {
+  --surface-background-subtle-50: rgba(from var(--surface-background-subtle) r g b / 0.5);
 } 
