@@ -1,5 +1,6 @@
 import React from 'react';
 import AppNavigation, { NavigationConfigItem } from '@/components/ui/AppNavigation';
+import Link from 'next/link';
 
 const handbookNavItems: NavigationConfigItem[] = [
   {
@@ -17,6 +18,9 @@ const handbookNavItems: NavigationConfigItem[] = [
     heading: 'Architecture',
     children: [
       { type: 'link', label: 'Frontend Architecture', href: '/handbook/frontend-architecture' },
+      { type: 'link', label: 'Conversational Architecture', href: '/handbook/conversational-architecture' },
+      { type: 'link', label: 'Scan-to-Collection Workflow', href: '/handbook/scan-to-collection-workflow' },
+      { type: 'link', label: 'Fix: Dequeue Job Function', href: '/handbook/fix-dequeue-job-function' },
     ],
   },
   {
@@ -38,12 +42,12 @@ export default function HandbookLayout({
 }) {
   return (
     <div className="circuitds-layout-container">
-      <AppNavigation
-        navTitle="Handbook"
-        items={handbookNavItems}
-        baseNavClass="circuitds-sidebar" // Reusing the same class for consistent styling
-        titleClass="circuitds-sidebar-title"
-      />
+      <div className="circuit-sidebar">
+        <AppNavigation
+          navTitle={<h2 className="sidebar-nav-title"><Link href="/handbook">Handbook</Link></h2>}
+          items={handbookNavItems}
+        />
+      </div>
       <main className="circuitds-main-content">
         {children}
       </main>

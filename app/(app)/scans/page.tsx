@@ -5,13 +5,13 @@ import { useJobs } from '@/hooks/useJobs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { RenameBinderModal } from '@/components/ui/RenameBinderModal';
+import { RenameScanModal } from '@/components/ui/RenameScanModal';
 
-// This is the shape of the 'binder_page_uploads' table row.
-interface BinderPageUpload {
+// This is the shape of the 'scan_uploads' table row.
+interface ScanUpload {
   id: string;
   created_at: string;
-  binder_title: string;
+  scan_title: string;
   processing_status: 'queued' | 'processing' | 'review_pending' | 'failed' | 'timeout' | 'cancelled' | 'completed';
   // The 'results' field is now part of the 'jobs' table, so it's optional here.
   results?: {
@@ -23,9 +23,9 @@ interface BinderPageUpload {
 
 const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-export default function BindersPage() {
+export default function ScansPage() {
   const { data: uploads, isLoading, isError, error, renameJob, deleteJob, deleteJobStatus } = useJobs();
-  const [renamingUpload, setRenamingUpload] = useState<BinderPageUpload | null>(null);
+  const [renamingUpload, setRenamingUpload] = useState<ScanUpload | null>(null);
   
   // Show delete status for debugging
   if (deleteJobStatus.isPending) {
@@ -81,11 +81,11 @@ export default function BindersPage() {
 
       {uploads && uploads.length > 0 ? (
         <div className="scans-grid">
-          {(uploads as BinderPageUpload[]).map((upload) => (
+          {(uploads as ScanUpload[]).map((upload) => (
             <div key={upload.id} className="scan-card-wrapper">
               <Link href={`/scans/${upload.id}`} className="scan-card-link">
                 <div className="scan-card">
-                  <h3>{upload.binder_title || 'Untitled Scan'}</h3>
+                  <h3>{upload.scan_title || 'Untitled Scan'}</h3>
                   <div className={`status-chip ${getStatusChipClass(upload.processing_status)}`}>
                     {upload.processing_status}
                   </div>
@@ -94,7 +94,7 @@ export default function BindersPage() {
                     <div className="scan-image-container">
                       <img
                         src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/scans/${upload.results.summary_image_path}`}
-                        alt={`Processed view of ${upload.binder_title}`}
+                        alt={`Processed view of ${upload.scan_title}`}
                         className="scan-result-image"
                       />
                       <p className="scan-card-count">
@@ -112,7 +112,7 @@ export default function BindersPage() {
               </Link>
               <div className="scan-actions">
                 <Button variant="ghost" size="sm" onClick={() => setRenamingUpload(upload)}>Rename</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(upload.id, upload.binder_title || 'Untitled Scan')}>Delete</Button>
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(upload.id, upload.scan_title || 'Untitled Scan')}>Delete</Button>
               </div>
             </div>
           ))}
@@ -128,8 +128,8 @@ export default function BindersPage() {
       )}
 
       {renamingUpload && (
-        <RenameBinderModal
-          currentTitle={renamingUpload.binder_title || ''}
+        <RenameScanModal
+          currentTitle={renamingUpload.scan_title || ''}
           onRename={handleRename}
           onClose={() => setRenamingUpload(null)}
         />

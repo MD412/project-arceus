@@ -133,7 +133,7 @@
 }
 
 /* Responsive behavior */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .action-toolbar {
     flex-wrap: wrap;
     gap: var(--sds-size-space-200);
@@ -156,19 +156,37 @@
   .toolbar-actions {
     justify-content: center;
   }
+  
+  /* Hide minimize button container on mobile - sidebar uses sheet overlay instead */
+  .toolbar-left-actions {
+    display: none !important;
+  }
+  
+  /* Right actions should stay right-aligned when left actions are hidden */
+  .top-toolbar .action-toolbar {
+    justify-content: flex-end;
+  }
 }
 
-/* Integration with top-toolbar layout */
-.top-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--surface-background);
-  border-bottom: var(--sds-size-stroke-border) solid var(--border-default);
+/* Toolbar action groups - Figma auto-layout behavior */
+.toolbar-left-actions,
+.toolbar-right-actions {
+  display: flex;
+  align-items: center;
+  height: 100%; /* CRITICAL: Fill full toolbar height */
+  gap: 0; /* No gap between toolbar buttons - they handle their own borders */
 }
 
-.top-toolbar .action-toolbar {
-  border-bottom: none; /* Avoid double borders */
+/* Left-side buttons have border on RIGHT (to separate from content) */
+.toolbar-left-actions .button_button_toolbar_uCVc {
+  border-left: none;
+  border-right: 1px solid var(--circuit-light-teal);
+}
+
+/* Right-side buttons keep border on LEFT (to separate from each other) */
+.toolbar-right-actions .button_button_toolbar_uCVc {
+  border-left: 1px solid var(--circuit-light-teal);
+  border-right: none;
 }
 
 /* Dark mode adjustments */

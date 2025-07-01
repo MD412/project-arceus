@@ -5,6 +5,7 @@ import { useJob } from '@/hooks/useJobs';
 import Image from 'next/image';
 import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface BinderPageProps {
   params: Promise<{ id: string }> | { id: string };
@@ -15,6 +16,7 @@ const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 export default function BinderDetailPage({ params }: BinderPageProps) {
   const { id } = (React.use(params as any) as { id: string });
   const { data: job, isLoading, isError, error } = useJob(id);
+  const queryClient = useQueryClient();
   
   // NEW: State for manual corrections
   const [correctingCard, setCorrectingCard] = useState<number | null>(null);
@@ -30,17 +32,44 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
   };
   
   const handleSaveCorrection = async (cardIndex: number) => {
-    // TODO: Send correction to backend
-    console.log(`Correcting card ${cardIndex} to: ${manualCardName}`);
-    
-    // For now, just close the correction UI
+    if (!manualCardName.trim()) return;
+
+    // This is a simplified update. In a real scenario, you would
+    // likely have a more structured object for the corrected data.
+    const correctedData = {
+      card_name: manualCardName,
+      enrichment_success: true, // Mark as successfully corrected
+      identification_confidence: 100, // User corrections are 100% confident
+      // You might also want to clear or update other fields like set_name, rarity, etc.
+    };
+
+    try {
+      const response = await fetch(`/api/scans/${id}/cards`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cardIndex, correctedData }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save correction.');
+      }
+
+      console.log(`Correction for card ${cardIndex} saved successfully.`);
+      
+      // Invalidate the query for this job to trigger a re-fetch
+      await queryClient.invalidateQueries({ queryKey: ['job', id] });
+
+    } catch (error) {
+      console.error('Failed to save correction:', error);
+      // Optionally, show an error message to the user
+    } finally {
+      // Close the correction UI
     setCorrectingCard(null);
     setManualCardName('');
-    
-    // In production, this would:
-    // 1. Update the card identification in the database
-    // 2. Feed the correction back to the enrichment system
-    // 3. Refresh the job data
+    }
   };
   
   const handleCancelCorrection = () => {

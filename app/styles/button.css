@@ -1,14 +1,17 @@
 /* ===== CIRCUIT BUTTON COMPONENT ===== */
 
 .button_button_uCVc {
-  padding: var(--sds-size-space-200) var(--sds-size-space-400); /* 8px vertical, 16px horizontal */
+  padding: var(--sds-size-space-150) var(--sds-size-space-300); /* 6px vertical, 12px horizontal (was 8px/16px) */
   border: var(--sds-size-stroke-border) solid transparent;
   gap: var(--sds-size-space-200);
   display: inline-flex;
   min-height: var(--sds-size-height-40);
   align-items: center;
   justify-content: center;
-  font: var(--font-body-strong);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-87);  /* Default size that variants can override */
+  font-weight: 600;
+  line-height: 1.4;
   cursor: pointer;
   /* Lightning-fast transitions - matching navigation */
   transition: background-color 0.12s ease-linear, color 0.12s ease-linear, border-color 0.12s ease-linear;
@@ -102,6 +105,40 @@
   border-color: var(--color-blue-700);
 }
 
+/* Toolbar Button - A special variant for the main app header - More compact and modern */
+.button_button_toolbar_uCVc {
+  height: 100%;
+  padding: 0 var(--sds-size-space-400); /* 16px horizontal (was 20px) - more compact */
+  background-color: transparent;
+  border: none;
+  border-left: 1px solid var(--circuit-light-teal);
+  border-radius: 0;
+  font-size: var(--font-size-75); /* 12px (was 14px) - matches new typography scale */
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+.button_button_toolbar_uCVc:hover:not(:disabled) {
+  background-color: var(--circuit-dark-teal);
+}
+
+/* Ensure toolbar buttons maintain compact font-size regardless of container */
+.action-toolbar .button_button_toolbar_uCVc,
+.top-toolbar .button_button_toolbar_uCVc,
+.top-toolbar .action-toolbar .button_button_toolbar_uCVc {
+  font-size: var(--font-size-75) !important; /* 12px - force override any container rules */
+}
+
+/* Nuclear option - maximum specificity to force 12px font-size */
+.top-toolbar .action-toolbar .button_button_uCVc.button_button_toolbar_uCVc,
+.top-toolbar .action-toolbar button.button_button_uCVc.button_button_toolbar_uCVc,
+.app-layout .top-toolbar .action-toolbar .button_button_uCVc.button_button_toolbar_uCVc {
+  font-size: 0.75rem !important; /* 12px - nuclear option with hardcoded value */
+  font-size: var(--font-size-75) !important; /* 12px - CSS variable fallback */
+}
+
 /* Disabled state for all variants */
 .button_button_uCVc:disabled {
   cursor: not-allowed;
@@ -116,18 +153,18 @@
 
 /* ===== BUTTON SIZES ===== */
 
-/* Small */
+/* Small - More compact */
 .circuit-button-sm {
-  padding: var(--sds-size-space-200) var(--sds-size-space-400);
+  padding: var(--sds-size-space-100) var(--sds-size-space-300); /* 4px/12px (was 8px/16px) */
   min-height: var(--sds-size-height-32);
-  font-size: var(--font-size-100); /* 13px */
+  font-size: var(--font-size-100); /* 14px (was 13px) */
 }
 
-/* Large */
+/* Large - More compact */
 .circuit-button-lg {
-  padding: var(--sds-size-space-400) var(--sds-size-space-800);
+  padding: var(--sds-size-space-300) var(--sds-size-space-600); /* 12px/24px (was 16px/32px) */
   min-height: var(--sds-size-height-48);
-  font-size: var(--font-size-300); /* 16px */
+  font-size: var(--font-size-300); /* 18px (was 16px) */
 }
 
 /* === Button Styles === */
@@ -137,13 +174,13 @@
   align-items: center;
   justify-content: center;
   gap: var(--sds-size-space-200); /* 8px */
-  padding: var(--sds-size-space-200) var(--sds-size-space-400); /* 8px vertical, 16px horizontal */
+  padding: var(--sds-size-space-150) var(--sds-size-space-300); /* 6px vertical, 12px horizontal (was 8px/16px) */
   border: var(--sds-size-stroke-border) solid var(--border-default);
   border-radius: var(--sds-size-radius-150); /* 6px */
   background: var(--surface-background);
   color: var(--text-primary);
   font-family: var(--font-family-display);
-  font-size: var(--font-size-75); /* 14px */
+  font-size: var(--font-size-75); /* 12px (was 14px) */
   font-weight: 500;
   line-height: var(--line-height-tight);
   letter-spacing: var(--letter-spacing-wide);
@@ -154,9 +191,9 @@
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   
-  /* Ensure proper touch target size */
-  min-height: 44px;
-  min-width: 44px;
+  /* Ensure proper touch target size - More compact */
+  min-height: 36px; /* Was 44px */
+  min-width: 36px;  /* Was 44px */
 }
 
 .btn:hover {
@@ -232,19 +269,19 @@
   border-color: var(--interactive-danger-pressed);
 }
 
-/* Size variants */
+/* Size variants - More compact and modern */
 .btn-sm {
-  padding: var(--sds-size-space-100) var(--sds-size-space-300); /* 4px vertical, 12px horizontal */
-  font-size: var(--font-size-50); /* 12px */
-  min-height: 36px;
-  min-width: 36px;
+  padding: var(--sds-size-space-100) var(--sds-size-space-200); /* 4px vertical, 8px horizontal (was 4px/12px) */
+  font-size: var(--font-size-50); /* 10px (was 12px) */
+  min-height: 28px; /* Was 36px */
+  min-width: 28px;  /* Was 36px */
 }
 
 .btn-lg {
-  padding: var(--sds-size-space-300) var(--sds-size-space-600); /* 12px vertical, 24px horizontal */
-  font-size: var(--font-size-100); /* 16px */
-  min-height: 52px;
-  min-width: 52px;
+  padding: var(--sds-size-space-200) var(--sds-size-space-500); /* 8px vertical, 20px horizontal (was 12px/24px) */
+  font-size: var(--font-size-100); /* 14px (was 16px) */
+  min-height: 44px; /* Was 52px */
+  min-width: 44px;  /* Was 52px */
 }
 
 /* Mobile responsive improvements */

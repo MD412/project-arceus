@@ -1,20 +1,20 @@
 /* Typography System */
 
 :root {
-  /* Font Size Scale */
-  --font-size-50: 0.75rem;   /* 12px */
-  --font-size-75: 0.875rem;  /* 14px */
-  --font-size-87: 0.9375rem; /* 15px */
-  --font-size-100: 1rem;     /* 16px */
-  --font-size-200: 1.125rem; /* 18px */
-  --font-size-300: 1.25rem;  /* 20px */
-  --font-size-400: 1.5rem;   /* 24px */
-  --font-size-500: 1.75rem;  /* 28px */
-  --font-size-600: 2rem;     /* 32px */
-  --font-size-700: 2.5rem;   /* 40px */
-  --font-size-800: 3rem;     /* 48px */
-  --font-size-900: 3.5rem;   /* 56px */
-  --font-size-1000: 4rem;    /* 64px */
+  /* Font Size Scale - Reduced by 2px for more modern, compact feel */
+  --font-size-50: 0.625rem;  /* 10px (was 12px) */
+  --font-size-75: 0.75rem;   /* 12px (was 14px) */
+  --font-size-87: 0.8125rem; /* 13px (was 15px) */
+  --font-size-100: 0.875rem; /* 14px (was 16px) */
+  --font-size-200: 1rem;     /* 16px (was 18px) */
+  --font-size-300: 1.125rem; /* 18px (was 20px) */
+  --font-size-400: 1.375rem; /* 22px (was 24px) */
+  --font-size-500: 1.625rem; /* 26px (was 28px) */
+  --font-size-600: 1.875rem; /* 30px (was 32px) */
+  --font-size-700: 2.375rem; /* 38px (was 40px) */
+  --font-size-800: 2.875rem; /* 46px (was 48px) */
+  --font-size-900: 3.375rem; /* 54px (was 56px) */
+  --font-size-1000: 3.875rem; /* 62px (was 64px) */
 
   /* Line Heights */
   --line-height-tight: 1.1;

@@ -8,22 +8,17 @@ import { Scan, BeakerIcon, PanelLeftClose, PanelLeft, Menu, X } from 'lucide-rea
 import { Sheet, SheetContent } from '@/components/ui/Sheet';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
-export default function GlobalNavigationWrapper() {
+interface GlobalNavigationWrapperProps {
+  isMinimized?: boolean;
+}
+
+export default function GlobalNavigationWrapper({ isMinimized = false }: GlobalNavigationWrapperProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const isMobile = useMediaQuery('(max-width: 767px)');
 
   // close drawer on route change
   useEffect(() => { setMobileOpen(false); }, [pathname]);
-
-  // Persist minimize state in localStorage
-  useEffect(() => {
-    const savedState = localStorage.getItem('sidebar-minimized');
-    if (savedState === 'true') {
-      setIsMinimized(true);
-    }
-  }, []);
 
   // Add/remove body class when mobile menu opens/closes
   useEffect(() => {
@@ -37,12 +32,6 @@ export default function GlobalNavigationWrapper() {
       document.body.classList.remove('sheet-open');
     };
   }, [mobileOpen]);
-
-  const toggleMinimize = () => {
-    const newState = !isMinimized;
-    setIsMinimized(newState);
-    localStorage.setItem('sidebar-minimized', newState.toString());
-  };
 
   // Define paths where the main navigation should be hidden
   const noNavPaths = ['/login', '/signup', '/forgot-password'];
@@ -93,21 +82,9 @@ export default function GlobalNavigationWrapper() {
 
   // Desktop sidebar
   return (
-    <>
-      {/* Floating minimize toggle - appears to be part of top toolbar */}
-      <button
-        className="sidebar-floating-toggle"
-        onClick={toggleMinimize}
-        aria-label={isMinimized ? "Expand sidebar" : "Minimize sidebar"}
-        title={isMinimized ? "Expand sidebar" : "Minimize sidebar"}
-      >
-        {isMinimized ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
-      </button>
-
-      <Navigation 
-        mobileOpen={false} 
-        isMinimized={isMinimized}
-      />
-    </>
+    <Navigation 
+      mobileOpen={false} 
+      isMinimized={isMinimized}
+    />
   );
 } 

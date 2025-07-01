@@ -43,19 +43,19 @@ export default function HandbookHomePage() {
       <ContentSection title="📝 Project Update Log" headingLevel={2}>
         <div className="update-log-feed">
           {/* --- JUNE 13 2025 THE GREAT DEBUGGING CAMPAIGN --- */}
-          <div className="log-entry" style={{ background: 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%)', border: '4px solid #FF6B6B' }}>
+          <div className="log-entry log-entry-campaign">
             <div className="log-header">
-              <h3 className="log-title" style={{ color: 'white', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>🎪 THE GREAT DEBUGGING CAMPAIGN: From Circus to Cathedral</h3>
-              <p className="log-date" style={{ color: '#f0f8ff', fontWeight: 'bold' }}>June 13, 2025 – The Day We Tamed the Chaos</p>
+              <h3 className="log-title">🎪 THE GREAT DEBUGGING CAMPAIGN: From Circus to Cathedral</h3>
+              <p className="log-date">June 13, 2025 – The Day We Tamed the Chaos</p>
             </div>
-            <div className="log-body" style={{ color: 'white' }}>
-              <p style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#f0f8ff' }}>
+            <div className="log-body">
+              <p className="handbook-text-bold handbook-text-large text-campaign-light">
                 <strong>🚨 EMERGENCY CAMPAIGN:</strong> Project Arceus was completely broken across every system. Data split between old/new schemas, images not loading, workers crashing, authentication failing, and CRUD operations dead. What followed was an epic 8-hour debugging siege that rebuilt the entire stack from the ground up.
               </p>
               
-              <h4 style={{ color: '#fff', marginTop: '1.5rem' }}>⚔️ The Battlefield: Complete System Failure</h4>
-              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 'var(--sds-size-space-400)', borderRadius: 'var(--sds-size-radius-100)', margin: 'var(--sds-size-space-300) 0' }}>
-                <ul style={{ margin: 0, color: '#f0f8ff' }}>
+              <h4>⚔️ The Battlefield: Complete System Failure</h4>
+              <div className="campaign-info-box">
+                <ul className="handbook-list-tight text-campaign-light">
                   <li><strong>💥 Data Bifurcation Crisis:</strong> 82 completed jobs trapped in old <code>jobs</code> table, new system using <code>binder_page_uploads</code></li>
                   <li><strong>🖼️ Image Display Failure:</strong> All result images broken, frontend showing empty completed jobs</li>
                   <li><strong>🤖 Worker Apocalypse:</strong> Render worker 401 errors, HuggingFace model missing, local worker incompatible</li>
@@ -65,28 +65,28 @@ export default function HandbookHomePage() {
                 </ul>
               </div>
               
-              <h4 style={{ color: '#fff' }}>🎯 Phase 1: Archaeological Data Recovery</h4>
-              <ul style={{ color: '#f0f8ff' }}>
+              <h4>🎯 Phase 1: Archaeological Data Recovery</h4>
+              <ul className="handbook-list text-campaign-light">
                 <li><strong>Schema Archaeology:</strong> Mapped data flow between <code>jobs</code> → <code>binder_page_uploads</code> + <code>job_queue</code></li>
                 <li><strong>Mass Migration:</strong> Rescued 82 completed jobs with full ML results and image paths</li>
                 <li><strong>User ID Reconciliation:</strong> Fixed authentication mismatches blocking data access</li>
                 <li><strong>Results Field Mapping:</strong> Preserved all <code>summary_image_path</code> and detection data</li>
               </ul>
               
-              <h4 style={{ color: '#fff' }}>🔧 Phase 2: HuggingFace & Worker Resurrection</h4>
-              <ul style={{ color: '#f0f8ff' }}>
+              <h4>🔧 Phase 2: HuggingFace & Worker Resurrection</h4>
+              <ul className="handbook-list text-campaign-light">
                 <li><strong>Model Upload Crisis:</strong> Repository <code>zanzoy/alkzm</code> didn't exist - uploaded 22.5MB YOLO model</li>
                 <li><strong>Privacy Configuration:</strong> Made repository public to eliminate 401 authentication errors</li>
                 <li><strong>Local Worker Surgery:</strong> Rebuilt RPC functions for new bifurcated database schema</li>
                 <li><strong>Dual Table Updates:</strong> Fixed worker to update both <code>job_queue</code> and <code>binder_page_uploads</code></li>
               </ul>
               
-              <h4 style={{ color: '#fff' }}>🖼️ Phase 3: Image Pipeline Reconstruction</h4>
-              <div style={{ background: 'rgba(255,255,255,0.15)', padding: 'var(--sds-size-space-400)', borderRadius: 'var(--sds-size-radius-100)', margin: 'var(--sds-size-space-300) 0' }}>
-                <p style={{ margin: 0, fontWeight: 'bold', color: '#f0f8ff' }}>
+              <h4>🖼️ Phase 3: Image Pipeline Reconstruction</h4>
+              <div className="campaign-info-box">
+                <p className="handbook-text-bold text-campaign-light">
                   🎨 BREAKTHROUGH: Fixed frontend field name mismatch <code>job.status</code> → <code>job.processing_status</code>
                 </p>
-                <ul style={{ margin: '0.5rem 0 0 0', color: '#f0f8ff' }}>
+                <ul className="handbook-list text-campaign-light">
                   <li>Summary images now displaying with perfect bounding boxes</li>
                   <li>Individual card crops showing in grid layout</li>
                   <li>Fallback system working for legacy detections</li>
@@ -94,8 +94,8 @@ export default function HandbookHomePage() {
                 </ul>
               </div>
               
-              <h4 style={{ color: '#fff' }}>🔐 Phase 4: Authentication & CRUD Overhaul</h4>
-              <ul style={{ color: '#f0f8ff' }}>
+              <h4>🔐 Phase 4: Authentication & CRUD Overhaul</h4>
+              <ul className="handbook-list text-campaign-light">
                 <li><strong>Service Role Architecture:</strong> Replaced broken session auth with service role + header validation</li>
                 <li><strong>Import Fix:</strong> <code>createServerClient</code> → <code>supabaseServer()</code> import correction</li>
                 <li><strong>Frontend Headers:</strong> User ID now passed in <code>x-user-id</code> header for secure operations</li>

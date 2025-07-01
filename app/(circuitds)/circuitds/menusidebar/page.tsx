@@ -5,6 +5,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
 import ExampleShowcase from '@/components/layout/ExampleShowcase';
 import AppNavigation, { type NavigationConfigItem } from '@/components/ui/AppNavigation';
+import Link from 'next/link';
 
 // Example navigation items for the MenuSidebar
 const basicNavItems: NavigationConfigItem[] = [
@@ -106,6 +107,47 @@ const groupedNavItems: NavigationConfigItem[] = [
           <li>You can customize the appearance using the various <code>*Class</code> props (e.g., <code>baseNavClass</code>, <code>navLinkClass</code>, <code>navLinkActiveClass</code>) to apply specific styles for your sidebar. The default classes provide a standard sidebar look.</li>
         </ul>
         <p>The component handles ARIA attributes for accessibility, including <code>aria-current="page"</code> for active links based on the current route.</p>
+      </ContentSection>
+
+      <ContentSection title="Layout Integration">
+        <p>For consistent sidebar navigation across your application, follow these layout patterns:</p>
+        
+        <h4>Grid Layout Structure</h4>
+        <p>Use CSS Grid for the parent container to create a two-column layout with the sidebar and main content:</p>
+        <pre className="code-block">{`<div className="your-layout-container">
+  <div className="circuit-sidebar">
+    <AppNavigation 
+      navTitle={<h2 className="sidebar-nav-title">
+        <Link href="/your-section">Your Section</Link>
+      </h2>}
+      items={navItems}
+    />
+  </div>
+  <main className="your-main-content">
+    {children}
+  </main>
+</div>`}</pre>
+
+        <h4>Required CSS</h4>
+        <p>Your layout container should use this CSS pattern:</p>
+        <pre className="code-block">{`.your-layout-container {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: 100vh;
+}
+
+.your-main-content {
+  overflow-y: auto;
+  padding: var(--sds-size-space-800);
+}`}</pre>
+
+        <h4>Important Notes</h4>
+        <ul>
+          <li>Always wrap <code>AppNavigation</code> in a <code>&lt;div className="circuit-sidebar"&gt;</code> to inherit the proper sidebar styling</li>
+          <li>Use a consistent grid layout structure across all pages with sidebars</li>
+          <li>The <code>circuit-sidebar</code> class provides scrollbar styling, responsive behavior, and proper spacing</li>
+          <li>For clickable titles, pass a React element with the title wrapped in a link component</li>
+        </ul>
       </ContentSection>
 
       <ContentSection title="Customization">

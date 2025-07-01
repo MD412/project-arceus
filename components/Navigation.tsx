@@ -7,12 +7,6 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import { Home, ScanLine, Layers, Beaker, BookOpen } from 'lucide-react';
 
-// Original NavItem structure (can be removed or kept for reference if needed)
-// interface NavItem {
-//   label: string;
-//   href: string;
-// }
-
 const navigationConfig: NavigationConfigItem[] = [
   // This first set of links appears under the main title.
   { type: 'link', label: 'Collection', href: '/', icon: <Home size={20} /> },
@@ -29,10 +23,6 @@ const navigationConfig: NavigationConfigItem[] = [
     ],
   },
 ];
-
-// Transform to NavigationConfigItem[] if your AppNavigation expects the union type directly
-// For this simple case, an array of NavLinkItem will also work if AppNavigation's items prop is typed as (NavLinkItem | NavGroupItem)[]
-// const navigationConfig: NavigationConfigItem[] = appNavItems.map(item => ({ ...item, type: 'link' }));
 
 export default function Navigation({ 
   mobileOpen = false, 
@@ -56,19 +46,25 @@ export default function Navigation({
         navTitle={<h2 className="sidebar-nav-title"><Link href="/">{isMinimized ? 'PA' : 'Project Arceus'}</Link></h2>}
         items={navigationConfig}
         isMinimized={isMinimized}
-        // Use default sidebar-nav classes for internal elements
       />
       
-      {/* Logout button */}
-      <button
-        className="sidebar-nav-link sidebar-logout-button"
-        onClick={handleLogout}
-        aria-label="Logout"
-        title="Logout"
-        style={{ margin: '16px' }}
-      >
-        {isMinimized ? '↗' : 'Logout'}
-      </button>
+      {/* Footer navigation - sticks to bottom with proper structure */}
+      <div className="sidebar-nav-footer">
+        <nav className="sidebar-nav">
+          <ul className="sidebar-nav-list">
+            <li className="sidebar-nav-item">
+              <button
+                className="sidebar-nav-link"
+                onClick={handleLogout}
+                aria-label="Logout"
+                title="Logout"
+              >
+                {isMinimized ? '↗' : 'Logout'}
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </div>
   );
 } 

@@ -50,11 +50,23 @@
 
 .circuit-form-actions {
   display: flex;
-  gap: var(--sds-size-space-300); /* 12px between buttons */
   justify-content: flex-end;
-  margin-top: var(--sds-size-space-800); /* 32px above action buttons */
-  padding-top: var(--sds-size-space-600); /* 24px padding above border */
-  border-top: var(--sds-size-stroke-border) solid var(--border-subtle);
+  gap: var(--sds-size-space-300); /* 12px */
+  padding-top: var(--sds-size-space-500); /* 20px */
+  margin-top: var(--sds-size-space-500); /* 20px */
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Override for buttons inside modal forms to ensure correct styling */
+.modal-content .circuit-form-actions .button_button_primary_uCVc {
+  background-color: var(--interactive-primary) !important;
+  border-color: var(--interactive-primary) !important;
+  color: var(--text-inverse) !important;
+}
+
+.modal-content .circuit-form-actions .button_button_primary_uCVc:hover:not(:disabled) {
+  background-color: var(--interactive-primary-hover) !important;
+  border-color: var(--interactive-primary-hover) !important;
 }
 
 /* Input Styles */

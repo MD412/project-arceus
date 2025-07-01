@@ -12,6 +12,7 @@ const buttonVariants = cva(
         ghost: 'button_button_ghost_uCVc',
         destructive: 'button_button_destructive_uCVc',
         info: 'button_button_info_uCVc',
+        toolbar: 'button_button_toolbar_uCVc',
       },
       size: {
         sm: 'circuit-button-sm',

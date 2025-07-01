@@ -2,7 +2,7 @@
 
 .circuitds-layout-container {
   display: grid;
-  grid-template-columns: 240px 1fr; /* Sidebar width, then remaining space */
+  grid-template-columns: var(--sidebar-width, 280px) 1fr; /* Use CSS variable with fallback */
   height: 100vh;
   width: 100vw;
   margin: 0;

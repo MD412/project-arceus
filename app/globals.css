@@ -23,6 +23,7 @@
 @import './styles/scans-page.css';
 @import './(app)/playground-card-component/playground-card-states.css';
 @import './styles/sheet.css';
+@import './styles/handbook.css';
 
 /* Reset */
 *,

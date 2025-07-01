@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import AppNavigation, { NavigationConfigItem } from '@/components/ui/AppNavigation';
+import AppNavigation, { type NavigationConfigItem } from '@/components/ui/AppNavigation';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 // You might want to import global styles for the DS if they are not already in the root layout
 // import '@/app/globals.css'; // Assuming circuit.css is imported here or in root layout
@@ -121,34 +122,16 @@ export default function CircuitDSLayout({
   useEffect(() => { setOpen(false); }, [pathname]);
 
   return (
-    <>
-      {/* Mobile navigation toggle button */}
-      <button
-        className={clsx('nav-toggle-btn', open && 'is-open')}
-        aria-label="Toggle navigation"
-        onClick={() => setOpen(!open)}
-      >
-        <div className="nav-toggle-icon">
-          <span className="nav-toggle-bar"></span>
-          <span className="nav-toggle-bar"></span>
-        </div>
-      </button>
-
-      {/* Mobile overlay */}
-      {open && <div className="sidebar-overlay" onClick={() => setOpen(false)} />}
-
-      <div className="circuitds-layout-container">
-        <div className={clsx('circuit-sidebar', open && 'sidebar--open')}>
-          <AppNavigation
-            navTitle="CircuitDS"
-            items={circuitDSNavItems}
-            // Using default classes for consistency with product navigation
-          />
-        </div>
-        <main className="circuitds-main-content">
-          {children}
-        </main>
+    <div className="circuitds-layout-container">
+      <div className="circuit-sidebar">
+        <AppNavigation 
+          navTitle={<h2 className="sidebar-nav-title"><Link href="/circuitds">CircuitDS</Link></h2>}
+          items={circuitDSNavItems}
+        />
       </div>
-    </>
+      <main className="circuitds-main-content">
+        {children}
+      </main>
+    </div>
   );
 } 

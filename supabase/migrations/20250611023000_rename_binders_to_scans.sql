@@ -33,14 +33,14 @@ CREATE OR REPLACE FUNCTION create_scan_and_enqueue_job(
   p_user_id uuid,
   p_storage_path text,
   p_content_hash text,
-  p_binder_title text
+  p_scan_title text
 ) RETURNS TABLE(job_id uuid) LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
   v_upload_id uuid;
 BEGIN
   -- Insert into scan_uploads
-  insert into scan_uploads(user_id, storage_path, content_hash, binder_title)
-    values (p_user_id, p_storage_path, p_content_hash, p_binder_title)
+  insert into scan_uploads(user_id, storage_path, content_hash, scan_title)
+    values (p_user_id, p_storage_path, p_content_hash, p_scan_title)
     returning id into v_upload_id;
 
   -- Enqueue job

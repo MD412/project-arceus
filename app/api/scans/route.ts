@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       p_user_id: userId,
       p_storage_path: filePath,
       p_content_hash: contentHash,
-      p_binder_title: title
+      p_scan_title: title
     });
 
     if (enqueueError) {

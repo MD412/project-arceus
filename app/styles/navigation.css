@@ -7,47 +7,41 @@
 
 .app-layout {
   display: grid;
-  grid-template-columns: 240px 1fr; /* Sidebar width, then remaining space */
+  grid-template-columns: auto 1fr; /* Figma auto-layout: sidebar hugs its content */
   height: 100vh; /* Changed from min-height to constrain grid */
   width: 100%;
-  transition: grid-template-columns 0.2s ease;
+  transition: grid-template-columns 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Mobile-style smooth animation */
   overflow: visible; /* Allow sidebar button to extend outside */
 }
 
 /* When sidebar is minimized */
 .app-layout:has(.sidebar--minimized) {
-  grid-template-columns: var(--sidebar-width-minimized) 1fr;
+  grid-template-columns: var(--sidebar-width-minimized) 1fr; /* Keep fixed width when minimized */
 }
 
-/* Floating toggle button - appears attached to top toolbar */
+/* Floating minimize toggle - positioned relative to top-right of sidebar */
 .sidebar-floating-toggle {
-  position: fixed;
-  top: 0;
-  left: 240px; /* Position at edge of sidebar */
-  height: 48px; /* Match toolbar height */
+  position: absolute;
+  right: -32px; /* Position just outside the sidebar's right edge */
+  top: 8px; /* Align with top toolbar height */
   width: 32px;
-  background-color: var(--circuit-mid-teal); /* Match toolbar background */
-  border: none;
-  border-right: 1px solid var(--circuit-light-teal);
-  border-bottom: 1px solid var(--border-default);
-  border-radius: 0; /* Plain square - no rounded corners */
-  color: var(--text-primary);
+  height: 32px;
+  background: var(--surface-background);
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  color: var(--text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999; /* Below mobile toggle but above content */
-  transition: all 0.2s ease;
-  box-shadow: none; /* No shadow for flat appearance */
+  /* Removed transition for snappy shadcn-style interaction */
+  z-index: 100; /* Above the main content but below overlays */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-floating-toggle:hover {
-  background-color: var(--circuit-dark-teal);
-}
-
-/* Adjust position when sidebar is minimized */
-.app-layout:has(.sidebar--minimized) .sidebar-floating-toggle {
-  left: var(--sidebar-width-minimized);
+  background: var(--surface-subtle);
+  color: var(--text-primary);
 }
 
 /* Sidebar Container - now uses CSS Grid, no fixed positioning needed */
@@ -55,18 +49,23 @@
   position: relative; /* For minimize button positioning */
   display: flex;
   flex-direction: column;
-  gap: var(--sds-size-space-400);
+  gap: 0; /* Remove gap - let children handle spacing */
   padding: 0;
   background: var(--surface-background);
   border-right: 1px solid var(--border-default);
-  /* No width, position, or height needed - Grid handles it! */
-  overflow: hidden; /* Prevent scrollbars */
-  transition: all 0.2s ease;
+  /* Figma auto-layout: hug contents with sensible constraints */
+  min-width: 200px; /* Minimum readable width */
+  max-width: 320px; /* Maximum to prevent taking over screen */
+  width: max-content; /* Hug the content like Figma auto-layout */
+  /* Mobile-style smooth animations for minimize/expand */
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* When minimized, hide text and center icon */
 .circuit-sidebar.sidebar--minimized {
-  width: var(--sidebar-width-minimized);
+  width: var(--sidebar-width-minimized) !important; /* Override auto-layout when minimized */
+  min-width: var(--sidebar-width-minimized) !important;
+  max-width: var(--sidebar-width-minimized) !important;
 }
 
 /* Override the nav container padding when minimized */
@@ -98,11 +97,7 @@
   display: none; /* Hide subitems when minimized */
 }
 
-.circuit-sidebar.sidebar--minimized .sidebar-logout-button {
-  padding: var(--sds-size-space-200);
-  text-align: center;
-  font-size: var(--font-size-150);
-}
+/* Old minimized logout button styles removed */
 
 /* Ensure the nav inside takes up remaining space to push logout to bottom */
 .circuit-sidebar nav {
@@ -110,7 +105,6 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto; /* Allow nav content to scroll */
-  overflow-x: hidden;
 }
 
 /* Ensure the navigation content stretches to fill available space */
@@ -118,33 +112,47 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding: 0; /* Remove padding from nav container to make scrollbar flush */
+}
+
+/* Apply padding to the nav header and list instead */
+.circuit-sidebar .sidebar-nav-header {
+  height: 48px; /* Match top-toolbar height */
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sds-size-space-300); /* 12px horizontal padding only */
+  margin: 0; /* Reset margin */
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
 .circuit-sidebar .sidebar-nav-list {
   flex: 1;
   overflow-y: auto; /* Allow list to scroll if needed */
-  overflow-x: hidden;
+  overflow-x: visible; /* Allow minimize button to extend outside */
+  padding: 4px; /* Equal 4px padding on all sides */
 }
 
-/* Logout button - inherits nav link styling but overrides button-specific properties */
-.sidebar-logout-button {
-  width: 100%;
-  border: none;
+/* Custom scrollbar styling for webkit browsers */
+.circuit-sidebar .sidebar-nav-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.circuit-sidebar .sidebar-nav-list::-webkit-scrollbar-track {
   background: transparent;
-  text-align: left;
-  margin: 0; /* Remove default margins */
-  margin-top: auto; /* Push to bottom of sidebar */
-  /* All other styling inherited from .sidebar-nav-link */
 }
 
-/* 
-  .circuit-sidebar-header, .circuit-nav-list, .circuit-nav-link, 
-  .circuit-nav-link:hover, .circuit-nav-link-active, .circuit-nav-link:focus 
-  are now handled by the generic .sidebar-nav-* classes in AppNavigation.css, 
-  as components/Navigation.tsx no longer passes these specific classes for internal elements.
-  If any specific overrides for these elements ARE NEEDED uniquely for .circuit-sidebar, 
-  they would be added here with more specific selectors, e.g., .circuit-sidebar .sidebar-nav-link { ... }
-*/
+.circuit-sidebar .sidebar-nav-list::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: 4px;
+}
+
+.circuit-sidebar .sidebar-nav-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--border-default);
+}
+
+/* Footer navigation - sticks to bottom - uses AppNavigation.css styling */
+
+/* Old logout button styles removed - now using proper navigation structure */
 
 /* Main content area - no margin needed, Grid handles layout! */
 .main-content-area {
@@ -159,7 +167,7 @@
 .app-content {
   flex: 1;
   padding: var(--sds-size-space-400) var(--sds-size-space-600);
-  overflow-x: hidden;
+  overflow-x: visible; /* Allow sidebar minimize button to extend outside */
   position: relative;
   z-index: 1; /* Below top-toolbar */
 }
@@ -175,6 +183,18 @@
   position: sticky; /* Stick to top of scroll area */
   top: 0;
   z-index: 10; /* Above app-content (z-index: 1) */
+}
+
+/* Action toolbar integration - Figma auto-layout */
+.top-toolbar .action-toolbar {
+  height: 100%;
+  padding: 0 !important; /* Override base action-toolbar padding */
+  margin: 0;
+  border-bottom: none; /* Avoid double borders */
+  gap: 0;
+  /* Figma auto-layout: space-between with flex */
+  justify-content: space-between;
+  width: 100%;
 }
 
 /* Removed unused .toolbar-status - the empty div was deleted */
@@ -431,7 +451,7 @@
   
   /* Mobile accordion animation improvements */
   .circuit-sidebar .sidebar-nav-sublist {
-    margin-left: var(--sds-size-space-200); /* Less indentation on mobile */
+    margin-left: 0; /* No indentation needed with new padding approach */
   }
   
   /* CRITICAL: Prevent sidebar minimization on mobile - override all minimized styles */
@@ -447,7 +467,7 @@
   }
   
   .circuit-sidebar.sidebar--minimized .sidebar-nav-icon {
-    margin-right: var(--sds-size-space-300) !important;
+    margin-right: 0 !important; /* No margin needed with new approach */
   }
   
   .circuit-sidebar.sidebar--minimized .sidebar-nav-sublist {
@@ -459,11 +479,7 @@
     text-align: left !important;
   }
   
-  .circuit-sidebar.sidebar--minimized .sidebar-logout-button {
-    padding: var(--sds-size-space-300) var(--sds-size-space-400) !important;
-    text-align: left !important;
-    font-size: var(--font-size-100) !important;
-  }
+  /* Old minimized logout button styles removed */
 }
 
 @media (min-width: 768px) {
@@ -672,11 +688,7 @@
   margin-left: calc(24px + var(--sds-size-space-300)); /* Align with parent icon */
 }
 
-.sheet-content .sidebar-logout-button {
-  padding: var(--sds-size-space-150) var(--sds-size-space-400) !important;
-  text-align: left !important;
-  font-size: var(--font-size-100) !important;
-}
+/* Old mobile sheet logout button styles removed */
 
 /* Ensure proper scrolling in sheet */
 .sheet-content .sidebar-nav-list {
