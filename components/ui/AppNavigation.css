@@ -30,7 +30,7 @@
   justify-content: flex-start; /* Left align */
   
   /* Smooth transitions for minimize/expand animations */
-  transition: font-size 0.25s cubic-bezier(0.4, 0, 0.2, 1), text-align 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: justify-content 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   
   /* Figma auto-layout: prevent title from making sidebar too wide */
   white-space: nowrap;
@@ -45,7 +45,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sds-size-space-050); /* Tiny gap between items */
+  gap: var(--sds-size-space-200); /* 8px gap between items */
 }
 
 /* General list items - usually no specific style needed if links are padded */
@@ -128,7 +128,7 @@ button.sidebar-nav-link {
 /* Group headings within the navigation */
 .sidebar-nav-group-heading {
   font-family: var(--font-family-display); /* Monda */
-  font-size: var(--font-size-75); /* 14px like ChatGPT */
+  font-size: var(--font-size-75); /* 12px consistent with nav links */
   font-weight: 500;
   color: var(--text-primary); /* Brighter like ChatGPT */
   text-transform: none; /* No uppercase */
@@ -192,7 +192,7 @@ button.sidebar-nav-link {
   border-radius: var(--sds-size-radius-150);
   
   font-family: var(--font-family-display); /* Monda */
-  font-size: var(--font-size-75); /* 14px */
+  font-size: var(--font-size-75); /* 12px consistent with nav links */
   font-weight: 500;
   color: var(--text-primary);
   text-transform: none;
@@ -248,7 +248,7 @@ button.sidebar-nav-link {
 /* Remove indent for sub-items - ChatGPT style */
 .sidebar-nav-sublist .sidebar-nav-link {
   padding-left: var(--sds-size-space-300); /* Same as parent */
-  font-size: var(--font-size-87); /* Same size as parent */
+  font-size: var(--font-size-75); /* Same size as parent - 12px */
 }
 
 /* Remove the active indicator for sub-items */
@@ -265,65 +265,7 @@ button.sidebar-nav-link {
   display: none;
 }
 
-/* Mobile responsive improvements */
-@media (max-width: 767px) {
-  .sidebar-nav {
-    padding: 0; /* Keep consistent with desktop - specific containers handle padding */
-  }
-  
-  .sidebar-nav-title {
-    font-size: var(--font-size-200); /* 18px */
-    padding-bottom: var(--sds-size-space-300);
-  }
-  
-  .sidebar-nav-link {
-    padding: var(--sds-size-space-250) var(--sds-size-space-400); /* 10px vertical, 16px horizontal */
-    font-size: var(--font-size-87); /* Keep 14px on mobile */
-    min-height: 40px;
-    gap: var(--sds-size-space-300);
-  }
-  
-  .sidebar-nav-group-toggle {
-    padding: var(--sds-size-space-250) var(--sds-size-space-400);
-    min-height: 40px;
-  }
-  
-  .sidebar-nav-group-heading {
-    padding: var(--sds-size-space-200) var(--sds-size-space-400);
-  }
-  
-  .sidebar-nav-sublist {
-    margin-left: 0;
-  }
-  
-  .sidebar-nav-sublist .sidebar-nav-link {
-    padding-left: var(--sds-size-space-800); /* 32px indentation for mobile sub-items */
-  }
-  
-  .sidebar-nav-icon {
-    width: 18px;
-    height: 18px;
-  }
-  
-  .sidebar-nav-group-arrow {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .sidebar-nav {
-    padding: 0; /* Keep consistent - specific containers handle padding */
-  }
-  
-  .sidebar-nav-title {
-    font-size: var(--font-size-200);
-  }
-  
-  .sidebar-nav-sublist {
-    margin-left: 0; /* No margin needed with new padding approach */
-  }
-}
+/* Mobile uses same styles as desktop for consistency */
 
 /* Ensure the root layout imports this CSS file. */
 /* Example: import './components/ui/AppNavigation.css'; (adjust path as needed) */
@@ -335,15 +277,25 @@ button.sidebar-nav-link {
   /* Removed ugly hairline border */
 }
 
-/* Footer nav should look identical to main nav */
+/* Footer nav containers - ensure identical overflow behavior */
 .sidebar-nav-footer .sidebar-nav {
-  /* Inherits all styles from .sidebar-nav */
+  padding: 0; /* Same as base .sidebar-nav */
+  border-right: none; /* Remove border in footer */
+  overflow: hidden; /* Prevent horizontal scroll */
 }
 
 .sidebar-nav-footer .sidebar-nav-list {
-  /* Inherits all styles from .sidebar-nav-list */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-200); /* 8px gap same as main nav */
+  overflow: hidden; /* Prevent horizontal scroll */
 }
 
 .sidebar-nav-footer .sidebar-nav-link {
-  /* Inherits all styles from .sidebar-nav-link */
+  /* Explicitly inherit all link styles */
+  overflow: hidden; /* Prevent horizontal scroll */
+  text-overflow: ellipsis; /* Handle text overflow */
 } 

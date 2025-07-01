@@ -104,7 +104,7 @@
 /* Viewport-based column adjustments for better ratios */
 
 /* Small to medium mobile: 2 columns */
-@media (max-width: 592px) {
+@media (max-width: 712px) {
   .card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--sds-size-space-200);
@@ -117,7 +117,7 @@
 }
 
 /* Larger mobile to tablet: 3 columns */
-@media (min-width: 593px) and (max-width: 768px) {
+@media (min-width: 713px) and (max-width: 888px) {
   .card-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--sds-size-space-300);
@@ -125,7 +125,7 @@
 }
 
 /* Tablet to small desktop transition: 3 columns with larger cards */
-@media (min-width: 769px) and (max-width: 960px) {
+@media (min-width: 889px) and (max-width: 1080px) {
   .card-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--sds-size-space-400);
@@ -133,42 +133,42 @@
 }
 
 /* Small desktop: 4 columns */
-@media (min-width: 961px) and (max-width: 1280px) {
+@media (min-width: 1081px) and (max-width: 1400px) {
   .card-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 /* Medium desktop: 5 columns */
-@media (min-width: 1281px) and (max-width: 1366px) {
+@media (min-width: 1401px) and (max-width: 1486px) {
   .card-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 
 /* Large desktop: 5 columns */
-@media (min-width: 1367px) and (max-width: 1680px) {
+@media (min-width: 1487px) and (max-width: 1800px) {
   .card-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 
 /* XL desktop: 6 columns */
-@media (min-width: 1681px) and (max-width: 1920px) {
+@media (min-width: 1801px) and (max-width: 2040px) {
   .card-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 
 /* 2K displays: 7 columns */
-@media (min-width: 1921px) and (max-width: 2560px) {
+@media (min-width: 2041px) and (max-width: 2680px) {
   .card-grid {
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }
 
 /* Ultrawide/4K+: Auto-fill with infinite columns */
-@media (min-width: 2561px) {
+@media (min-width: 2681px) {
   .card-grid {
     /* Cards at 240px minimum - allows more columns on ultrawide displays */
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -177,7 +177,7 @@
 }
 
 /* Mobile card adjustments for smaller viewports */
-@media (max-width: 592px) {
+@media (max-width: 712px) {
   .circuit-trading-card {
     padding: var(--sds-size-space-100); /* Smaller padding */
   }

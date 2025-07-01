@@ -24,7 +24,7 @@
   width: 100%;
   max-width: 1200px; /* Large default size */
   max-height: 90vh;
-  background: var(--surface-background);
+  background: var(--circuit-dark-teal); /* 1 shade darker than mid-teal */
   border: 1px solid var(--border-default);
   border-radius: var(--sds-size-radius-300);
   overflow: hidden;

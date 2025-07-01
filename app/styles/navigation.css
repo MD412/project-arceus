@@ -129,7 +129,12 @@
   flex: 1;
   overflow-y: auto; /* Allow list to scroll if needed */
   overflow-x: visible; /* Allow minimize button to extend outside */
-  padding: 4px; /* Equal 4px padding on all sides */
+  padding: 8px 0; /* 4px top/bottom, 0 left/right for minimized */
+}
+
+/* Add left-right padding back in expanded mode only */
+.circuit-sidebar:not(.sidebar--minimized) .sidebar-nav-list {
+  padding: 8px; /* 4px on all sides when expanded */
 }
 
 /* Custom scrollbar styling for webkit browsers */
@@ -435,49 +440,7 @@
     overflow-y: auto; /* Allow content scrolling */
   }
   
-  /* Improve mobile navigation links */
-  .circuit-sidebar .sidebar-nav-link {
-    padding: var(--sds-size-space-300) var(--sds-size-space-400);
-    font-size: var(--font-size-100);
-    min-height: 48px; /* Better touch target */
-    display: flex;
-    align-items: center;
-  }
-  
-  .circuit-sidebar .sidebar-nav-group-toggle {
-    min-height: 48px; /* Better touch target */
-    padding: var(--sds-size-space-300) var(--sds-size-space-400);
-  }
-  
-  /* Mobile accordion animation improvements */
-  .circuit-sidebar .sidebar-nav-sublist {
-    margin-left: 0; /* No indentation needed with new padding approach */
-  }
-  
-  /* CRITICAL: Prevent sidebar minimization on mobile - override all minimized styles */
-  .circuit-sidebar.sidebar--minimized {
-    width: min(280px, 85vw) !important; /* Force normal width */
-  }
-  
-  .circuit-sidebar.sidebar--minimized .sidebar-nav-link,
-  .circuit-sidebar.sidebar--minimized .sidebar-nav-group-heading,
-  .circuit-sidebar.sidebar--minimized .sidebar-nav-group-toggle {
-    padding: var(--sds-size-space-300) var(--sds-size-space-400) !important;
-    justify-content: flex-start !important;
-  }
-  
-  .circuit-sidebar.sidebar--minimized .sidebar-nav-icon {
-    margin-right: 0 !important; /* No margin needed with new approach */
-  }
-  
-  .circuit-sidebar.sidebar--minimized .sidebar-nav-sublist {
-    display: block !important;
-  }
-  
-  .circuit-sidebar.sidebar--minimized .sidebar-nav-title {
-    font-size: var(--font-size-150) !important;
-    text-align: left !important;
-  }
+  /* Mobile sidebar uses EXACT same styles as desktop - no overrides */
   
   /* Old minimized logout button styles removed */
 }
@@ -657,36 +620,7 @@
   width: 100% !important;
 }
 
-.sheet-content .sidebar-nav {
-  height: 100%;
-  padding: var(--sds-size-space-400); /* Same padding as desktop */
-}
-
-.sheet-content .sidebar-nav-header {
-  padding: 0 0 var(--sds-size-space-400) 0; /* Same as desktop */
-}
-
-.sheet-content .sidebar-nav-title {
-  font-size: var(--font-size-150) !important;
-  text-align: left !important;
-}
-
-.sheet-content .sidebar-nav-link,
-.sheet-content .sidebar-nav-group-heading,
-.sheet-content .sidebar-nav-group-toggle {
-  padding: var(--sds-size-space-150) var(--sds-size-space-400) !important;
-  justify-content: flex-start !important;
-}
-
-.sheet-content .sidebar-nav-icon {
-  width: 24px;
-  margin-right: var(--sds-size-space-300) !important;
-}
-
-.sheet-content .sidebar-nav-sublist {
-  display: block !important;
-  margin-left: calc(24px + var(--sds-size-space-300)); /* Align with parent icon */
-}
+/* Mobile sheet navigation uses EXACT same styles as desktop - no overrides */
 
 /* Old mobile sheet logout button styles removed */
 
@@ -697,21 +631,7 @@
   flex: 1;
 }
 
-/* Override any minimized states in mobile sheet */
-.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-link,
-.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-group-heading,
-.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-group-toggle {
-  padding: var(--sds-size-space-150) var(--sds-size-space-400) !important;
-  justify-content: flex-start !important;
-}
-
-.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-icon {
-  margin-right: var(--sds-size-space-300) !important;
-}
-
-.sheet-content .circuit-sidebar.sidebar--minimized .sidebar-nav-sublist {
-  display: block !important;
-}
+/* Mobile sheet inherits ALL desktop styles - no special treatment */
 
 /* Fix main content padding on mobile to prevent push down */
 @media (max-width: 767px) {
