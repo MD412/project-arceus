@@ -1,0 +1,29 @@
+{
+    "mcpServers": {
+      "supabase": {
+        "command": "cmd",
+        "args": [
+          "/c",
+          "npx",
+          "-y",
+          "@supabase/mcp-server-supabase@latest",
+          "--read-only",
+          "--project-ref=dipwodpxxjwkwflimgsf"
+        ],
+        "env": {
+          "SUPABASE_ACCESS_TOKEN": "sbp_07e13d033833f1051fc933bf69d838fe6c9a2ebc"
+        }
+      },
+      "figma": {
+        "command": "cmd",
+        "args": [
+          "/c",
+          "npx",
+          "-y",
+          "figma-developer-mcp",
+          "--figma-api-key=YOUR_ACTUAL_FIGMA_TOKEN_HERE",
+          "--stdio"
+        ]
+      }
+    }
+  }

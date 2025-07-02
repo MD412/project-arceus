@@ -57,6 +57,7 @@ const circuitDSNavItems: NavigationConfigItem[] = [
       { type: 'link', label: 'Dropdown', href: '/circuitds/components/dropdown' },
       { type: 'link', label: 'Accordion', href: '/circuitds/components/accordion' },
       { type: 'link', label: 'Input', href: '/circuitds/forms/input' }, 
+      { type: 'link', label: 'Review UI', href: '/circuitds/review-ui' },
       // Add Button, Card etc. here as NavLinkItem
     ],
   },

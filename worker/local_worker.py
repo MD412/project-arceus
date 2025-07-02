@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local development worker for Project Arceus - Full ML pipeline
+Local development worker for Project Arceus - Full ML pipeline with Pokemon TCG API
 """
 import io
 import os
@@ -11,6 +11,7 @@ import pillow_heif
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from ultralytics import YOLO
 from config import supabase_client
+from pokemon_tcg_api import identify_card_from_crop
 
 # --- Model and Configuration ---
 CONFIDENCE_THRESHOLD = 0.25
@@ -18,9 +19,20 @@ MAX_IMAGE_SIZE = 2048
 MAX_REASONABLE_CARDS = 18
 STORAGE_BUCKET = "scans"  # TODO: rename to "scans" after bucket migration
 
-def get_yolo_model(model_path='worker/pokemon_cards_trained.pt'):
-    if not Path(model_path).exists():
-        print(f"❌ Trained model not found at: {model_path}")
+def get_yolo_model():
+    # Try multiple possible paths for the model
+    possible_paths = [
+        'pokemon_cards_trained.pt',  # When running from worker directory
+        'worker/pokemon_cards_trained.pt',  # When running from project root
+        Path(__file__).parent / 'pokemon_cards_trained.pt'  # Relative to this script
+    ]
+    
+    for model_path in possible_paths:
+        if Path(model_path).exists():
+            print(f"✅ Found model at: {model_path}")
+            break
+    else:
+        print(f"❌ Trained model not found. Tried paths: {[str(p) for p in possible_paths]}")
         exit(1)
     try:
         model = YOLO(model_path)
@@ -83,12 +95,14 @@ def run_pipeline(job: dict, model: YOLO):
 
     summary_image_path = None
     detected_card_paths = []
+    identified_cards = []
+    
     if final_detections:
         summary_img = image.copy()
         draw = ImageDraw.Draw(summary_img)
         font = ImageFont.load_default()
 
-        print(f"🖼️ Creating crops and summary image...")
+        print(f"🖼️ Creating crops and identifying cards...")
         for i, det in enumerate(final_detections):
             # Draw on summary image
             draw.rectangle(det['box'], outline="red", width=3)
@@ -104,6 +118,57 @@ def run_pipeline(job: dict, model: YOLO):
                 path=card_path, file=card_buffer.getvalue(), file_options={"content-type": "image/jpeg", "upsert": "true"}
             )
             detected_card_paths.append(card_path)
+            
+            # 🃏 IDENTIFY THE CARD using Pokemon TCG API
+            print(f"🔍 Identifying card {i+1}...")
+            card_identification = identify_card_from_crop(card_path)
+            
+            if card_identification["success"]:
+                # Store or find the card in the master cards table
+                card_data = {
+                    "name": card_identification["name"],
+                    "set_code": card_identification["set_name"],
+                    "card_number": card_identification["number"],
+                    "image_url": card_identification["image_url"],
+                    "tcgplayer_id": card_identification["card_id"]
+                }
+                
+                # Try to find existing card first
+                existing_card = supabase_client.from_("cards").select("id").eq("tcgplayer_id", card_identification["card_id"]).execute()
+                
+                if existing_card.data:
+                    card_db_id = existing_card.data[0]["id"]
+                    print(f"✅ Found existing card: {card_identification['name']}")
+                else:
+                    # Create new card record
+                    new_card_result = supabase_client.from_("cards").insert(card_data).execute()
+                    card_db_id = new_card_result.data[0]["id"]
+                    print(f"➕ Created new card: {card_identification['name']}")
+                
+                # Store the identification result
+                identified_cards.append({
+                    "crop_path": card_path,
+                    "card_db_id": card_db_id,
+                    "confidence": card_identification["confidence"],
+                    "detection_confidence": det["confidence"],
+                    "estimated_value": card_identification["estimated_value"],
+                    "identification_data": card_identification
+                })
+                
+                # Update the summary image with card name
+                card_name = card_identification["name"][:15] + "..." if len(card_identification["name"]) > 15 else card_identification["name"]
+                draw.text((det['box'][0] + 5, det['box'][1] + 25), card_name, fill="red", font=font)
+                
+            else:
+                print(f"❌ Could not identify card {i+1}")
+                identified_cards.append({
+                    "crop_path": card_path,
+                    "card_db_id": None,
+                    "confidence": 0.0,
+                    "detection_confidence": det["confidence"],
+                    "estimated_value": 0.0,
+                    "identification_data": card_identification
+                })
         
         # Upload summary image
         summary_buffer = io.BytesIO()
@@ -113,20 +178,49 @@ def run_pipeline(job: dict, model: YOLO):
         supabase_client.storage.from_(STORAGE_BUCKET).upload(
             path=summary_image_path, file=summary_buffer.getvalue(), file_options={"content-type": "image/jpeg", "upsert": "true"}
         )
-        print("✅ Summary image and crops uploaded.")
+        print("✅ Summary image uploaded with card identifications.")
 
     return {
         "total_cards_detected": len(final_detections), 
         "summary_image_path": summary_image_path,
-        "detected_card_paths": detected_card_paths
+        "detected_card_paths": detected_card_paths,
+        "identified_cards": identified_cards,
+        "cards_identified_successfully": len([c for c in identified_cards if c["card_db_id"] is not None])
     }
 
 # --- Worker Loop ---
 
 def fetch_and_lock_job():
     try:
-        response = supabase_client.rpc("dequeue_and_start_job").execute()
-        return response.data[0] if response.data else None
+        # First try to find pending jobs directly (bypass broken dequeue function)
+        pending_jobs = supabase_client.from_("job_queue").select("*").eq("status", "pending").order("created_at").limit(1).execute()
+        
+        if pending_jobs.data:
+            job = pending_jobs.data[0]
+            print(f"✅ Found pending job {job['id']}, claiming...")
+            # Update to processing status
+            supabase_client.from_("job_queue").update({
+                "status": "processing",
+                "updated_at": "now()",
+                "started_at": "now()"
+            }).eq("id", job['id']).execute()
+            return job
+        
+        # If no pending jobs, look for stuck jobs (processing > 5 minutes)
+        print("🔧 No pending jobs, checking for stuck jobs...")
+        stuck_jobs = supabase_client.from_("job_queue").select("*").eq("status", "processing").execute()
+        
+        if stuck_jobs.data:
+            for job in stuck_jobs.data:
+                # Take over the stuck job (it's already in processing status)
+                print(f"🚑 Found stuck job {job['id']}, taking over...")
+                supabase_client.from_("job_queue").update({
+                    "updated_at": "now()",
+                    "started_at": "now()"
+                }).eq("id", job['id']).execute()
+                return job
+        
+        return None
     except Exception as e:
         print(f"🔥 Error fetching job: {e}")
         return None

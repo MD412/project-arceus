@@ -25,28 +25,84 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage.from('scans').upload(filePath, file);
     if (uploadError) throw uploadError;
 
-    // Create binder upload record and enqueue job using the new, correctly named stored procedure
-    const { data, error: enqueueError } = await supabase.rpc('create_scan_and_enqueue_job', {
-      p_user_id: userId,
-      p_storage_path: filePath,
-      p_content_hash: contentHash,
-      p_scan_title: title
-    });
+    // Create scan record using the existing scan_uploads table
+    const { data: scanUpload, error: scanError } = await supabase
+      .from('scan_uploads')
+      .insert({
+        user_id: userId,
+        scan_title: title,
+        storage_path: filePath,
+        processing_status: 'pending',
+        content_hash: contentHash
+      })
+      .select('id')
+      .single();
 
-    if (enqueueError) {
-      // Clean up uploaded file if job creation fails
+    if (scanError) {
+      // Clean up uploaded file if scan creation fails
       await supabase.storage.from('scans').remove([filePath]);
-      throw enqueueError;
+      throw scanError;
     }
 
-    console.log('Scan upload enqueued:', data);
+    // Create job queue entry directly
+    const { data: job, error: jobError } = await supabase
+      .from('job_queue')
+      .insert({
+        scan_upload_id: scanUpload.id,
+        status: 'pending',
+        job_type: 'process_scan_page',
+        payload: { storage_path: filePath }
+      })
+      .select('id')
+      .single();
+
+    if (jobError) {
+      console.error('Job creation failed:', jobError);
+      throw jobError;
+    }
+
+    console.log('Scan uploaded and queued for processing:', { 
+      scan_id: scanUpload.id, 
+      job_id: job?.id 
+    });
+    
     return NextResponse.json({ 
       message: 'Scan uploaded and queued for processing',
-      job_id: data?.[0]?.job_id
+      scan_id: scanUpload.id,
+      job_id: job?.id
     }, { status: 201 });
     
   } catch (error: any) {
     console.error('Error in POST /api/scans:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// GET endpoint to fetch user's scans using the new architecture
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get('user_id');
+  
+  if (!userId) {
+    return NextResponse.json({ error: 'user_id is required' }, { status: 400 });
+  }
+
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+  try {
+    // Fetch scans using the existing scan_uploads table
+    const { data: scans, error } = await supabase
+      .from('scan_uploads')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return NextResponse.json(scans || []);
+    
+  } catch (error: any) {
+    console.error('Error in GET /api/scans:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 } 

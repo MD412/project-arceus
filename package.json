@@ -11,7 +11,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "worker": "python services/worker/main.py",
+    "worker": "bash .cursor/run-worker.sh",
+    "worker-windows": ".cursor\\run-worker.bat",
     "supabase": "supabase start",
     "dev-up": "concurrently \"npm:dev\" \"npm:worker\""
   },

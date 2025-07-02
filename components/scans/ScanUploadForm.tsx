@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/browser';
 
 import { ScanSchema } from '@/schemas/scan';
@@ -45,6 +46,7 @@ interface ScanUploadFormProps {
 
 export default function ScanUploadForm({ close }: ScanUploadFormProps) {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const {
     register,
@@ -57,11 +59,16 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
 
   const mutation = useMutation({
     mutationFn: createScan,
-    onSuccess: () => {
+    onSuccess: (responseData) => {
       toast.success('Scan created successfully! Processing will begin shortly.');
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       reset();
       close?.();
+      
+      // Redirect to review page
+      if (responseData?.scan_id) {
+        router.push(`/scans/${responseData.scan_id}/review`);
+      }
     },
     onError: (error: Error) => {
       toast.error(`Failed to process scan: ${error.message}`);
