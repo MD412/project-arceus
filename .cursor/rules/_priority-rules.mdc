@@ -1,0 +1,8 @@
+---
+description:user rules
+globs:
+alwaysApply: true
+---
+
+/Plan = interrogative. Do not execute or write any code. Think and help me like a 10x product engineer from Meta. 
+/Execute = Back to normal mode

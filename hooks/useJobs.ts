@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getJobs, getJobById, renameJob, deleteJob } from '@/services/jobs';
+import { toast } from 'react-hot-toast';
 
 /**
  * A custom hook to fetch all jobs for the current user.
@@ -15,6 +16,12 @@ export function useJobs() {
 
   const renameJobMutation = useMutation({
     mutationFn: ({ jobId, newTitle }: { jobId: string; newTitle: string }) => renameJob(jobId, newTitle),
+    onSuccess: () => {
+      toast.success('Scan successfully renamed!');
+    },
+    onError: (error) => {
+      toast.error(`Failed to rename scan: ${error.message}`);
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['scan_uploads'] });
     },
@@ -22,11 +29,31 @@ export function useJobs() {
 
   const deleteJobMutation = useMutation({
     mutationFn: (jobId: string) => deleteJob(jobId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scan_uploads'] });
+    // Optimistic update
+    onMutate: async (jobId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['scan_uploads'] });
+
+      const previousUploads = queryClient.getQueryData<unknown[]>(['scan_uploads']);
+
+      queryClient.setQueryData(['scan_uploads'], (old: any[] | undefined) =>
+        (old ?? []).filter((upload) => (upload as any).id !== jobId)
+      );
+
+      return { previousUploads };
     },
-    onError: (error) => {
+    onSuccess: () => {
+      toast.success('Scan moved to trash.');
+    },
+    onError: (error, _jobId, context) => {
       console.error('❌ Delete failed:', error);
+      toast.error(`Failed to delete scan: ${error.message}`);
+      // Rollback
+      if (context?.previousUploads) {
+        queryClient.setQueryData(['scan_uploads'], context.previousUploads);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['scan_uploads'] });
     },
   });
 

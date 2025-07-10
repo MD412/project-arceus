@@ -13,40 +13,38 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
   const { id } = params;
-  const { binder_title } = await request.json();
+  const { scan_title } = await request.json();
 
-  if (!binder_title) {
+  if (!scan_title) {
     return NextResponse.json({ error: 'New title is required' }, { status: 400 });
   }
 
   try {
     const { data, error } = await supabase
       .from('scan_uploads')
-      .update({ binder_title })
+      .update({ scan_title })
       .eq('id', id)
-      .eq('user_id', userId) // Ensure user can only update their own binders
+      .eq('user_id', userId) // Ensure user can only update their own scans
       .select()
       .single();
 
     if (error) {
       if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Binder not found or you do not have permission to update it' }, { status: 404 });
+        return NextResponse.json({ error: 'Scan not found or you do not have permission to update it' }, { status: 404 });
       }
       throw error;
     }
 
-    return NextResponse.json({ message: 'Binder renamed successfully', binder: data }, { status: 200 });
+    return NextResponse.json({ message: 'Scan renamed successfully', scan: data }, { status: 200 });
   } catch (error: any) {
-    console.error(`Error in PATCH /api/binders/${id}:`, error);
+    console.error(`Error in PATCH /api/scans/${id}:`, error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 // DELETE /api/scans/[id]
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  // Get user_id from request headers (set by frontend)
   const userId = request.headers.get('x-user-id');
-
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized - User ID required' }, { status: 401 });
   }
@@ -55,58 +53,46 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
   const { id } = params;
 
   try {
-    console.log(`🗑️ DELETE request for binder: ${id}, user: ${userId}`);
-    
-    // First, get the storage_path of the binder to delete the file
-    const { data: uploadData, error: fetchError } = await supabase
+    console.log(`🗑️ DELETE (soft) request for scan: ${id}, user: ${userId}`);
+
+    // Ensure scan belongs to user
+    const { error: ownershipError } = await supabase
       .from('scan_uploads')
-      .select('storage_path')
+      .select('id')
       .eq('id', id)
       .eq('user_id', userId)
       .single();
-      
-    if (fetchError) {
-      console.error('Fetch error:', fetchError);
-        return NextResponse.json({ error: 'Binder not found or you do not have permission to delete it.' }, { status: 404 });
-    }
-    
-    if (!uploadData) {
-      console.log('No upload data found');
-      return NextResponse.json({ error: 'Binder not found or you do not have permission to delete it.' }, { status: 404 });
+
+    if (ownershipError) {
+      const status = ownershipError.code === 'PGRST116' ? 404 : 500;
+      return NextResponse.json({ error: 'Scan not found or no permission' }, { status });
     }
 
-    console.log(`📁 Found storage path: ${uploadData.storage_path}`);
-
-    // Delete the file from storage
-    if (uploadData.storage_path) {
-        console.log(`🗂️ Deleting storage file: ${uploadData.storage_path}`);
-        const { error: storageError } = await supabase.storage
-            .from('scans')
-            .remove([uploadData.storage_path]);
-
-        if (storageError) {
-            // Log the error but continue to delete the DB record
-            console.error(`Could not delete file ${uploadData.storage_path} from storage:`, storageError);
-        } else {
-            console.log(`✅ Storage file deleted successfully`);
-        }
-    }
-
-    // Then, delete the binder record from the database
-    // The CASCADE on job_queue will delete the associated job.
-    console.log(`🗄️ Deleting database record: ${id}`);
-    const { error: deleteError } = await supabase
+    // 1) Soft delete
+    const { error: softErr } = await supabase
       .from('scan_uploads')
-      .delete()
-      .eq('id', id);
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', userId);
 
-    if (deleteError) {
-      console.error('Database delete error:', deleteError);
-      throw deleteError;
+    if (softErr) {
+      console.error('Soft delete error:', softErr);
+      throw softErr;
     }
 
-    console.log(`✅ Binder ${id} deleted successfully`);
-    return NextResponse.json({ message: 'Binder deleted successfully' }, { status: 200 });
+    // 2) Enqueue command
+    const { error: qErr } = await supabase.from('command_queue').insert({
+      type: 'DELETE_SCAN',
+      payload: { scanId: id, userId },
+    });
+
+    if (qErr) {
+      console.error('Enqueue error:', qErr);
+      return NextResponse.json({ error: 'Failed to enqueue delete command' }, { status: 500 });
+    }
+
+    console.log('✅ Soft delete + enqueue successful');
+    return NextResponse.json({ accepted: true }, { status: 202 });
   } catch (error: any) {
     console.error(`💥 Error in DELETE /api/binders/${id}:`, error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });

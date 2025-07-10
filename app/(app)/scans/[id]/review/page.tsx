@@ -20,6 +20,7 @@ interface ReviewPageData {
       total_cards_detected: number;
       summary_image_path?: string;
       detected_card_paths?: string[];
+      image_public_url?: string;
       identified_cards?: Array<{
         crop_path: string;
         card_db_id: string | null;
@@ -160,12 +161,17 @@ export default function ReviewPage() {
       const identifiedCards = data?.scan.results?.identified_cards || [];
       const cardsToAdd = identifiedCards
         .filter(card => selectedCards.has(card.crop_path) && card.card_db_id)
-        .map(card => ({
-          cardId: card.card_db_id,
-          condition: 'unknown',
-          quantity: 1,
-          cropImageUrl: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/scans/${card.crop_path}`
-        }));
+        .map(card => {
+          // The base URL of the originally scanned image
+          const baseUrl = data?.scan.results?.image_public_url?.substring(0, data.scan.results.image_public_url.lastIndexOf('/'));
+          
+          return {
+            cardId: card.card_db_id,
+            condition: 'unknown',
+            quantity: 1,
+            cropImageUrl: baseUrl ? `${baseUrl}/${card.crop_path}` : null
+          };
+        });
 
       const response = await fetch('/api/collections', {
         method: 'POST',

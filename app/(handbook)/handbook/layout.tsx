@@ -14,25 +14,25 @@ const handbookNavItems: NavigationConfigItem[] = [
     href: '/handbook',
   },
   {
-    type: 'group',
-    heading: 'Architecture',
-    children: [
-      { type: 'link', label: 'Frontend Architecture', href: '/handbook/frontend-architecture' },
-      { type: 'link', label: 'Conversational Architecture', href: '/handbook/conversational-architecture' },
-      { type: 'link', label: 'Scan-to-Collection Workflow', href: '/handbook/scan-to-collection-workflow' },
-      { type: 'link', label: 'Fix: Dequeue Job Function', href: '/handbook/fix-dequeue-job-function' },
-    ],
+    type: 'link',
+    label: 'Changelog',
+    href: '/handbook/changelog',
+  },
+  {
+    type: 'link',
+    label: 'Vision Pipeline PRD',
+    href: '/handbook/vision-pipeline-prd',
   },
   {
     type: 'group',
-    heading: 'AI Vision Pipeline',
+    heading: 'Architectural Patterns',
+    collapsible: true,
+    defaultOpen: true,
     children: [
-        { type: 'link', label: '3×3 Slice Strategy', href: '/handbook/vision-pipeline-3x3-slice' },
-        { type: 'link', label: '🔥 Case Study', href: '/handbook/vision-pipeline-case-study' },
-        { type: 'link', label: '🔧 Technical Snapshot', href: '/handbook/vision-pipeline-technical-snapshot' },
-    ]
+      { type: 'link', label: 'Optimistic CRUD Pipeline', href: '/handbook/patterns/optimistic-crud-pipeline' },
+      // { type: 'link', label: 'Frontend Architecture', href: '/handbook/patterns/frontend-architecture' },
+    ],
   },
-  // Add more handbook sections here in the future
 ];
 
 export default function HandbookLayout({

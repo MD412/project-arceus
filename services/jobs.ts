@@ -10,11 +10,12 @@ export const getJobs = async () => {
   const { data, error } = await supabase
     .from('scan_uploads')
     .select('*')
+    .is('deleted_at', null) // exclude soft-deleted rows
     .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching jobs:', error);
-    throw new Error(error.message);
+    throw new Error(`Error fetching jobs: ${JSON.stringify(error, null, 2)}`);
   }
 
   return data;
@@ -63,7 +64,7 @@ export async function renameJob(jobId: string, newTitle: string) {
       'Content-Type': 'application/json',
       'x-user-id': user.id
     },
-    body: JSON.stringify({ binder_title: newTitle }),
+    body: JSON.stringify({ scan_title: newTitle }),
   });
 
   if (!response.ok) {
@@ -82,20 +83,23 @@ export async function deleteJob(jobId: string) {
     throw new Error('User not authenticated');
   }
 
-  const response = await fetch(`/api/scans/${jobId}`, {
-    method: 'DELETE',
+  console.log(`🗑️ Frontend: Deleting job ${jobId} with user ID: ${user.id}`);
+
+  const response = await fetch('/api/commands/delete-scan', {
+    method: 'POST',
     headers: {
-      'x-user-id': user.id
+      'Content-Type': 'application/json',
+      'x-user-id': user.id,
     },
+    body: JSON.stringify({ scanId: jobId }),
   });
 
   if (!response.ok) {
     let errorMessage = 'Failed to delete binder';
     try {
-    const errorData = await response.json();
+      const errorData = await response.json();
       errorMessage = errorData.error || errorMessage;
     } catch (e) {
-      // Response might not be JSON (500 error, etc.)
       errorMessage = `Server error (${response.status}): ${response.statusText}`;
     }
     throw new Error(errorMessage);

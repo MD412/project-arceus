@@ -14,19 +14,24 @@ import { Button } from '../ui/Button';
 
 type ScanFormValues = z.infer<typeof ScanSchema>;
 
-// The mutation function accepts the transformed data
-async function createScan(data: any) {
+async function createBulkScans(data: any) {
   const supabase = getSupabaseClient();
   const { data: { session } } = await supabase.auth.getSession();
   const userId = session?.user?.id;
   if (!userId) throw new Error('Not logged in');
 
   const formData = new FormData();
-  formData.append('title', data.title);
-  formData.append('file', data.file);
+  // Use a generic title or derive one if not provided
+  const title = data.title || `Bulk Upload - ${new Date().toLocaleDateString()}`;
+  formData.append('title', title);
   formData.append('user_id', userId);
+  
+  // Append all files
+  Array.from(data.files).forEach((file: any) => {
+    formData.append('files', file);
+  });
 
-  const response = await fetch('/api/scans', {
+  const response = await fetch('/api/scans/bulk', {
     method: 'POST',
     body: formData,
     credentials: 'include',
@@ -34,7 +39,7 @@ async function createScan(data: any) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error || 'Failed to process scan');
+    throw new Error(errorData.error || 'Failed to process scans');
   }
 
   return response.json();
@@ -58,57 +63,55 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
   });
 
   const mutation = useMutation({
-    mutationFn: createScan,
+    mutationFn: createBulkScans,
     onSuccess: (responseData) => {
-      toast.success('Scan created successfully! Processing will begin shortly.');
+      toast.success(`${responseData.count} scans created successfully! Processing will begin shortly.`);
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['scans'] });
       reset();
       close?.();
       
-      // Redirect to review page
-      if (responseData?.scan_id) {
-        router.push(`/scans/${responseData.scan_id}/review`);
-      }
+      // Optional: redirect to the main scans page after bulk upload
+      router.push(`/scans`);
     },
     onError: (error: Error) => {
-      toast.error(`Failed to process scan: ${error.message}`);
+      toast.error(`Failed to process scans: ${error.message}`);
     },
   });
 
   // After validation, handleSubmit provides the transformed output data
   const onSubmit = (data: any) => {
-    // We need to get the file from the form data, not directly from the data object
-    const fileInput = (document.getElementById('file') as HTMLInputElement).files?.[0];
-    if (fileInput) {
-      const submissionData = { ...data, file: fileInput };
+    const fileInput = (document.getElementById('file') as HTMLInputElement).files;
+    if (fileInput && fileInput.length > 0) {
+      const submissionData = { ...data, files: fileInput };
       mutation.mutate(submissionData);
     } else {
-      // This case should be handled by the Zod schema, but as a fallback
-      toast.error('Please select a file to upload.');
+      toast.error('Please select at least one file to upload.');
     }
   };
 
   return (
     <div className="circuit-form-container">
-      <h2 className="circuit-form-title">Upload New Scan</h2>
-      <p className="circuit-form-description">Upload a photo of your cards to start processing.</p>
+      <h2 className="circuit-form-title">Upload New Scans</h2>
+      <p className="circuit-form-description">Upload one or more photos of your cards to start processing.</p>
       
       <form onSubmit={handleSubmit(onSubmit)} className="circuit-form">
         <Input
           id="title"
-          label="Scan Title"
+          label="Batch Title (Optional)"
           type="text"
           {...register('title')}
           error={errors.title?.message as string}
-          placeholder="e.g., 'My First Edition Holos'"
+          placeholder="e.g., 'Modern Horizons 3 Binder'"
         />
 
         <Input
           id="file"
-          label="Card Photo"
+          label="Card Photos"
           type="file"
           {...register('file')}
           error={errors.file?.message as string}
+          multiple // Allow multiple file selection
         />
 
         <div className="circuit-form-actions">
@@ -116,7 +119,7 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
             Cancel
           </Button>
           <Button type="submit" variant="primary" disabled={mutation.isPending}>
-            {mutation.isPending ? 'Uploading...' : 'Upload Scan'}
+            {mutation.isPending ? 'Uploading...' : 'Upload Scans'}
           </Button>
         </div>
       </form>

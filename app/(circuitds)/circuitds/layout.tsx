@@ -58,6 +58,8 @@ const circuitDSNavItems: NavigationConfigItem[] = [
       { type: 'link', label: 'Accordion', href: '/circuitds/components/accordion' },
       { type: 'link', label: 'Input', href: '/circuitds/forms/input' }, 
       { type: 'link', label: 'Review UI', href: '/circuitds/review-ui' },
+      { type: 'link', label: 'Processing Queue Card', href: '/circuitds/components/processing-queue-card' },
+      { type: 'link', label: 'Scan History Table', href: '/circuitds/components/scan-history-table' },
       // Add Button, Card etc. here as NavLinkItem
     ],
   },

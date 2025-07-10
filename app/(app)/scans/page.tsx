@@ -2,10 +2,10 @@
 
 import React, { useState } from 'react';
 import { useJobs } from '@/hooks/useJobs';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
+import { ProcessingQueueCard } from '@/components/ui/ProcessingQueueCard';
+import { ScanHistoryTable } from '@/components/ui/ScanHistoryTable';
 import { RenameScanModal } from '@/components/ui/RenameScanModal';
+import Link from 'next/link';
 
 // This is the shape of the 'scan_uploads' table row.
 interface ScanUpload {
@@ -13,7 +13,6 @@ interface ScanUpload {
   created_at: string;
   scan_title: string;
   processing_status: 'queued' | 'processing' | 'review_pending' | 'failed' | 'timeout' | 'cancelled' | 'completed';
-  // The 'results' field is now part of the 'jobs' table, so it's optional here.
   results?: {
     summary_image_path?: string;
     total_cards_detected?: number;
@@ -21,112 +20,156 @@ interface ScanUpload {
   error_message?: string;
 }
 
-const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-
 export default function ScansPage() {
   const { data: uploads, isLoading, isError, error, renameJob, deleteJob, deleteJobStatus } = useJobs();
   const [renamingUpload, setRenamingUpload] = useState<ScanUpload | null>(null);
-  
-  // Show delete status for debugging
-  if (deleteJobStatus.isPending) {
-    console.log('🔄 Delete in progress...');
-  }
-  if (deleteJobStatus.isError) {
-    console.error('❌ Delete error:', deleteJobStatus.error);
-  }
 
   const handleRename = (newTitle: string) => {
     if (renamingUpload) {
       renameJob({ jobId: renamingUpload.id, newTitle });
+      setRenamingUpload(null);
     }
   };
 
   const handleDelete = (uploadId: string, jobTitle: string) => {
     if (window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
-      console.log('🗑️ Attempting to delete:', jobTitle, uploadId);
       deleteJob(uploadId);
     }
   };
 
-  const getStatusChipClass = (status: string) => {
-    switch (status) {
-      case 'completed':
-      case 'review_pending':
-        return 'status-chip--completed';
-      case 'processing': 
-        return 'status-chip--processing';
-      case 'queued':
-        return 'status-chip--queued';
-      case 'failed': 
-        return 'status-chip--failed';
-      default: 
-        return 'status-chip--default';
+  const handleRetry = async (uploadId: string) => {
+    try {
+      // Reset the upload status to queued and create a new job
+      const response = await fetch(`/api/scans/${uploadId}/retry`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to retry upload');
+      }
+
+      // Refresh the data to show updated status
+      window.location.reload(); // Simple refresh for now
+    } catch (error) {
+      console.error('Retry failed:', error);
+      alert('Failed to retry upload. Please try again.');
     }
   };
 
   if (isLoading) {
-    return <div className="scans-container"><div className="scans-loading">Loading your scans...</div></div>;
+    return (
+      <div className="scans-page">
+        <div className="scans-page__loading">Loading your scans...</div>
+      </div>
+    );
   }
 
   if (isError) {
-    return <div className="scans-container"><div className="scans-error">Error loading scans: {(error as Error).message}</div></div>;
+    return (
+      <div className="scans-page">
+        <div className="scans-page__error">
+          Error loading scans: {(error as Error).message}
+        </div>
+      </div>
+    );
   }
 
+  // Separate uploads into priority (needs attention) and history (completed)
+  const priorityUploads = (uploads as ScanUpload[])?.filter(upload => 
+    ['pending', 'queued', 'processing', 'failed', 'timeout'].includes(upload.processing_status)
+  ) || [];
+
+  const historyUploads = (uploads as ScanUpload[])?.filter(upload =>
+    ['completed', 'review_pending', 'cancelled'].includes(upload.processing_status)
+  ) || [];
+
+  const totalUploads = uploads?.length || 0;
+
   return (
-    <div className="scans-container">
-      <header className="scans-header">
-        <h1>My Processed Scans</h1>
-        <p>Here are the results of your submitted card scans.</p>
+    <div className="scans-page">
+      {/* Header */}
+      <header className="scans-page__header">
+        <div className="scans-page__header-content">
+          <h1 className="scans-page__title">My Scans</h1>
+          <p className="scans-page__description">
+            Track your Pokemon card scan processing and view results
+          </p>
+        </div>
+        <Link href="/upload" className="scans-page__upload-button">
+          Upload New Scan
+        </Link>
       </header>
 
-      {uploads && uploads.length > 0 ? (
-        <div className="scans-grid">
-          {(uploads as ScanUpload[]).map((upload) => (
-            <div key={upload.id} className="scan-card-wrapper">
-              <Link href={`/scans/${upload.id}`} className="scan-card-link">
-                <div className="scan-card">
-                  <h3>{upload.scan_title || 'Untitled Scan'}</h3>
-                  <div className={`status-chip ${getStatusChipClass(upload.processing_status)}`}>
-                    {upload.processing_status}
-                  </div>
-                  
-                  {upload.processing_status === 'completed' && upload.results?.summary_image_path && (
-                    <div className="scan-image-container">
-                      <img
-                        src={`${SUPABASE_PUBLIC_URL}/storage/v1/object/public/scans/${upload.results.summary_image_path}`}
-                        alt={`Processed view of ${upload.scan_title}`}
-                        className="scan-result-image"
-                      />
-                      <p className="scan-card-count">
-                        Detected {upload.results.total_cards_detected || 0} cards
-                      </p>
-                    </div>
-                  )}
-                  
-                  {upload.processing_status === 'processing' && <p className="scan-status-message">Your scan is currently being processed...</p>}
-                  {upload.processing_status === 'queued' && <p className="scan-status-message">This scan is in the queue and will be processed shortly.</p>}
-                  {upload.processing_status === 'failed' && <p className="scan-error-text">Processing failed: {upload.error_message}</p>}
-
-                  <p className="scan-timestamp">Uploaded: {new Date(upload.created_at).toLocaleString()}</p>
-                </div>
-              </Link>
-              <div className="scan-actions">
-                <Button variant="ghost" size="sm" onClick={() => setRenamingUpload(upload)}>Rename</Button>
-                <Button variant="destructive" size="sm" onClick={() => handleDelete(upload.id, upload.scan_title || 'Untitled Scan')}>Delete</Button>
-              </div>
-            </div>
-          ))}
+      {totalUploads === 0 ? (
+        <div className="scans-page__empty-state">
+          <div className="scans-page__empty-content">
+            <h2>No scans found</h2>
+            <p>You haven't uploaded any card scans for processing yet.</p>
+            <Link href="/upload" className="scans-page__empty-cta">
+              Upload Your First Scan
+            </Link>
+          </div>
         </div>
       ) : (
-        <div className="scans-empty-state">
-          <h2>No scans found.</h2>
-          <p>You haven't uploaded any card scans for processing yet.</p>
-          <Link href="/upload" className="scans-upload-link">
-            Upload Your First Scan
-          </Link>
-        </div>
+        <>
+          {/* Priority Section - Needs Attention */}
+          {priorityUploads.length > 0 && (
+            <section className="scans-page__priority-section">
+              <div className="scans-page__section-header">
+                <h2 className="scans-page__section-title">
+                  Needs Attention
+                  <span className="scans-page__section-count">
+                    {priorityUploads.length}
+                  </span>
+                </h2>
+                <p className="scans-page__section-description">
+                  Scans that require your attention or are currently processing
+                </p>
+                  </div>
+                  
+              <div className="scans-page__priority-grid">
+                {priorityUploads.map((upload) => (
+                  <ProcessingQueueCard
+                    key={upload.id}
+                    upload={upload}
+                    onRetry={handleRetry}
+                    onRename={setRenamingUpload}
+                    onDelete={handleDelete}
+                  />
+                ))}
+                    </div>
+            </section>
+                  )}
+                  
+          {/* History Section - Completed Scans */}
+          {historyUploads.length > 0 && (
+            <section className="scans-page__history-section">
+              <div className="scans-page__section-header">
+                <h2 className="scans-page__section-title">
+                  Scan History
+                  <span className="scans-page__section-count">
+                    {historyUploads.length}
+                  </span>
+                </h2>
+                <p className="scans-page__section-description">
+                  Completed scans and their results
+                </p>
+              </div>
+              
+              <ScanHistoryTable
+                uploads={historyUploads}
+                onRename={setRenamingUpload}
+                onDelete={handleDelete}
+              />
+            </section>
+          )}
+        </>
       )}
 
+      {/* Rename Modal */}
       {renamingUpload && (
         <RenameScanModal
           currentTitle={renamingUpload.scan_title || ''}
@@ -135,7 +178,179 @@ export default function ScansPage() {
         />
       )}
 
+      <style jsx>{`
+        .scans-page {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: var(--sds-size-space-400);
+        }
 
+        .scans-page__header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-bottom: var(--sds-size-space-600);
+          padding-bottom: var(--sds-size-space-400);
+          border-bottom: 1px solid var(--border-default);
+        }
+
+        .scans-page__header-content {
+          flex: 1;
+        }
+
+        .scans-page__title {
+          margin: 0 0 var(--sds-size-space-100) 0;
+          font-size: var(--font-size-600);
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .scans-page__description {
+          margin: 0;
+          color: var(--text-secondary);
+          font-size: var(--font-size-100);
+        }
+
+        .scans-page__upload-button {
+          display: inline-flex;
+          align-items: center;
+          padding: var(--sds-size-space-200) var(--sds-size-space-400);
+          background: var(--interactive-primary);
+          color: var(--text-on-primary);
+          text-decoration: none;
+          border-radius: var(--sds-size-radius-200);
+          font-weight: 500;
+          font-size: var(--font-size-100);
+          transition: all 0.2s ease;
+        }
+
+        .scans-page__upload-button:hover {
+          background: var(--interactive-primary-hover);
+          transform: translateY(-1px);
+        }
+
+        .scans-page__priority-section {
+          margin-bottom: var(--sds-size-space-800);
+        }
+
+        .scans-page__history-section {
+          margin-bottom: var(--sds-size-space-600);
+        }
+
+        .scans-page__section-header {
+          margin-bottom: var(--sds-size-space-400);
+        }
+
+        .scans-page__section-title {
+          display: flex;
+          align-items: center;
+          gap: var(--sds-size-space-200);
+          margin: 0 0 var(--sds-size-space-100) 0;
+          font-size: var(--font-size-400);
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .scans-page__section-count {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 24px;
+          height: 24px;
+          padding: 0 var(--sds-size-space-100);
+          background: var(--surface-secondary);
+          color: var(--text-secondary);
+          border-radius: var(--sds-size-radius-full);
+          font-size: var(--font-size-75);
+          font-weight: 500;
+        }
+
+        .scans-page__section-description {
+          margin: 0;
+          color: var(--text-secondary);
+          font-size: var(--font-size-75);
+        }
+
+        .scans-page__priority-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+          gap: var(--sds-size-space-400);
+          align-items: start;
+        }
+
+        .scans-page__loading,
+        .scans-page__error {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 200px;
+          color: var(--text-secondary);
+          font-size: var(--font-size-100);
+        }
+
+        .scans-page__error {
+          color: var(--status-error);
+        }
+
+        .scans-page__empty-state {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 400px;
+          text-align: center;
+        }
+
+        .scans-page__empty-content h2 {
+          margin: 0 0 var(--sds-size-space-200) 0;
+          font-size: var(--font-size-400);
+          color: var(--text-primary);
+        }
+
+        .scans-page__empty-content p {
+          margin: 0 0 var(--sds-size-space-400) 0;
+          color: var(--text-secondary);
+          font-size: var(--font-size-100);
+        }
+
+        .scans-page__empty-cta {
+          display: inline-flex;
+          align-items: center;
+          padding: var(--sds-size-space-300) var(--sds-size-space-500);
+          background: var(--interactive-primary);
+          color: var(--text-on-primary);
+          text-decoration: none;
+          border-radius: var(--sds-size-radius-200);
+          font-weight: 500;
+          font-size: var(--font-size-100);
+          transition: all 0.2s ease;
+        }
+
+        .scans-page__empty-cta:hover {
+          background: var(--interactive-primary-hover);
+          transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+          .scans-page {
+            padding: var(--sds-size-space-300);
+          }
+
+          .scans-page__header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--sds-size-space-300);
+          }
+
+          .scans-page__priority-grid {
+            grid-template-columns: 1fr;
+            gap: var(--sds-size-space-300);
+          }
+
+          .scans-page__section-title {
+            font-size: var(--font-size-300);
+          }
+        }
+      `}</style>
     </div>
   );
 } 

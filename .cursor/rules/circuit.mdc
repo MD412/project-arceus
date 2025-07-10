@@ -60,3 +60,45 @@ For design system library documentation:
     }
   ]
 }
+
+{
+  "when": {
+    "messageMatches": [
+      "delete scan", "rename scan", "retry scan",          // user phrases
+      "soft delete", "optimistic delete", "CRUD pipeline", // architectural
+      "command queue", "background cleanup"                // tech terms
+    ]
+  },
+  "then": {
+    "actions": [
+      {
+        "type": "SHOW_MESSAGE",
+        "content": "Referencing Optimistic CRUD Pipeline: app/(handbook)/handbook/optimistic-crud-pipeline/page.tsx – follow this pattern (CQRS + command queue + optimistic UI)."
+      },
+      {
+        "type": "ATTACH_FILE_CONTEXT",
+        "filePath": "app/(handbook)/handbook/optimistic-crud-pipeline/page.tsx"
+      }
+    ]
+  },
+  "description": "Automatically enforces the Factorio-style Optimistic CRUD pattern."
+}
+
+{
+  "when": {
+    "fileCreatedInPath": "app/(circuitds)/circuitds/components/**/page.tsx"
+  },
+  "then": {
+    "actions": [
+      {
+        "type": "SHOW_MESSAGE",
+        "content": "⚠️   New CircuitDS component docs detected.\n→ Remember to add a sidebar link in app/(circuitds)/circuitds/layout.tsx › circuitDSNavItems."
+      },
+      {
+        "type": "ATTACH_FILE_CONTEXT",
+        "filePath": "app/(circuitds)/circuitds/layout.tsx"
+      }
+    ]
+  },
+  "description": "Ensures every new CircuitDS docs page is wired into the sidebar navigation."
+}

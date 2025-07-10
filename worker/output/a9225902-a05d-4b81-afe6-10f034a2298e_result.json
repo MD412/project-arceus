@@ -1,0 +1,4 @@
+{
+  "error": "'NoneType' object has no attribute 'get'",
+  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\mdand\\Projects\\project-arceus\\worker\\normalized_worker_v3.py\", line 433, in main\n    pipeline_results = run_normalized_pipeline(job, yolo_model)\n  File \"C:\\Users\\mdand\\Projects\\project-arceus\\worker\\normalized_worker_v3.py\", line 180, in run_normalized_pipeline\n    storage_path = job.get('payload', {}).get('storage_path')\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'get'\n"
+}

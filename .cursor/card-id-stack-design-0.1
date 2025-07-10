@@ -1,0 +1,184 @@
+# Arceus Card‑ID Stack Design (v0.1)
+
+### **Status: LOCKED – Source of Truth (2025‑07‑10)**
+
+## 1  Purpose & Scope
+
+Design a production‑grade pipeline for Pokémon card detection and identification that **minimises vendor lock‑in and variable AI costs** while still letting us tap “big‑gun” cloud models when truly needed.
+
+## 2  Guiding Principles
+
+1. **Local‑first, Cloud‑optional** – Every request should succeed with self‑hosted models; cloud APIs are back‑stops.
+2. **Cost‑aware routing** – Each tier has a budgeted ¢/card ceiling; we short‑circuit as soon as confidence ≥ τ.
+3. **User‑correctable + self‑improving** – The review UI captures gold‑label corrections that feed nightly fine‑tunes.
+4. **Observable & degradable** – Latency, confidence and spend are logged; any external outage downgrades gracefully.
+
+## 3  Layered Tech Stack
+
+| Layer                          | Component                             | OSS / Vendor | Notes                                        |
+| ------------------------------ | ------------------------------------- | ------------ | -------------------------------------------- |
+| **Edge / Client**              | Tiny‑YOLOv8 Lite                      | OSS          | Optional on‑device detection for card shows. |
+| **Core Inference (always‑on)** | *Detector* – YOLOv8‑Nano custom       | OSS          | Detect rectangle + orientation.              |
+|                                | *OCR‑Fast* – PaddleOCR‑Tiny           | OSS          | English/Japanese; CPU‑friendly.              |
+|                                | *Embedder* – OpenCLIP ViT‑B/32‑distil | OSS          | 512‑D image fingerprint.                     |
+|                                | *ANN Index* – pgvector                | OSS          | Hosted inside Supabase.                      |
+| **Premium Burst (on‑demand)**  | *OCR‑Cloud* – Google Vision           | Google       | Only if local OCR conf < 0.75.               |
+|                                | *Embed‑XL* – OpenAI CLIP L14          | OpenAI       | Only if top‑1 sim < 0.88.                    |
+|                                | *Verifier LLM* – GPT‑4o vision        | OpenAI       | Final arbiter on high‑value scans.           |
+
+## 4  Request Flow (pseudocode)
+
+```python
+bbox = detector(img)
+for crop in bbox:
+    card = None
+    if ocr_fast(crop).confidence > 0.75:
+        card = tcg_lookup(text)
+    if not card:
+        sim, card = local_search(embed_fast(crop))
+    if sim < 0.88:
+        # cloud escalation block
+        txt = ocr_cloud(crop)
+        if txt.conf > 0.8:
+            card = tcg_lookup(txt.text)
+        if not card:
+            sim, card = cloud_search(embed_xl(crop))
+            if sim < 0.92:
+                card = llm_verify(crop, card)
+    ui.present(card)
+```
+
+## 5  Cost / Dependability Matrix (per 1 000 crops)
+
+| Tier               | Avg calls | Est \$             | Failure impact         |
+| ------------------ | --------- | ------------------ | ---------------------- |
+| Local only         |  1 000    | \$0.10 (GPU power) | Baseline accuracy 92 % |
+| + Cloud OCR (10 %) |  100      | \$0.40             | +3 pp accuracy         |
+| + Cloud CLIP (4 %) |  40       | \$1.20             | +2 pp accuracy         |
+| + LLM verify (1 %) |  10       | \$2.00             | +0.5 pp accuracy       |
+
+## 6  Operational Strategy
+
+* **Config knobs** – Thresholds `τ_ocr`, `τ_sim` per user tier (free vs pro).
+* **Circuit‑breakers** – If Google Vision latency > 3 s or error rate > 20 %, route around it.
+* **Feedback loop** – Accepted crops go to `s3://training/gold`; nightly job fine‑tunes OCR and OpenCLIP distil.
+* **Observability** – Prometheus metrics for GPU util, API spend, success rate; Grafana dash.
+
+## 7  Offline & Mobile Mode
+
+* Bundle quantised Detector + Embedder via Core ML / SNPE.
+* Pre‑seed top 5 000 card embeddings on‑device; fuzzy K‑NN in WASM.
+
+## 8  Data Model & Storage
+
+**Postgres (Supabase) schema overview**
+
+| Table         | Purpose                                             | Key columns                                                    |
+| ------------- | --------------------------------------------------- | -------------------------------------------------------------- |
+| `cards`       | Canonical TCG metadata synced from Pokémon TCG API. | `id`, `name`, `set_id`, `number`, `rarity`, `image_url`        |
+| `embeddings`  | 512‑D vector per official card art (plus alt‑arts). | `card_id` → `vector` (pgvector)                                |
+| `scans`       | Raw photo uploads (binder pages or single shots).   | `scan_id`, `user_id`, `s3_url`, `timestamp`                    |
+| `detections`  | YOLO outputs on each scan.                          | `scan_id`, `bbox`, `rotation`, `crop_url`, `detector_version`  |
+| `predictions` | Identifier results per crop.                        | `crop_id`, `card_id_pred`, `confidence`, `route`, `latency_ms` |
+| `corrections` | User overrides (gold labels).                       | `crop_id`, `card_id_true`, `reason`, `timestamp`               |
+
+Static card art lives in `s3://arceus/card_refs/…` and is CDN‑cached. User uploads live in `s3://arceus/user_scans/…` with presigned PUT.
+
+---
+
+## 9  Microservices & Interfaces
+
+| Service            | Runtime                  | Responsibilities                                | Exposed API                    |
+| ------------------ | ------------------------ | ----------------------------------------------- | ------------------------------ |
+| **gateway**        | FastAPI                  | Auth, rate‑limit, orchestrate pipeline tasks    | `/scan`, `/status`, `/billing` |
+| **detector‑svc**   | Python + onnxruntime GPU | Run YOLO, emit crops                            | gRPC `Detect(request)`         |
+| **identifier‑svc** | Rust + tch + pgvector    | OCR→lookup→embed→KNN cascade                    | gRPC `Identify(crop)`          |
+| **trainer‑svc**    | Python                   | Nightly fine‑tune OCR & CLIP from `corrections` | Cron‑trigger only              |
+| **cdn edge**       | Cloudflare Workers       | Resize, IM purge, version assets                | Image rewrite rules            |
+
+All services talk over **NATS JetStream** for resilient, at‑least‑once queues. Each message carries a `trace_id` for OpenTelemetry.
+
+---
+
+## 10  Model Lifecycle & Training Pipelines
+
+1. **Data harvest** – Stream new `corrections` to `/training/daily.parquet`.
+2. **Pre‑flight** – Deduplicate by perceptual hash, sanity‑check labels.
+3. **Detector fine‑tune** – Incremental YOLO v8‑nano training every Sunday.
+4. **OCR LM** – Distill PaddleOCR language model with synthetic/noisy augmentation.
+5. **Embedding distillation** – Contrastive learning (SupCon) on triplets `(anchor, pos, neg)` built from gold crops vs nearest misses.
+6. **Model registry** – MLflow tracks metrics; **Roll‑forward on shadow‑test ≥ +0.5 pp accuracy**.
+
+---
+
+## 11  Confidence Heuristics & Routing
+
+```text
+if OCR_conf > 0.80 and tcg_hit: accept
+elif KNN_sim > 0.92: accept
+elif 0.85 < KNN_sim ≤ 0.92 and scan_value_usd > $5: escalate → cloud_CLIP
+elif still_uncertain and user_tier == "pro": escalate → gpt‑4o_verify
+else: flag "needs review"
+```
+
+Thresholds versioned in `routing_rules.yaml` & hot‑reloadable.
+
+---
+
+## 12  Edge & Offline Bundle
+
+* **CoreML** detector + embedder, 16‑bit quantised (≈ 18 MB each).
+* **SQLite** with top‑10 000 embeddings using **ScaNN**‑wasm for ANN.
+* Delta updates streamed via signed diffpack (≈ 1 MB / new set).
+* Offline queue batches `scans` for later sync when connectivity restored.
+
+---
+
+## 13  Security, Privacy & Compliance
+
+* JWT auth via Supabase GoTrue; all buckets private by default.
+* Image retention policy: auto‑purge raw scans after 30 days unless user opts‑in.
+* GDPR / CCPA data‑export endpoint with one‑click redaction.
+* Hash‑based licence keys for offline bundle; no PII on‑device.
+
+---
+
+## 14  Observability & SLOs
+
+| Metric                    | Target  | Alert when            |
+| ------------------------- | ------- | --------------------- |
+| Median end‑to‑end latency | <800 ms | >1.5 s 5‑min P95      |
+| Detector precision        | ≥97 %   | <95 % over 1000 scans |
+| Identifier top‑1 accuracy | ≥93 %   | −2 pp week‑over‑week  |
+| Cloud spend / day         | <\$5    | >\$10                 |
+
+Prometheus + Grafana + Sentry for tracing UI errors.
+
+---
+
+## 15  Versioning & Canary
+
+1. `vX.Y.Z` tags per service & model.
+2. Canary 5 % traffic → new identifier build; roll‑back on error budget burn >2 %.
+3. Automatic DB migration via Alembic in CI pipeline.
+
+---
+
+## 16  Failure Modes & Circuit Breakers
+
+* **Cloud API outage** – fallback to local‑only mode; warn UI "reduced accuracy".
+* **pgvector latency spike** – switch to in‑memory Faiss cache replica.
+* **Detector crash** – NATS puts crop back to queue; alert PagerDuty.
+
+---
+
+## 17  Future Extensions
+
+* Holofoil glare synthetic augmentation pipeline.
+* Graded slab barcode reader.
+* Other TCGs (MTG, Yu‑Gi‑Oh) plug‑in: add new embeddings index, no new code.
+* Siamese‑TDNN audio classifier for card *packs* (users shake pack near mic to ID set).
+
+---
+
+*End design‑focused revision (timeline removed)*

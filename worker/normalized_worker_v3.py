@@ -9,12 +9,17 @@ Production-ready version addressing o3 feedback:
 """
 import io
 import time
+import json
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from ultralytics import YOLO
 from config import supabase_client
+from pokemon_tcg_api import identify_card_from_crop
+from paddleocr import PaddleOCR
+import faiss
+import open_clip
 
 # --- Model and Configuration ---
 CONFIDENCE_THRESHOLD = 0.25
@@ -34,7 +39,7 @@ def get_yolo_model(model_path='pokemon_cards_trained.pt'):
         print(f"🔥 Failed to load YOLO model: {e}")
         exit(1)
 
-yolo_model = get_yolo_model()
+yolo_model = get_yolo_model('worker/pokemon_cards_trained.pt')
 
 def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
     w, h = image.size
@@ -42,31 +47,6 @@ def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
         return image, 1.0
     scale = max_size / max(w, h)
     return image.resize((int(w * scale), int(h * scale)), Image.Resampling.LANCZOS), scale
-
-def mock_enrich_card(crop_path: str) -> Dict:
-    """
-    Mock enrichment function - replace with real LLM + API call
-    Returns enrichment data for a card crop
-    """
-    mock_cards = [
-        {"name": "Charizard ex", "set_name": "Scarlet & Violet", "set_code": "SV1", "card_number": "27", "rarity": "Double Rare", "price": 45.00},
-        {"name": "Pikachu VMAX", "set_name": "Sword & Shield", "set_code": "SWSH", "card_number": "188", "rarity": "Secret Rare", "price": 12.50},
-        {"name": "Mewtwo GX", "set_name": "Sun & Moon", "set_code": "SM1", "card_number": "62", "rarity": "Ultra Rare", "price": 8.75},
-    ]
-    
-    import random
-    mock_card = random.choice(mock_cards)
-    
-    return {
-        "success": True,
-        "card_name": mock_card["name"],
-        "set_name": mock_card["set_name"],
-        "set_code": mock_card["set_code"],
-        "card_number": mock_card["card_number"],
-        "rarity": mock_card["rarity"],
-        "estimated_price": mock_card["price"],
-        "confidence": round(random.uniform(0.7, 0.95), 2)
-    }
 
 def find_or_create_card(enrichment: Dict) -> Optional[str]:
     """
@@ -78,38 +58,29 @@ def find_or_create_card(enrichment: Dict) -> Optional[str]:
         
     try:
         set_code = enrichment.get("set_code")
-        card_number = enrichment.get("card_number")
+        card_number = enrichment.get("number")
+        image_url = enrichment.get("image_url")
         
-        # ✏️ Use UPSERT to handle race conditions safely
         new_card = {
-            "name": enrichment["card_name"],
+            "name": enrichment.get("name"),
             "set_code": set_code,
-            "set_name": enrichment.get("set_name"),
             "card_number": card_number,
+            "image_url": image_url,
             "rarity": enrichment.get("rarity"),
-            "market_price": enrichment.get("estimated_price"),
-            # ✏️ Fixed: Use NULL instead of string literal 'now()'
-            # Let the database handle the default timestamp
         }
-        
-        # Use upsert with conflict resolution on unique constraint
-        if set_code and card_number:
-            # Primary strategy: upsert by set_code + card_number
-            response = supabase_client.from_("cards").upsert(
-                new_card, 
-                on_conflict="set_code,card_number"
-            ).select("id").execute()
-        else:
-            # Fallback: upsert by name only (less reliable but safer than insert)
-            response = supabase_client.from_("cards").upsert(
-                new_card,
-                on_conflict="name"
-            ).select("id").execute()
-            
+
+        print("🔵 [DEBUG] Attempting to upsert card with this data:")
+        print(new_card)
+
+        response = supabase_client.from_("cards").upsert(
+            new_card,
+            on_conflict="set_code,card_number"
+        ).execute()
+
         if response.data:
             card_id = response.data[0]["id"]
             action = "found/created" if set_code and card_number else "found/created (by name)"
-            print(f"✅ {action} card: {enrichment['card_name']} ({set_code} {card_number}) -> {card_id}")
+            print(f"✅ {action} card: {enrichment['name']} ({set_code} {card_number}) -> {card_id}")
             return card_id
             
     except Exception as e:
@@ -176,9 +147,19 @@ def run_normalized_pipeline(job: dict, model: YOLO):
     """
     # Extract job data
     upload_id = job['scan_upload_id']
-    storage_path = job.get('payload', {}).get('storage_path')
+    storage_path = None
+    if job.get('payload') and isinstance(job['payload'], dict):
+        storage_path = job['payload'].get('storage_path')
+
+    # Fallback: directly read from scan_uploads if payload missing
     if not storage_path:
-        raise ValueError(f"Job {job['id']} is missing 'storage_path' in payload.")
+        print("⚠️  Job payload missing storage_path, fetching from scan_uploads…")
+        legacy_path_resp = supabase_client.from_("scan_uploads").select("storage_path").eq("id", upload_id).single().execute()
+        if legacy_path_resp.data:
+            storage_path = legacy_path_resp.data.get("storage_path")
+
+    if not storage_path:
+        raise ValueError(f"Job {job['id']} has no storage_path in payload or scan_uploads record.")
         
     # Get user_id from scan_uploads table (transition helper)
     legacy_scan = supabase_client.from_("scan_uploads").select("user_id, scan_title").eq("id", upload_id).single().execute()
@@ -197,9 +178,9 @@ def run_normalized_pipeline(job: dict, model: YOLO):
             "storage_path": storage_path,
             "status": "processing",
             "progress": 10.0
-        }).select("id").single().execute()
+        }).execute()
         
-        scan_id = scan_response.data["id"]
+        scan_id = scan_response.data[0]["id"]
         print(f"✅ Created scan: {scan_id}")
 
         # 2. DOWNLOAD AND PROCESS IMAGE
@@ -293,7 +274,7 @@ def run_normalized_pipeline(job: dict, model: YOLO):
                 
                 # ENRICH THE CARD
                 print(f"🧠 Enriching card {i+1}...")
-                enrichment = mock_enrich_card(crop_path)
+                enrichment = identify_card_from_crop(crop_path)
                 
                 # Find or create card in catalog (race-safe)
                 card_id = None
@@ -302,8 +283,8 @@ def run_normalized_pipeline(job: dict, model: YOLO):
                     detection_data["guess_card_id"] = card_id
                 
                 # Insert detection record
-                detection_response = supabase_client.from_("card_detections").insert(detection_data).select("id").single().execute()
-                detection_id = detection_response.data["id"]
+                detection_response = supabase_client.from_("card_detections").insert(detection_data).execute()
+                detection_id = detection_response.data[0]["id"]
                 detection_records.append(detection_id)
                 
                 # CREATE USER CARD OWNERSHIP RECORD (with upsert for safety)
@@ -313,7 +294,7 @@ def run_normalized_pipeline(job: dict, model: YOLO):
                         "detection_id": detection_id,
                         "card_id": card_id,
                         "condition": "unknown",
-                        "estimated_value": enrichment.get("estimated_price")
+                        "estimated_value": enrichment.get("estimated_value")
                     }
                     
                     # ✏️ Use upsert to prevent duplicate user_cards if scan is re-run
@@ -323,7 +304,7 @@ def run_normalized_pipeline(job: dict, model: YOLO):
                             on_conflict="user_id,card_id"
                         ).execute()
                         user_cards_created += 1
-                        print(f"✅ Created/updated user card: {enrichment['card_name']}")
+                        print(f"✅ Created/updated user card: {enrichment['name']}")
                     except Exception as e:
                         # If upsert fails, fall back to regular insert
                         print(f"⚠️ Upsert failed, trying insert: {e}")
@@ -375,6 +356,39 @@ def run_normalized_pipeline(job: dict, model: YOLO):
                 print(f"🔥 Failed to update scan error status: {update_error}")
         raise e
 
+def save_output_log(job_id: str, results: Dict):
+    """Saves a detailed JSON log for a completed job."""
+    output_dir = Path("worker/output")
+    output_dir.mkdir(exist_ok=True)
+    file_path = output_dir / f"{job_id}_result.json"
+    with open(file_path, 'w') as f:
+        json.dump(results, f, indent=2, sort_keys=True)
+    print(f"📄 Saved detailed output log to: {file_path}")
+
+# --- Identifier Cascade Functions (Phase 2 Scaffolding) ---
+
+def run_ocr(image_path: str, ocr_engine: PaddleOCR) -> tuple[str, float]:
+    """
+    Runs OCR on a cropped card image to extract text.
+    Returns a tuple of (detected_text, confidence_score).
+    """
+    # TODO: Implement actual OCR logic
+    print(f"🔩 [STUB] Running OCR on {image_path}")
+    # result = ocr_engine.ocr(image_path, cls=True)
+    # ... process result ...
+    return "", 0.0
+
+def run_clip_knn(image_path: str) -> tuple[str, float]:
+    """
+    Generates a CLIP embedding for the image and searches a Faiss index.
+    Returns a tuple of (best_guess_card_id, similarity_score).
+    """
+    # TODO: Load CLIP model and Faiss index
+    # TODO: Preprocess image and generate embedding
+    # TODO: Search Faiss index
+    print(f"🔩 [STUB] Running CLIP+Faiss on {image_path}")
+    return "", 0.0
+
 # --- Worker Loop ---
 def fetch_and_lock_job():
     try:
@@ -424,11 +438,13 @@ def main():
             update_job_status(job_id, upload_id, 'completed', results=pipeline_results)
             print(f"✅ Job {job_id} completed successfully.")
             print(f"   📊 Created {pipeline_results['user_cards_created']} user cards from {pipeline_results['total_detections']} detections")
+            save_output_log(job_id, pipeline_results)
         except Exception as e:
             import traceback
             print(f"🔥 Job {job_id} failed: {e}")
             traceback.print_exc()
             update_job_status(job_id, upload_id, 'failed', error_message=str(e))
+            save_output_log(job_id, {"error": str(e), "traceback": traceback.format_exc()})
 
 if __name__ == "__main__":
     main() 
