@@ -3,7 +3,7 @@ import { supabaseServer } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = supabaseServer();
+    const supabase = await supabaseServer();
 
     console.log('🧹 Starting cleanup of old failed scans...');
 

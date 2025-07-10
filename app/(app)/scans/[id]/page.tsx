@@ -3,9 +3,12 @@
 import React, { useState } from 'react';
 import { useJob } from '@/hooks/useJobs';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
+
 import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
-import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/Button';
 
 interface BinderPageProps {
   params: Promise<{ id: string }> | { id: string };
@@ -77,6 +80,60 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
     setManualCardName('');
   };
 
+  // NEW: Handler for flagging individual card for training
+  const handleFlagCardForTraining = async (detectionId: string, type: 'not_a_card' | 'card_not_in_db' | 'wrong') => {
+    try {
+      console.log(`🎯 Flagging detection ${detectionId} as ${type}...`);
+      
+      const response = await fetch('/api/training/add-failure', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ detection_id: detectionId, type }),
+      });
+
+      console.log(`📡 Response status: ${response.status}`);
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('❌ API Error Response:', errorData);
+        throw new Error(`Failed to flag card for training: ${response.status} ${errorData}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Training flag result:', result);
+      
+      alert(`✅ Card flagged as '${type}' and added to training set! Total training images: ${result.training_count || 'unknown'}`);
+    } catch (error: any) {
+      console.error('💥 Failed to flag for training:', error);
+      alert(`Failed to add card to training set: ${error.message || error}`);
+    }
+  };
+
+  // NEW: Handler for confidence feedback
+  const handleConfidenceFeedback = async (detectionId: string, type: 'correct' | 'wrong') => {
+    try {
+      const response = await fetch('/api/training/add-confidence', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ detection_id: detectionId, type }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add confidence feedback');
+      }
+
+      const result = await response.json();
+      alert(`✅ Confidence feedback added! Total confidence feedback: ${result.confidence_count || 'unknown'}`);
+    } catch (error) {
+      console.error('Failed to add confidence feedback:', error);
+      alert('Failed to add confidence feedback. Please try again.');
+    }
+  };
+
   const getStatusChipColor = (status: string) => {
     switch (status) {
       case 'completed': return '#22c55e'; // green-500
@@ -144,12 +201,12 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                   Cards are positioned to match their location in your scan. 
                   Click "Fix" if any identification looks incorrect.
                 </p>
-                <button 
-                  className="layout-toggle"
-                  onClick={() => setUseGridLayout(!useGridLayout)}
-                >
-                  {useGridLayout ? '📍 Spatial View' : '🔲 Grid View'}
-                </button>
+                                  <Button 
+                    variant="secondary"
+                    onClick={() => setUseGridLayout(!useGridLayout)}
+                  >
+                    {useGridLayout ? '📍 Spatial View' : '🔲 Grid View'}
+                  </Button>
               </div>
             </div>
             
@@ -202,19 +259,19 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                               autoFocus
                             />
                             <div className="correction-buttons">
-                              <button 
-                                onClick={() => handleSaveCorrection(cardIndex)}
-                                className="save-button"
-                                disabled={!manualCardName.trim()}
-                              >
-                                ✓ Save
-                              </button>
-                              <button 
-                                onClick={handleCancelCorrection}
-                                className="cancel-button"
-                              >
-                                ✕ Cancel
-                              </button>
+                                                              <Button 
+                                  variant="primary"
+                                  onClick={() => handleSaveCorrection(cardIndex)}
+                                  disabled={!manualCardName.trim()}
+                                >
+                                  ✓ Save
+                                </Button>
+                                <Button 
+                                  variant="secondary"
+                                  onClick={handleCancelCorrection}
+                                >
+                                  ✕ Cancel
+                                </Button>
                             </div>
                           </div>
                         )}
@@ -240,26 +297,61 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                           {!enrichedCard.enrichment_success && (
                             <>
                               <p className="error-text">{enrichedCard.error_message || 'Not in database'}</p>
-                              <button 
-                                className="fix-button"
-                                onClick={() => handleFixCard(cardIndex)}
-                                disabled={correctingCard === cardIndex}
-                              >
-                                🔧 Fix This
-                              </button>
+                                                              <Button 
+                                  variant="secondary"
+                                  onClick={() => handleFixCard(cardIndex)}
+                                  disabled={correctingCard === cardIndex}
+                                >
+                                  🔧 Fix This
+                                </Button>
                             </>
                           )}
                           
-                          {/* Manual correction only for identified cards that might be wrong */}
-                          {enrichedCard.enrichment_success && (
-                            <button 
-                              className="manual-fix-button" 
-                              title="Correct this identification"
-                              onClick={() => handleFixCard(cardIndex)}
-                              disabled={correctingCard === cardIndex}
-                            >
-                              ⚙️
-                            </button>
+                          {/* Smart Feedback System - Show for ALL detections */}
+                          {enrichedCard.detection_id && (
+                            <div className="smart-feedback">
+                              <Button 
+                                variant="info"
+                                size="sm"
+                                onClick={() => handleFlagCardForTraining(enrichedCard.detection_id, 'not_a_card')}
+                                title="This crop is not a Pokemon card (logos, backgrounds, etc.)"
+                              >
+                                🚫 Not a Card
+                              </Button>
+                              
+                              {!enrichedCard.enrichment_success && (
+                                <Button 
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => handleFlagCardForTraining(enrichedCard.detection_id, 'card_not_in_db')}
+                                  title="This is a real card but not in our database"
+                                >
+                                  📚 Missing from DB
+                                </Button>
+                              )}
+                              
+                              {enrichedCard.enrichment_success && (
+                                <Button 
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleConfidenceFeedback(enrichedCard.detection_id, 'wrong')}
+                                  title="This identification is wrong"
+                                >
+                                  ❌ Wrong ID
+                                </Button>
+                              )}
+                              
+                              {enrichedCard.enrichment_success && enrichedCard.identification_confidence < 70 && (
+                                <Button 
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleConfidenceFeedback(enrichedCard.detection_id, 'correct')}
+                                  title="This identification is actually correct"
+                                >
+                                  ✅ Correct
+                                </Button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -281,12 +373,12 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                       <div className="card-info">
                         <h4 className="card-name">Unknown Card</h4>
                         <p className="card-details">Legacy detection</p>
-                        <button 
-                          className="fix-button"
-                          onClick={() => handleFixCard(index)}
-                        >
-                          🔧 Fix This
-                        </button>
+                                                  <Button 
+                            variant="secondary"
+                            onClick={() => handleFixCard(index)}
+                          >
+                            🔧 Fix This
+                          </Button>
                       </div>
                     </div>
                   ))}
@@ -341,19 +433,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
           font-size: 0.875rem;
           flex: 1;
         }
-        .layout-toggle {
-          background: var(--color-primary-500);
-          color: white;
-          border: none;
-          padding: 0.5rem 1rem;
-          border-radius: var(--sds-size-radius-100);
-          font-size: 0.75rem;
-          cursor: pointer;
-          white-space: nowrap;
-        }
-        .layout-toggle:hover {
-          background: var(--color-primary-600);
-        }
+
         
         .spatial-card-container {
           position: relative;
@@ -441,21 +521,6 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
         }
         
         /* NEW: Manual Correction Buttons */
-        .fix-button {
-          background: var(--color-warning-500);
-          color: white;
-          border: none;
-          padding: 0.375rem 0.75rem;
-          border-radius: var(--sds-size-radius-100);
-          font-size: 0.75rem;
-          font-weight: 500;
-          cursor: pointer;
-          width: 100%;
-          margin-bottom: 0.25rem;
-        }
-        .fix-button:hover {
-          background: var(--color-warning-600);
-        }
         
         .manual-fix-button {
           position: absolute;
@@ -509,30 +574,38 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
           width: 100%;
         }
         
-        .save-button {
-          flex: 1;
-          background: var(--color-success-500);
-          color: white;
-          border: none;
-          padding: 0.375rem 0.75rem;
-          border-radius: var(--sds-size-radius-100);
-          font-size: 0.75rem;
-          cursor: pointer;
-        }
-        .save-button:disabled {
-          background: var(--color-gray-400);
-          cursor: not-allowed;
+        .correction-buttons {
+          display: flex;
+          gap: 0.5rem;
+          width: 100%;
         }
         
-        .cancel-button {
+        .correction-buttons .button_button_uCVc {
           flex: 1;
-          background: var(--color-error-500);
-          color: white;
-          border: none;
-          padding: 0.375rem 0.75rem;
-          border-radius: var(--sds-size-radius-100);
-          font-size: 0.75rem;
-          cursor: pointer;
+        }
+        
+        /* Make buttons full width in card info */
+        .card-info .button_button_uCVc {
+          width: 100%;
+          margin-bottom: 0.25rem;
+        }
+        
+        .card-info .button_button_uCVc:last-child {
+          margin-bottom: 0;
+          margin-top: 0.5rem;
+        }
+
+        /* NEW: Smart Feedback Styles */
+        .smart-feedback {
+          display: flex;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+        }
+
+        .confidence-feedback {
+          display: flex;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
         }
       `}</style>
     </PageLayout>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -8,6 +8,7 @@ import {
   flexRender,
 } from '@tanstack/react-table';
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
 
 interface ScanUpload {
   id: string;
@@ -25,9 +26,10 @@ interface ScanHistoryTableProps {
   uploads: ScanUpload[];
   onRename?: (upload: ScanUpload) => void;
   onDelete?: (uploadId: string, title: string) => void;
+  onFlagForTraining?: (uploadId: string) => void;
 }
 
-export function ScanHistoryTable({ uploads, onRename, onDelete }: ScanHistoryTableProps) {
+export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTraining }: ScanHistoryTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: 'created_at', desc: true } // Most recent first by default
   ]);
@@ -110,27 +112,42 @@ export function ScanHistoryTable({ uploads, onRename, onDelete }: ScanHistoryTab
       header: 'Actions',
       cell: ({ row }) => (
         <div className="scan-history-table__actions">
+          {onFlagForTraining && row.original.processing_status === 'completed' && (
+            <Button 
+              variant="info"
+              size="sm"
+              onClick={(e) => {
+                e.preventDefault();
+                onFlagForTraining(row.original.id);
+              }}
+              title="Add this scan to the training dataset"
+            >
+              🎯 Training
+            </Button>
+          )}
           {onRename && (
-            <button 
-              className="scan-history-table__action-link"
+            <Button 
+              variant="ghost"
+              size="sm"
               onClick={(e) => {
                 e.preventDefault();
                 onRename(row.original);
               }}
             >
               Rename
-            </button>
+            </Button>
           )}
           {onDelete && (
-            <button 
-              className="scan-history-table__action-link scan-history-table__action-link--destructive"
+            <Button 
+              variant="destructive"
+              size="sm"
               onClick={(e) => {
                 e.preventDefault();
                 onDelete(row.original.id, row.original.scan_title || 'Untitled Scan');
               }}
             >
               Delete
-            </button>
+            </Button>
           )}
         </div>
       ),
@@ -334,28 +351,8 @@ export function ScanHistoryTable({ uploads, onRename, onDelete }: ScanHistoryTab
 
         .scan-history-table__actions {
           display: flex;
-          gap: var(--sds-size-space-300);
+          gap: var(--sds-size-space-100);
           justify-content: flex-end;
-        }
-
-        .scan-history-table__action-link {
-          background: none;
-          border: none;
-          padding: 0;
-          cursor: pointer;
-          font-size: var(--font-size-75);
-          font-family: var(--font-inter);
-          font-weight: 500;
-          color: var(--text-secondary);
-          text-decoration: none;
-        }
-
-        .scan-history-table__action-link:hover {
-          text-decoration: underline;
-        }
-
-        .scan-history-table__action-link--destructive {
-          color: var(--status-warning);
         }
 
         .scan-history-table__empty {

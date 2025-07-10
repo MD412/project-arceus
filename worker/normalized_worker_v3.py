@@ -403,8 +403,9 @@ def update_job_status(job_id, upload_id, status, error_message=None, results=Non
         # Update legacy job queue (for compatibility)
         job_update_data = {"status": status}
         if status in ['completed', 'failed']:
-            # ✏️ Fixed: Use database default instead of string literal
-            job_update_data['finished_at'] = 'now()'
+            # ✏️ Fixed: Use actual timestamp instead of string literal
+            from datetime import datetime
+            job_update_data['finished_at'] = datetime.utcnow().isoformat()
         supabase_client.from_("job_queue").update(job_update_data).eq("id", job_id).execute()
         
         # Update legacy scan_uploads (for compatibility)

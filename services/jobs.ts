@@ -22,29 +22,35 @@ export const getJobs = async () => {
 }
 
 /**
- * Fetches a single job by its ID.
- * RLS policies ensure the user can only access a job they own.
+ * Fetches a single job by its ID with card details.
+ * Uses the API endpoint to get properly formatted data.
  * @param jobId - The UUID of the job to fetch.
- * @returns The job object if found, otherwise null.
+ * @returns The job object with card details if found, otherwise null.
  */
 export async function getJobById(jobId: string) {
-  const { data, error } = await supabase
-    .from('scan_uploads')
-    .select('*')
-    .eq('id', jobId)
-    .single(); // Expect one or zero rows
+  try {
+    const response = await fetch(`/api/scans/${jobId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // PGRST116: "The result contains 0 rows" - this is not a server error.
-      console.log(`Job with id ${jobId} not found.`);
-      return null;
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(`Job with id ${jobId} not found.`);
+        return null;
+      }
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Failed to fetch job ${jobId}`);
     }
-    console.error(`Error fetching job ${jobId}:`, error);
-    throw new Error(error.message);
-  }
 
-  return data;
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error(`Error fetching job ${jobId}:`, error);
+    throw error;
+  }
 }
 
 /**

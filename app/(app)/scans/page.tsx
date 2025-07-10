@@ -6,6 +6,7 @@ import { ProcessingQueueCard } from '@/components/ui/ProcessingQueueCard';
 import { ScanHistoryTable } from '@/components/ui/ScanHistoryTable';
 import { RenameScanModal } from '@/components/ui/RenameScanModal';
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
 
 // This is the shape of the 'scan_uploads' table row.
 interface ScanUpload {
@@ -59,6 +60,52 @@ export default function ScansPage() {
     }
   };
 
+  const handleFlagForTraining = async (uploadId: string) => {
+    try {
+      const response = await fetch('/api/training/add-failure', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ scan_id: uploadId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to flag scan for training');
+      }
+
+      const result = await response.json();
+      alert(`✅ Scan added to training set! Total training images: ${result.training_count || 'unknown'}`);
+    } catch (error) {
+      console.error('Failed to flag for training:', error);
+      alert('Failed to add scan to training set. Please try again.');
+    }
+  };
+
+  const handleFixStuckScans = async () => {
+    try {
+      const response = await fetch('/api/scans/fix-stuck', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fix stuck scans');
+      }
+
+      const result = await response.json();
+      alert(`✅ ${result.message}`);
+      
+      // Refresh the page to show updated status
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to fix stuck scans:', error);
+      alert('Failed to fix stuck scans. Please try again.');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="scans-page">
@@ -98,9 +145,6 @@ export default function ScansPage() {
             Track your Pokemon card scan processing and view results
           </p>
         </div>
-        <Link href="/upload" className="scans-page__upload-button">
-          Upload New Scan
-        </Link>
       </header>
 
       {totalUploads === 0 ? (
@@ -108,8 +152,10 @@ export default function ScansPage() {
           <div className="scans-page__empty-content">
             <h2>No scans found</h2>
             <p>You haven't uploaded any card scans for processing yet.</p>
-            <Link href="/upload" className="scans-page__empty-cta">
-              Upload Your First Scan
+            <Link href="/upload">
+              <Button variant="primary">
+                Upload Your First Scan
+              </Button>
             </Link>
           </div>
         </div>
@@ -128,7 +174,16 @@ export default function ScansPage() {
                 <p className="scans-page__section-description">
                   Scans that require your attention or are currently processing
                 </p>
-                  </div>
+                {priorityUploads.some(u => ['queued', 'processing'].includes(u.processing_status)) && (
+                  <Button
+                    variant="info"
+                    onClick={handleFixStuckScans}
+                    title="Reset scans that have been stuck for more than 5 minutes"
+                  >
+                    🔧 Fix Stuck Scans
+                  </Button>
+                )}
+              </div>
                   
               <div className="scans-page__priority-grid">
                 {priorityUploads.map((upload) => (
@@ -163,6 +218,7 @@ export default function ScansPage() {
                 uploads={historyUploads}
                 onRename={setRenamingUpload}
                 onDelete={handleDelete}
+                onFlagForTraining={handleFlagForTraining}
               />
             </section>
           )}
@@ -186,9 +242,6 @@ export default function ScansPage() {
         }
 
         .scans-page__header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
           margin-bottom: var(--sds-size-space-600);
           padding-bottom: var(--sds-size-space-400);
           border-bottom: 1px solid var(--border-default);
@@ -211,23 +264,7 @@ export default function ScansPage() {
           font-size: var(--font-size-100);
         }
 
-        .scans-page__upload-button {
-          display: inline-flex;
-          align-items: center;
-          padding: var(--sds-size-space-200) var(--sds-size-space-400);
-          background: var(--interactive-primary);
-          color: var(--text-on-primary);
-          text-decoration: none;
-          border-radius: var(--sds-size-radius-200);
-          font-weight: 500;
-          font-size: var(--font-size-100);
-          transition: all 0.2s ease;
-        }
 
-        .scans-page__upload-button:hover {
-          background: var(--interactive-primary-hover);
-          transform: translateY(-1px);
-        }
 
         .scans-page__priority-section {
           margin-bottom: var(--sds-size-space-800);
@@ -271,6 +308,8 @@ export default function ScansPage() {
           font-size: var(--font-size-75);
         }
 
+
+
         .scans-page__priority-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -312,23 +351,7 @@ export default function ScansPage() {
           font-size: var(--font-size-100);
         }
 
-        .scans-page__empty-cta {
-          display: inline-flex;
-          align-items: center;
-          padding: var(--sds-size-space-300) var(--sds-size-space-500);
-          background: var(--interactive-primary);
-          color: var(--text-on-primary);
-          text-decoration: none;
-          border-radius: var(--sds-size-radius-200);
-          font-weight: 500;
-          font-size: var(--font-size-100);
-          transition: all 0.2s ease;
-        }
 
-        .scans-page__empty-cta:hover {
-          background: var(--interactive-primary-hover);
-          transform: translateY(-1px);
-        }
 
         @media (max-width: 768px) {
           .scans-page {

@@ -7,13 +7,13 @@ import { v4 as uuid } from 'uuid';
  * POST /api/scans/bulk
  * Accepts 1-200 JPEG/PNG images in a multipart/form-data body under the key “files”.
  * For each image:
- *  1. Stores it in the `scan_uploads` bucket at `${userId}/${uuid()}.jpg`
+ *  1. Stores it in the `scans` bucket at `${userId}/${uuid()}.jpg`
  *  2. Inserts a row into `scans` and `job_queue` via the RPC `enqueue_scan_job`
  */
 export async function POST(request: NextRequest) {
   // -------- 1  Parse form data
   const formData = await request.formData();
-  const files  = formData.getAll('files') as File[];
+  const files = formData.getAll('files') as File[];
   const userId = formData.get('user_id') as string;
 
   if (!userId || files.length === 0) {
@@ -30,15 +30,21 @@ export async function POST(request: NextRequest) {
   }
 
   // -------- 2  Init Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error('Missing Supabase env vars');
+  }
+  const supabase = createClient(supabaseUrl, serviceKey);
 
   // -------- 3  Upload + enqueue in parallel
   const results = await Promise.allSettled(
     files.map(async (file) => {
-      const scanId   = uuid();
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        throw new Error('Invalid file type: only JPEG/PNG allowed');
+      }
+
+      const scanId = uuid();
       const filePath = `${userId}/${scanId}.jpg`;
 
       // 3a  Upload raw image to storage
@@ -78,10 +84,10 @@ export async function POST(request: NextRequest) {
 
   const success = results
     .filter((r) => r.status === 'fulfilled')
-    .map((r) => (r as PromiseFulfilledResult<any>).value);
+    .map((r) => (r as PromiseFulfilledResult<{ scan_id: string; path: string }>).value);
 
   return NextResponse.json(
     { message: 'Scans queued', count: success.length, scans: success },
     { status: 201 },
   );
-} 
+}

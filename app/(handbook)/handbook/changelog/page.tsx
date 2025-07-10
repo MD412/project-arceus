@@ -6,6 +6,21 @@ import ContentSection from '@/components/layout/ContentSection';
 
 const changelogData = [
   {
+    date: 'January 2, 2025 (Late Night Session)',
+    title: 'Smart Training System & CircuitDS Button Consistency',
+    description: 'Revolutionized the training feedback system with categorized data collection and achieved full CircuitDS design system compliance across all buttons. Fixed Next.js 15 async cookies compatibility.',
+    tags: ['Feature', 'UX', 'Design System', 'Training'],
+    details: [
+      'Replaced binary "add to training" with smart feedback: "🚫 Not a Card", "📚 Missing from DB", "❌ Wrong ID", and "✅ Correct".',
+      'Implemented organized training data collection in `training_data/card_crops/{type}/` folders for better ML retraining.',
+      'Achieved 100% CircuitDS Button component usage - replaced all custom button CSS with proper design system variants.',
+      'Fixed Next.js 15 async cookies compatibility by updating `supabaseServer()` and all API route params.',
+      'Resolved RLS permission issues by simplifying database queries and removing complex joins.',
+      'Added comprehensive error logging and user feedback for training data collection.',
+      'Successfully collected real "not a card" training examples (social media logos, reflective surfaces) for YOLO retraining.',
+    ],
+  },
+  {
     date: 'July 10, 2025',
     title: 'Vision Pipeline Stability & Enrichment',
     description: 'Resolved a persistent and elusive database error (42P10) that was blocking card creation. Fully stabilized the end-to-end vision pipeline, enabling successful enrichment from the pokemontcg.io API.',
@@ -170,6 +185,8 @@ export default function ChangelogPage() {
         .tag-feature { background-color: #e0e7ff; color: #312e81; }
         .tag-api { background-color: #ede9fe; color: #5b21b6; }
         .tag-worker { background-color: #fae8ff; color: #86198f; }
+        .tag-design { background-color: #ffcf60; color: #1a4a47; }
+        .tag-training { background-color: #f0fdf4; color: #166534; }
         .tag-milestone { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #422006; font-weight: 600; }
         .tag-ai { background-color: #d1fae5; color: #065f46; }
         

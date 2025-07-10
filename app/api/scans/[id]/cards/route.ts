@@ -5,7 +5,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const supabase = supabaseServer();
+  const supabase = await supabaseServer();
 
   const {
     data: { session },

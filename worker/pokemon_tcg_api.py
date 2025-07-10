@@ -43,6 +43,13 @@ class PokemonTCGAPI:
         # 3. Match against known card database
         # 4. Use image similarity matching
         
+        import random
+        
+        # Simulate some cards not being identified (30% failure rate)
+        if random.random() < 0.3:
+            print(f"❌ Mock identification failed for {crop_image_path}")
+            return None
+        
         mock_cards = [
             {
                 "id": "xy1-1",
@@ -92,7 +99,6 @@ class PokemonTCGAPI:
         ]
         
         # Return a random mock card for now
-        import random
         card = random.choice(mock_cards)
         
         # Simulate confidence based on random factors

@@ -1,8 +1,92 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabaseServer } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
 
+// GET /api/scans/[id] - fetch scan details with cards
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const supabase = await supabaseServer();
+  const { id } = await params;
+
+  try {
+    // Fetch scan details
+    const { data: scan, error: scanError } = await supabase
+      .from('scan_uploads')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (scanError) {
+      if (scanError.code === 'PGRST116') {
+        return NextResponse.json({ error: 'Scan not found' }, { status: 404 });
+      }
+      throw scanError;
+    }
+
+    // Fetch card detections with card details
+    // Use the scan_id from results if available, otherwise fall back to the scan_uploads id
+    const scanIdForDetections = scan.results?.scan_id || id;
+    
+    const { data: detections, error: detectionsError } = await supabase
+      .from('card_detections')
+      .select(`
+        *,
+        card:guess_card_id (
+          id,
+          name,
+          set_code,
+          set_name,
+          card_number,
+          rarity,
+          image_url,
+          market_price
+        )
+      `)
+      .eq('scan_id', scanIdForDetections)
+      .order('tile_source', { ascending: true });
+
+    if (detectionsError) {
+      console.error('Error fetching detections:', detectionsError);
+    }
+
+    // Transform the data to match the expected format
+    const enrichedCards = detections?.map((detection, index) => ({
+      card_index: index,
+      bounding_box: detection.bbox,
+      cropped_image_path: detection.crop_url,
+      enrichment_success: !!detection.card,
+      card_name: detection.card?.name || 'Unknown Card',
+      set_name: detection.card?.set_name || '',
+      set_code: detection.card?.set_code || '',
+      card_number: detection.card?.card_number || '',
+      rarity: detection.card?.rarity || '',
+      market_price: detection.card?.market_price || null,
+      identification_confidence: (detection.confidence || 0) * 100,
+      error_message: detection.card ? null : 'Card not identified',
+      detection_id: detection.id,
+      card_id: detection.guess_card_id
+    })) || [];
+
+    // Merge the data
+    const scanWithCards = {
+      ...scan,
+      binder_title: scan.scan_title,
+      results: {
+        ...scan.results,
+        enriched_cards: enrichedCards,
+        total_cards_detected: enrichedCards.length,
+        original_image_width: 3456, // TODO: Get from actual image metadata
+        original_image_height: 4608
+      }
+    };
+
+    return NextResponse.json(scanWithCards, { status: 200 });
+  } catch (error: any) {
+    console.error(`Error in GET /api/scans/${id}:`, error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 // PATCH /api/scans/[id] - for renaming
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // Get user_id from request headers (set by frontend)
   const userId = request.headers.get('x-user-id');
 
@@ -10,9 +94,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     return NextResponse.json({ error: 'Unauthorized - User ID required' }, { status: 401 });
   }
 
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const supabase = await supabaseServer();
 
-  const { id } = params;
+  const { id } = await params;
   const { scan_title } = await request.json();
 
   if (!scan_title) {
@@ -43,14 +127,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE /api/scans/[id]
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userId = request.headers.get('x-user-id');
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized - User ID required' }, { status: 401 });
   }
 
-  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const { id } = params;
+  const supabase = await supabaseServer();
+  const { id } = await params;
 
   try {
     console.log(`🗑️ DELETE (soft) request for scan: ${id}, user: ${userId}`);
