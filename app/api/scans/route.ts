@@ -1,117 +1,115 @@
-import { createClient } from '@supabase/supabase-js';
+// app/api/scans/route.ts
 import { type NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { v4 as uuid } from 'uuid';
 
-export async function POST(request: NextRequest) {
-  const formData = await request.formData();
-  const title = formData.get('title') as string;
-  const file = formData.get('file') as File;
-  const userId = formData.get('user_id') as string;
-
-  if (!title || !file || !userId) {
-    return NextResponse.json({ error: 'Missing required form data' }, { status: 400 });
-  }
-
-  const supabase = createClient(
+// --- Helper for creating a Supabase client with user context ---
+function getSupabaseClientWithUser() {
+  const cookieStore = cookies();
+  return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: (cookiesToSet) =>
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          ),
+      },
+    }
   );
+}
 
-  let scanUploadId: string | null = null;
-  let storagePath: string | null = null;
+// --- Helper for creating a Supabase client with service role ---
+function getSupabaseServiceRoleClient() {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+}
 
+/**
+ * GET /api/scans
+ * Fetches all scans for the currently authenticated user.
+ */
+export async function GET(request: NextRequest) {
+  const supabase = getSupabaseClientWithUser();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+  
   try {
-    const fileBuffer = await file.arrayBuffer();
-    const contentHash = crypto.createHash('sha256').update(new Uint8Array(fileBuffer)).digest('hex');
-    
-    storagePath = `${userId}/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage.from('scans').upload(storagePath, file);
-
-    if (uploadError) {
-      throw new Error('Storage upload failed.');
-    }
-
-    const { data: { publicUrl } } = supabase.storage.from('scans').getPublicUrl(storagePath);
-
-    // Step 1: Create the scan record.
-    const { data: scanData, error: scanError } = await supabase
+    const { data: scans, error } = await getSupabaseServiceRoleClient()
       .from('scan_uploads')
-      .insert({
-        user_id: userId,
-        scan_title: title,
-        storage_path: storagePath,
-        processing_status: 'pending',
-        content_hash: contentHash,
-        results: { image_public_url: publicUrl }
-      })
-      .select('id')
-      .single();
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
 
-    if (scanError || !scanData) {
-      throw new Error('Failed to create scan record.');
-    }
-    
-    scanUploadId = scanData.id;
+    if (error) throw error;
+    return NextResponse.json(scans || []);
 
-    // Step 2: Create the corresponding job.
-    const { error: jobError } = await supabase
-      .from('job_queue')
-      .insert({
-        scan_upload_id: scanUploadId, // Explicitly pass the ID
-        status: 'pending',
-        job_type: 'process_scan_page',
-        payload: { storage_path: storagePath },
-      });
-
-    if (jobError) {
-      throw new Error('Failed to create job queue entry.');
-    }
-
-    return NextResponse.json({ 
-      message: 'Scan uploaded and queued successfully.',
-      scan_id: scanUploadId,
-    }, { status: 201 });
-    
   } catch (error: any) {
-    // If anything fails, attempt to clean up the orphaned data.
-    if (storagePath) {
-      await supabase.storage.from('scans').remove([storagePath]);
-    }
-    if (scanUploadId) {
-      await supabase.from('scan_uploads').delete().eq('id', scanUploadId);
-    }
-    
-    console.error('Critical error in POST /api/scans:', error.message);
+    console.error('Error in GET /api/scans:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('user_id');
-  
-  if (!userId) {
-    return NextResponse.json({ error: 'user_id is required' }, { status: 400 });
+/**
+ * POST /api/scans (Legacy Single Upload)
+ * This is now a wrapper around the same logic as the bulk endpoint for consistency.
+ */
+export async function POST(request: NextRequest) {
+  const supabaseUserClient = getSupabaseClientWithUser();
+  const { data: { user } } = await supabaseUserClient.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!, 
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const formData = await request.formData();
+  const file = formData.get('file') as File;
+  
+  if (!file) {
+    return NextResponse.json({ error: 'File is required' }, { status: 400 });
+  }
+  
+  const supabaseService = getSupabaseServiceRoleClient();
+  const scanId = uuid();
+  const filePath = `${user.id}/${scanId}.${file.name.split('.').pop()}`;
 
   try {
-    const { data: scans, error } = await supabase
-      .from('scan_uploads')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    // 1. Upload raw image to storage
+    const { error: uploadError } = await supabaseService.storage
+      .from('scans')
+      .upload(filePath, file);
 
-    if (error) throw error;
+    if (uploadError) throw uploadError;
 
-    return NextResponse.json(scans || []);
-    
+    // 2. Insert DB row & queue job through the stored procedure
+    const { error: rpcError } = await supabaseService.rpc('enqueue_scan_job', {
+      p_scan_id: scanId,
+      p_user_id: user.id,
+      p_storage_path: filePath,
+    });
+
+    if (rpcError) {
+      // Clean up orphaned upload
+      await supabaseService.storage.from('scans').remove([filePath]);
+      throw rpcError;
+    }
+
+    return NextResponse.json({
+        message: 'Scan queued successfully.',
+        scan_id: scanId,
+    }, { status: 201 });
+
   } catch (error: any) {
-    console.error('Error in GET /api/scans:', error);
+    console.error('Error in POST /api/scans:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
