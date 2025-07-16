@@ -23,7 +23,7 @@ export default function HandbookHomePage() {
           </li>
           <li>
             <strong>Start the Python Worker:</strong> Open a second, separate terminal and run the Python worker.
-            <pre className="code-block">py worker/normalized_worker_v3.py</pre>
+            <pre className="code-block">py worker/worker.py</pre>
             This worker processes uploaded binder images to detect and identify cards.
           </li>
           <li>

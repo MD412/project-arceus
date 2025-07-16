@@ -5,21 +5,29 @@ import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
 import ExampleShowcase from '@/components/layout/ExampleShowcase';
 
-// Define the spacing scale data, including our custom --sds-size-space-150
+// Define the complete spacing scale data with all tokens
 const spacingScale = [
   { token: '--sds-size-space-0', value: '0px', description: 'No spacing, used for removing default margins or padding.' },
+  { token: '--sds-size-space-025', value: '1px', description: 'Hair-thin spacing for borders and fine details.' },
   { token: '--sds-size-space-050', value: '2px', description: 'Micro spacing for tight UI elements.' },
+  { token: '--sds-size-space-075', value: '3px', description: 'Tiny spacing for compact components like small tags.' },
   { token: '--sds-size-space-100', value: '4px', description: 'Extra small spacing for compact layouts.' },
-  { token: '--sds-size-space-150', value: '6px', description: 'Custom small spacing step.' }, // Our custom token
+  { token: '--sds-size-space-150', value: '6px', description: 'Small spacing step for fine-tuned layouts.' },
   { token: '--sds-size-space-200', value: '8px', description: 'Small spacing for related elements.' },
+  { token: '--sds-size-space-250', value: '10px', description: 'Medium-small spacing for component internals.' },
   { token: '--sds-size-space-300', value: '12px', description: 'Base spacing for general content.' },
   { token: '--sds-size-space-400', value: '16px', description: 'Medium spacing for content sections.' },
+  { token: '--sds-size-space-500', value: '20px', description: 'Medium-large spacing for content blocks.' },
   { token: '--sds-size-space-600', value: '24px', description: 'Large spacing for major sections.' },
+  { token: '--sds-size-space-700', value: '28px', description: 'Large spacing for component separation.' },
   { token: '--sds-size-space-800', value: '32px', description: 'Extra large spacing for page sections.' },
+  { token: '--sds-size-space-1000', value: '40px', description: 'Extra large spacing for major content blocks.' },
   { token: '--sds-size-space-1200', value: '48px', description: 'Double extra large spacing for major layout blocks.' },
   { token: '--sds-size-space-1600', value: '64px', description: 'Triple extra large spacing for hero sections.' },
-  { token: '--sds-size-space-2400', value: '96px', description: 'Huge spacing for major page divisions.' },
-  { token: '--sds-size-space-4000', value: '160px', description: 'Maximum spacing for dramatic layout effects.' },
+  { token: '--sds-size-space-2000', value: '80px', description: 'Huge spacing for major page divisions.' },
+  { token: '--sds-size-space-2400', value: '96px', description: 'Massive spacing for dramatic layout effects.' },
+  { token: '--sds-size-space-3200', value: '128px', description: 'Maximum spacing for hero sections.' },
+  { token: '--sds-size-space-4000', value: '160px', description: 'Ultimate spacing for dramatic page breaks.' },
 ];
 
 export default function SpacingPage() {
@@ -72,6 +80,33 @@ export default function SpacingPage() {
   Content with margin-bottom: 16px and padding: 24px
 </div>`}
         />
+      </ContentSection>
+
+      <ContentSection title="Component Spacing Guidelines" headingLevel={2}>
+        <p className="body-medium">
+          Different components use specific spacing tokens for optimal visual hierarchy and usability:
+        </p>
+        <div style={{ marginTop: 'var(--sds-size-space-400)' }}>
+          <h3 className="heading" style={{ marginBottom: 'var(--sds-size-space-200)' }}>Tag Components</h3>
+          <ul className="list-disc pl-6 body-medium" style={{ marginBottom: 'var(--sds-size-space-400)' }}>
+            <li><strong>Small tags:</strong> <code>--sds-size-space-075</code> × <code>--sds-size-space-200</code> (3px × 8px)</li>
+            <li><strong>Medium tags:</strong> <code>--sds-size-space-100</code> × <code>--sds-size-space-250</code> (4px × 10px)</li>
+          </ul>
+          
+          <h3 className="heading" style={{ marginBottom: 'var(--sds-size-space-200)' }}>Button Components</h3>
+          <ul className="list-disc pl-6 body-medium" style={{ marginBottom: 'var(--sds-size-space-400)' }}>
+            <li><strong>Small buttons:</strong> <code>--sds-size-space-200</code> × <code>--sds-size-space-300</code> (8px × 12px)</li>
+            <li><strong>Medium buttons:</strong> <code>--sds-size-space-300</code> × <code>--sds-size-space-400</code> (12px × 16px)</li>
+            <li><strong>Large buttons:</strong> <code>--sds-size-space-400</code> × <code>--sds-size-space-500</code> (16px × 20px)</li>
+          </ul>
+          
+          <h3 className="heading" style={{ marginBottom: 'var(--sds-size-space-200)' }}>Layout Spacing</h3>
+          <ul className="list-disc pl-6 body-medium">
+            <li><strong>Component gaps:</strong> <code>--sds-size-space-200</code> to <code>--sds-size-space-400</code></li>
+            <li><strong>Section spacing:</strong> <code>--sds-size-space-600</code> to <code>--sds-size-space-800</code></li>
+            <li><strong>Page-level spacing:</strong> <code>--sds-size-space-1200</code> and above</li>
+          </ul>
+        </div>
       </ContentSection>
 
       <ContentSection title="Dimension Tokens vs. Spacing Tokens" headingLevel={2}>

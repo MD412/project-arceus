@@ -5,3 +5,6 @@ alwaysApply: true
 ---
 
 Tool Calls - Always Windows Powershell
+Supabase CLI 
+
+q^D^C leads to error "the term 'q' is not recognized 

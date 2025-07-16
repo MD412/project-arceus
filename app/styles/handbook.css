@@ -280,3 +280,126 @@
 .text-gold-light {
   color: var(--theme-gold-text-light);
 } 
+
+/* === Changelog Specific Styles === */
+
+/* Changelog feed container */
+.changelog-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-800); /* 32px between entries */
+}
+
+/* Changelog entry styling */
+.changelog-entry {
+  padding: var(--sds-size-space-600); /* 24px */
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-200);
+  background: var(--surface-background);
+}
+
+/* Changelog meta section */
+.changelog-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--sds-size-space-400);
+  margin-bottom: var(--sds-size-space-400);
+  gap: var(--sds-size-space-400);
+}
+
+.changelog-date {
+  font: var(--font-body-small);
+  color: var(--text-secondary);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.changelog-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-300);
+  flex-wrap: wrap;
+}
+
+/* Copy button styling */
+.copy-button {
+  background: var(--surface-preview-background);
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  padding: var(--sds-size-space-100) var(--sds-size-space-200);
+  font: var(--font-body-small);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-50);
+  flex-shrink: 0;
+}
+
+.copy-button:hover {
+  background: var(--surface-background-hover);
+  border-color: var(--border-default-hover);
+  color: var(--text-primary);
+}
+
+.copy-button:active {
+  transform: translateY(1px);
+}
+
+/* Changelog tags */
+.changelog-tags {
+  display: flex;
+  gap: var(--sds-size-space-100);
+  flex-wrap: wrap;
+}
+
+
+
+
+
+/* Changelog title and description */
+.changelog-entry h3 {
+  margin: 0 0 var(--sds-size-space-300) 0;
+  color: var(--text-primary);
+  font: var(--font-heading);
+}
+
+.changelog-entry p {
+  margin: 0 0 var(--sds-size-space-400) 0;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+/* Changelog details list */
+.changelog-entry ul {
+  margin: 0;
+  padding-left: var(--sds-size-space-400);
+  color: var(--text-primary);
+}
+
+.changelog-entry li {
+  margin-bottom: var(--sds-size-space-100);
+  line-height: 1.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .changelog-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sds-size-space-300);
+  }
+  
+  .changelog-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .changelog-tags {
+    flex: 1;
+    justify-content: flex-end;
+  }
+} 

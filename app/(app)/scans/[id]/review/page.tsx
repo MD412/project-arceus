@@ -40,6 +40,12 @@ interface ReviewPageData {
   };
 }
 
+interface TrainingFeedback {
+  [detectionId: string]: string; // e.g., 'not_a_card', 'missing_from_db', etc.
+}
+
+type FeedbackType = 'not_a_card' | 'missing_from_db' | 'wrong_id' | 'correct';
+
 const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 export default function ReviewPage() {
@@ -50,6 +56,7 @@ export default function ReviewPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCards, setSelectedCards] = useState<Set<string>>(new Set());
   const [addingToCollection, setAddingToCollection] = useState(false);
+  const [feedback, setFeedback] = useState<TrainingFeedback>({});
 
   useEffect(() => {
     if (!scanId) return;
@@ -193,6 +200,76 @@ export default function ReviewPage() {
     } finally {
       setAddingToCollection(false);
     }
+  };
+
+  const handleAddSingle = async (card) => {
+    setAddingToCollection(true);
+    try {
+      const supabase = getSupabaseClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      if (!userId) {
+        toast.error('You must be logged in to add cards to collection');
+        return;
+      }
+
+      // Optimistic update: Assume success and show toast immediately
+      toast.success(`Added ${card.identification_data.name} to your collection!`);
+
+      const baseUrl = data?.scan.results?.image_public_url?.substring(0, data.scan.results.image_public_url.lastIndexOf('/'));
+      
+      const cardToAdd = {
+        cardId: card.card_db_id,
+        condition: 'unknown',
+        quantity: 1,
+        cropImageUrl: baseUrl ? `${baseUrl}/${card.crop_path}` : null
+      };
+
+      const response = await fetch('/api/collections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, cards: [cardToAdd] })
+      });
+
+      if (!response.ok) {
+        toast.error('Failed to add card - rolling back');
+        throw new Error('Failed to add card');
+      }
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAddingToCollection(false);
+    }
+  };
+
+  const handleFeedback = async (detectionId: string, type: FeedbackType) => {
+    try {
+      const response = await fetch('/api/training/add-failure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ detection_id: detectionId, type })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit feedback');
+      }
+
+      setFeedback(prev => ({ ...prev, [detectionId]: type }));
+      toast.success(`Flagged as ${type.replace('_', ' ')}`);
+    } catch (err) {
+      toast.error('Failed to submit feedback');
+    }
+  };
+
+  const handleUndo = (detectionId: string) => {
+    setFeedback(prev => {
+      const newFeedback = { ...prev };
+      delete newFeedback[detectionId];
+      return newFeedback;
+    });
+    toast.success('Feedback reset');
   };
 
   if (loading) {
@@ -364,6 +441,66 @@ export default function ReviewPage() {
                     </>
                   )}
                 </div>
+
+                {/* Add training feedback buttons */}
+                <div className="training-feedback">
+                  <Button 
+                    variant="destructive"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); handleFeedback(card.crop_path, 'not_a_card'); }}
+                    disabled={!!feedback[card.crop_path]}
+                    className={feedback[card.crop_path] === 'not_a_card' ? 'selected' : ''}
+                  >
+                    {feedback[card.crop_path] === 'not_a_card' ? '✅ Not a Card' : '🚫 Not a Card'}
+                  </Button>
+                  <Button 
+                    variant="warning"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); handleFeedback(card.crop_path, 'missing_from_db'); }}
+                    disabled={!!feedback[card.crop_path]}
+                    className={feedback[card.crop_path] === 'missing_from_db' ? 'selected' : ''}
+                  >
+                    {feedback[card.crop_path] === 'missing_from_db' ? '✅ Missing from DB' : '📚 Missing from DB'}
+                  </Button>
+                  <Button 
+                    variant="warning"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); handleFeedback(card.crop_path, 'wrong_id'); }}
+                    disabled={!!feedback[card.crop_path]}
+                    className={feedback[card.crop_path] === 'wrong_id' ? 'selected' : ''}
+                  >
+                    {feedback[card.crop_path] === 'wrong_id' ? '✅ Wrong ID' : '❌ Wrong ID'}
+                  </Button>
+                  <Button 
+                    variant="success"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); handleFeedback(card.crop_path, 'correct'); }}
+                    disabled={!!feedback[card.crop_path]}
+                    className={feedback[card.crop_path] === 'correct' ? 'selected' : ''}
+                  >
+                    {feedback[card.crop_path] === 'correct' ? '✅ Correct' : '✅ Correct'}
+                  </Button>
+                  {feedback[card.crop_path] && (
+                    <Button 
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); handleUndo(card.crop_path); }}
+                    >
+                      Undo
+                    </Button>
+                  )}
+                </div>
+
+                {/* Confirm & Add Button */}
+                {card.card_db_id && (
+                  <Button 
+                    variant="primary"
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); handleAddSingle(card); }}
+                  >
+                    Confirm & Add
+                  </Button>
+                )}
               </div>
             ))}
           </div>
@@ -730,6 +867,19 @@ export default function ReviewPage() {
 
         .back-link:hover {
           color: var(--text-primary);
+        }
+
+        .training-feedback {
+          display: flex;
+          gap: 0.5rem;
+          margin-top: 1rem;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .training-feedback button.selected {
+          background-color: var(--success) !important;
+          color: white !important;
+          opacity: 1 !important;
         }
       `}</style>
     </PageLayout>

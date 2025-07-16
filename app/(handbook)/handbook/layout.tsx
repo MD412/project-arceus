@@ -30,6 +30,7 @@ const handbookNavItems: NavigationConfigItem[] = [
     defaultOpen: true,
     children: [
       { type: 'link', label: 'Optimistic CRUD Pipeline', href: '/handbook/patterns/optimistic-crud-pipeline' },
+      { type: 'link', label: 'Worker Pipeline', href: '/handbook/worker-pipeline' },
       // { type: 'link', label: 'Frontend Architecture', href: '/handbook/patterns/frontend-architecture' },
     ],
   },

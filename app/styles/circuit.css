@@ -57,18 +57,25 @@
   /* 2. SIZE PRIMITIVES */
   /* Spacing Scale */
   --sds-size-space-0: 0px;
+  --sds-size-space-025: 1px;
   --sds-size-space-050: 2px;
+  --sds-size-space-075: 3px;
   --sds-size-space-100: 4px;
   --sds-size-space-150: 6px;
   --sds-size-space-200: 8px;
+  --sds-size-space-250: 10px;
   --sds-size-space-300: 12px;
   --sds-size-space-400: 16px;
   --sds-size-space-500: 20px;
   --sds-size-space-600: 24px;
+  --sds-size-space-700: 28px;
   --sds-size-space-800: 32px;
+  --sds-size-space-1000: 40px;
   --sds-size-space-1200: 48px;
   --sds-size-space-1600: 64px;
+  --sds-size-space-2000: 80px;
   --sds-size-space-2400: 96px;
+  --sds-size-space-3200: 128px;
   --sds-size-space-4000: 160px;
 
   /* Component Heights - Reduced for more modern, compact buttons */
@@ -412,4 +419,67 @@ a {
   margin-top: 0;
   margin-bottom: var(--sds-size-space-600, 24px);
   letter-spacing: var(--letter-spacing-heading, -2%);
+}
+
+/* === Circuit Design System Component Styles === */
+
+/* Circuit Tag Component */
+.circuit-tag {
+  display: inline-flex;
+  align-items: center;
+  font: var(--font-body-small);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: var(--sds-size-radius-50);
+  border: 1px solid;
+  transition: all 0.2s ease;
+}
+
+/* Tag Sizes */
+.circuit-tag--small {
+  padding: var(--sds-size-space-075) var(--sds-size-space-200);
+  font-size: 0.75rem;
+}
+
+.circuit-tag--medium {
+  padding: var(--sds-size-space-100) var(--sds-size-space-250);
+  font-size: 0.8rem;
+}
+
+/* Tag Variants */
+.circuit-tag--default {
+  background: var(--surface-preview-background);
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+.circuit-tag--feature {
+  background: var(--theme-info-bg);
+  color: var(--theme-info-primary);
+  border-color: var(--theme-info-border);
+}
+
+.circuit-tag--success {
+  background: var(--theme-success-bg);
+  color: var(--theme-success-primary);
+  border-color: var(--theme-success-border);
+}
+
+.circuit-tag--warning {
+  background: var(--theme-warning-bg);
+  color: var(--theme-warning-primary);
+  border-color: var(--theme-warning-border);
+}
+
+.circuit-tag--error {
+  background: var(--theme-error-bg);
+  color: var(--theme-error-primary);
+  border-color: var(--theme-error-border);
+}
+
+.circuit-tag--info {
+  background: var(--theme-info-bg);
+  color: var(--theme-info-primary);
+  border-color: var(--theme-info-border);
 }

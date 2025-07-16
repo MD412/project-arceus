@@ -1,333 +1,202 @@
 'use client';
 
-import React from 'react';
-import PageLayout from '@/components/layout/PageLayout';
-import SortablePlayerGrid, { PlayerCardData } from '@/components/ui/SortablePlayerGrid';
-import StaticDragGrid from '@/components/ui/StaticDragGrid';
-import SearchBar from '@/components/ui/SearchBar';
+import { useState } from 'react';
+import { convertHeicToJpeg } from '@/lib/utils';
+import toast from 'react-hot-toast';
+import './playground-card-states.css';
 
-const PlaygroundCardStatesPage = () => {
-  // Sample data matching the PlayerCardData interface
-  const allCards: PlayerCardData[] = [
-    {
-      id: '1',
-      title: 'Pikachu',
-      description: 'Electric mouse Pokémon',
-      theme: 'arceus',
-      icon: '/ui-playground-pk-img/pikachu.jpg',
-      variant: 'default'
-    },
-    {
-      id: '2',
-      title: 'Bulbasaur',
-      description: 'Seed Pokémon',
-      theme: 'global',
-      icon: '/ui-playground-pk-img/bulbasaur.jpg',
-      variant: 'elevated'
-    },
-    {
-      id: '3',
-      title: 'Gyarados',
-      description: 'Atrocious Pokémon',
-      theme: 'file',
-      icon: '/ui-playground-pk-img/gyarados.jpg',
-      variant: 'outlined'
-    },
-    {
-      id: '4',
-      title: 'Moltres',
-      description: 'Flame Pokémon',
-      theme: 'window',
-      icon: '/ui-playground-pk-img/moltres.jpg',
-      variant: 'default'
-    },
-    {
-      id: '5',
-      title: 'Sylveon',
-      description: 'Intertwining Pokémon',
-      theme: 'frame',
-      icon: '/ui-playground-pk-img/slveon.jpg',
-      variant: 'elevated'
-    },
-    {
-      id: '6',
-      title: 'Walking Wake',
-      description: 'Paradox Pokémon',
-      theme: 'next',
-      icon: '/ui-playground-pk-img/walking-wake.jpg',
-      variant: 'outlined'
-    },
-    {
-      id: '7',
-      title: 'Garchomp',
-      description: 'Mach Pokémon',
-      theme: 'deploy',
-      icon: '/ui-playground-pk-img/Cynthias-Garchomp-ex-SIR.jpg',
-      variant: 'default'
-    },
-    {
-      id: '8',
-      title: 'Unknown Card',
-      description: 'Mystery awaits',
-      theme: 'network',
-      icon: '/ui-playground-pk-img/1600.jpg',
-      variant: 'elevated'
-    }
-  ];
+export default function PlaygroundCardStates() {
+  const [heicTestResult, setHeicTestResult] = useState<string>('');
+  const [convertedImageUrl, setConvertedImageUrl] = useState<string>('');
 
-  const [cards, setCards] = React.useState<PlayerCardData[]>(allCards);
-  const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [sortBy, setSortBy] = React.useState('default');
-  const [useStaticMode, setUseStaticMode] = React.useState(true);
+  const handleHeicTest = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  // Filter cards based on search
-  const filteredCards = React.useMemo(() => {
-    let filtered = [...allCards];
+    setHeicTestResult('Converting...');
+    setConvertedImageUrl('');
     
-    // Apply search filter
-    if (searchQuery) {
-      filtered = filtered.filter(card => 
-        card.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+    try {
+      const startTime = Date.now();
+      const converted = await convertHeicToJpeg(file);
+      const endTime = Date.now();
+      
+      const result = `
+Original: ${file.name} (${file.type || 'unknown'}) - ${(file.size / 1024).toFixed(2)}KB
+Converted: ${converted.name} (${converted.type}) - ${(converted.size / 1024).toFixed(2)}KB
+Time: ${endTime - startTime}ms
+Status: ${converted !== file ? '✅ Converted successfully' : '⚠️ No conversion needed'}
+      `;
+      
+      setHeicTestResult(result.trim());
+      
+      // Create a preview URL for the converted image
+      const url = URL.createObjectURL(converted);
+      setConvertedImageUrl(url);
+      
+      if (converted !== file) {
+        toast.success('HEIC conversion successful!');
+      } else {
+        toast.success('File is already in a supported format');
+      }
+    } catch (error) {
+      setHeicTestResult(`❌ Error: ${error}`);
+      toast.error('HEIC conversion failed');
     }
-
-    // Apply sorting
-    switch (sortBy) {
-      case 'name-asc':
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'name-desc':
-        filtered.sort((a, b) => b.title.localeCompare(a.title));
-        break;
-      case 'theme':
-        filtered.sort((a, b) => a.theme.localeCompare(b.theme));
-        break;
-      default:
-        // Keep original order
-        break;
-    }
-
-    return filtered;
-  }, [searchQuery, sortBy]);
-
-  // Update cards when filters change
-  React.useEffect(() => {
-    setCards(filteredCards);
-  }, [filteredCards]);
-
-  const sortOptions = [
-    { value: 'default', label: 'Default Order' },
-    { value: 'name-asc', label: 'Name (A-Z)' },
-    { value: 'name-desc', label: 'Name (Z-A)' },
-    { value: 'theme', label: 'Theme' }
-  ];
+  };
 
   return (
-    <PageLayout
-      title="Playground: Drag & Drop Cards"
-      description="Testing @dnd-kit implementation with search, sort, and different drag behaviors"
-    >
-      <div className="mode-toggle">
-        <label className="toggle-label">
-          <input
-            type="checkbox"
-            checked={useStaticMode}
-            onChange={(e) => setUseStaticMode(e.target.checked)}
-          />
-          <span className="toggle-switch"></span>
-          <span className="toggle-text">
-            {useStaticMode ? 'Static Placement Mode' : 'Auto-Sort Mode'}
-          </span>
-        </label>
-      </div>
-
-      <div className="playground-controls">
-        <div className="controls-left">
-          <SearchBar 
-            value={searchQuery} 
-            onChange={setSearchQuery}
-            placeholder="Search Pokémon..."
-          />
-          <div className="sort-select">
-            <label htmlFor="sort-by" className="sort-label">Sort by:</label>
-            <select 
-              id="sort-by"
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value)}
-              className="sort-dropdown"
-            >
-              {sortOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+    <div className="playground-container">
+      <h1 className="playground-title">HEIC File Support Test</h1>
+      
+      <section className="playground-section">
+        <h2 className="playground-section-title">HEIC to JPEG Conversion</h2>
+        <p className="playground-description">
+          Upload a HEIC file from your iPhone to test the conversion process. 
+          The file will be converted to JPEG format for compatibility.
+        </p>
+        
+        <div className="playground-heic-test">
+          <div className="circuit-form-field">
+            <label htmlFor="heic-upload" className="circuit-label">
+              Select HEIC File
+            </label>
+            <input 
+              id="heic-upload"
+              type="file" 
+              accept="image/*,.heic,.heif"
+              onChange={handleHeicTest}
+              className="circuit-input"
+            />
           </div>
+          
+          {heicTestResult && (
+            <div className="playground-test-result">
+              <h3>Conversion Result:</h3>
+              <pre className="playground-heic-result">{heicTestResult}</pre>
+            </div>
+          )}
+          
+          {convertedImageUrl && (
+            <div className="playground-image-preview">
+              <h3>Converted Image Preview:</h3>
+              <img 
+                src={convertedImageUrl} 
+                alt="Converted preview" 
+                style={{ maxWidth: '100%', maxHeight: '400px', borderRadius: '8px' }}
+              />
+            </div>
+          )}
         </div>
-        <div className="controls-right">
-          <button
-            className={`btn ${viewMode === 'grid' ? 'btn--primary' : 'btn--secondary'}`}
-            onClick={() => setViewMode('grid')}
-          >
-            Grid View
-          </button>
-          <button
-            className={`btn ${viewMode === 'list' ? 'btn--primary' : 'btn--secondary'}`}
-            onClick={() => setViewMode('list')}
-          >
-            List View
-          </button>
+      </section>
+
+      <section className="playground-section">
+        <h2 className="playground-section-title">How It Works</h2>
+        <div className="playground-info">
+          <ol>
+            <li>When you upload a HEIC file, it's automatically detected</li>
+            <li>The file is converted to JPEG format in your browser</li>
+            <li>The converted JPEG is then uploaded to our servers</li>
+            <li>If conversion fails, the original HEIC is uploaded and converted server-side</li>
+          </ol>
+          <p className="playground-note">
+            <strong>Note:</strong> HEIC files are Apple's high-efficiency image format. 
+            This conversion ensures compatibility across all devices and browsers.
+          </p>
         </div>
-      </div>
-
-      <div className="results-info">
-        Showing {cards.length} of {allCards.length} cards
-      </div>
-
-      <div className="playground-content">
-        {useStaticMode ? (
-          <StaticDragGrid 
-            cards={cards} 
-            setCards={setCards} 
-            viewMode={viewMode}
-          />
-        ) : (
-          <SortablePlayerGrid 
-            cards={cards} 
-            setCards={setCards} 
-            viewMode={viewMode}
-          />
-        )}
-      </div>
+      </section>
 
       <style jsx>{`
-        .mode-toggle {
+        .playground-container {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: var(--sds-size-space-600);
+        }
+        
+        .playground-title {
+          font-size: var(--font-size-500);
           margin-bottom: var(--sds-size-space-600);
-          display: flex;
-          justify-content: center;
+          color: var(--text-primary);
         }
-
-        .toggle-label {
-          display: flex;
-          align-items: center;
-          gap: var(--sds-size-space-200);
-          cursor: pointer;
-        }
-
-        .toggle-switch {
-          position: relative;
-          width: 48px;
-          height: 24px;
-          background: var(--surface-subtle);
+        
+        .playground-section {
+          margin-bottom: var(--sds-size-space-800);
+          padding: var(--sds-size-space-600);
+          background: var(--surface-background);
           border: 1px solid var(--border-default);
-          border-radius: 12px;
-          transition: all 0.3s ease;
+          border-radius: var(--sds-size-radius-200);
         }
-
-        .toggle-switch::after {
-          content: '';
-          position: absolute;
-          top: 2px;
-          left: 2px;
-          width: 18px;
-          height: 18px;
-          background: var(--text-secondary);
-          border-radius: 50%;
-          transition: transform 0.3s ease;
-        }
-
-        input[type="checkbox"] {
-          display: none;
-        }
-
-        input[type="checkbox"]:checked + .toggle-switch {
-          background: var(--interactive-primary-subtle);
-          border-color: var(--interactive-primary);
-        }
-
-        input[type="checkbox"]:checked + .toggle-switch::after {
-          transform: translateX(24px);
-          background: var(--interactive-primary);
-        }
-
-        .toggle-text {
-          font-size: var(--font-size-100);
-          font-weight: 500;
-        }
-
-        .playground-controls {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: var(--sds-size-space-400);
+        
+        .playground-section-title {
+          font-size: var(--font-size-300);
           margin-bottom: var(--sds-size-space-400);
-          flex-wrap: wrap;
+          color: var(--text-primary);
         }
-
-        .controls-left,
-        .controls-right {
-          display: flex;
-          gap: var(--sds-size-space-200);
-          align-items: center;
-        }
-
-        .results-info {
+        
+        .playground-description {
           color: var(--text-secondary);
-          font-size: var(--font-size-75);
           margin-bottom: var(--sds-size-space-400);
         }
-
-        .playground-content {
+        
+        .playground-heic-test {
+          display: flex;
+          flex-direction: column;
+          gap: var(--sds-size-space-400);
+        }
+        
+        .playground-test-result,
+        .playground-image-preview {
           padding: var(--sds-size-space-400);
           background: var(--surface-subtle);
-          border-radius: var(--sds-size-radius-200);
-          min-height: 500px;
-        }
-
-        .btn {
-          padding: var(--sds-size-space-200) var(--sds-size-space-400);
           border-radius: var(--sds-size-radius-100);
+        }
+        
+        .playground-test-result h3,
+        .playground-image-preview h3 {
+          font-size: var(--font-size-100);
+          margin-bottom: var(--sds-size-space-200);
+          color: var(--text-secondary);
+        }
+        
+        .playground-heic-result {
+          font-family: var(--font-mono);
+          font-size: var(--font-size-75);
+          line-height: 1.6;
+          color: var(--text-primary);
+          white-space: pre-wrap;
+          margin: 0;
+        }
+        
+        .playground-info ol {
+          margin-left: var(--sds-size-space-400);
+          color: var(--text-secondary);
+        }
+        
+        .playground-info li {
+          margin-bottom: var(--sds-size-space-200);
+        }
+        
+        .playground-note {
+          margin-top: var(--sds-size-space-400);
+          padding: var(--sds-size-space-300);
+          background: var(--surface-info-subtle);
+          border-radius: var(--sds-size-radius-100);
+          color: var(--text-primary);
+          font-size: var(--font-size-75);
+        }
+        
+        .circuit-form-field {
+          display: flex;
+          flex-direction: column;
+          gap: var(--sds-size-space-200);
+        }
+        
+        .circuit-label {
           font-size: var(--font-size-100);
           font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          border: 1px solid transparent;
-        }
-
-        .btn--primary {
-          background: var(--interactive-primary);
-          color: var(--text-on-primary);
-          border-color: var(--interactive-primary);
-        }
-
-        .btn--secondary {
-          background: var(--surface-background);
           color: var(--text-primary);
-          border-color: var(--border-default);
-        }
-
-        .btn:hover {
-          transform: translateY(-1px);
-          box-shadow: var(--shadow-sm);
-        }
-
-        @media (max-width: 768px) {
-          .playground-controls {
-            flex-direction: column;
-            align-items: stretch;
-          }
-
-          .controls-left,
-          .controls-right {
-            width: 100%;
-            justify-content: space-between;
-          }
         }
       `}</style>
-    </PageLayout>
+    </div>
   );
-};
-
-export default PlaygroundCardStatesPage; 
+} 

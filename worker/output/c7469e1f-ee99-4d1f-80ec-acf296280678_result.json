@@ -1,0 +1,4 @@
+{
+  "error": "{'message': \"Could not find the 'identification_confidence' column of 'card_detections' in the schema cache\", 'code': 'PGRST204', 'hint': None, 'details': None}",
+  "traceback": "Traceback (most recent call last):\n  File \"c:\\Users\\mdand\\Projects\\project-arceus\\worker\\worker.py\", line 444, in main\n    try:\n    \n  File \"c:\\Users\\mdand\\Projects\\project-arceus\\worker\\worker.py\", line 341, in run_normalized_pipeline\n    return {\n    ^^^^^^^\n  File \"c:\\Users\\mdand\\Projects\\project-arceus\\worker\\worker.py\", line 291, in run_normalized_pipeline\n  File \"C:\\Users\\mdand\\Projects\\project-arceus\\.venv\\Lib\\site-packages\\postgrest\\_sync\\request_builder.py\", line 78, in execute\n    raise APIError(dict(json_obj))\npostgrest.exceptions.APIError: {'message': \"Could not find the 'identification_confidence' column of 'card_detections' in the schema cache\", 'code': 'PGRST204', 'hint': None, 'details': None}\n"
+}

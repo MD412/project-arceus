@@ -203,9 +203,9 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                 </p>
                                   <Button 
                     variant="secondary"
-                    onClick={() => setUseGridLayout(!useGridLayout)}
-                  >
-                    {useGridLayout ? '📍 Spatial View' : '🔲 Grid View'}
+                  onClick={() => setUseGridLayout(!useGridLayout)}
+                >
+                  {useGridLayout ? '📍 Spatial View' : '🔲 Grid View'}
                   </Button>
               </div>
             </div>
@@ -261,16 +261,16 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                             <div className="correction-buttons">
                                                               <Button 
                                   variant="primary"
-                                  onClick={() => handleSaveCorrection(cardIndex)}
-                                  disabled={!manualCardName.trim()}
-                                >
-                                  ✓ Save
+                                onClick={() => handleSaveCorrection(cardIndex)}
+                                disabled={!manualCardName.trim()}
+                              >
+                                ✓ Save
                                 </Button>
                                 <Button 
                                   variant="secondary"
-                                  onClick={handleCancelCorrection}
-                                >
-                                  ✕ Cancel
+                                onClick={handleCancelCorrection}
+                              >
+                                ✕ Cancel
                                 </Button>
                             </div>
                           </div>
@@ -299,10 +299,10 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                               <p className="error-text">{enrichedCard.error_message || 'Not in database'}</p>
                                                               <Button 
                                   variant="secondary"
-                                  onClick={() => handleFixCard(cardIndex)}
-                                  disabled={correctingCard === cardIndex}
-                                >
-                                  🔧 Fix This
+                                onClick={() => handleFixCard(cardIndex)}
+                                disabled={correctingCard === cardIndex}
+                              >
+                                🔧 Fix This
                                 </Button>
                             </>
                           )}
@@ -330,7 +330,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                                 </Button>
                               )}
                               
-                              {enrichedCard.enrichment_success && (
+                          {enrichedCard.enrichment_success && (
                                 <Button 
                                   variant="ghost"
                                   size="sm"
@@ -347,7 +347,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                                   size="sm"
                                   onClick={() => handleConfidenceFeedback(enrichedCard.detection_id, 'correct')}
                                   title="This identification is actually correct"
-                                >
+                            >
                                   ✅ Correct
                                 </Button>
                               )}
@@ -375,9 +375,9 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
                         <p className="card-details">Legacy detection</p>
                                                   <Button 
                             variant="secondary"
-                            onClick={() => handleFixCard(index)}
-                          >
-                            🔧 Fix This
+                          onClick={() => handleFixCard(index)}
+                        >
+                          🔧 Fix This
                           </Button>
                       </div>
                     </div>
@@ -594,7 +594,7 @@ export default function BinderDetailPage({ params }: BinderPageProps) {
           margin-bottom: 0;
           margin-top: 0.5rem;
         }
-
+        
         /* NEW: Smart Feedback Styles */
         .smart-feedback {
           display: flex;

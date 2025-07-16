@@ -3,8 +3,25 @@
 import React from 'react';
 import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
+import Tag from '@/components/ui/Tag';
 
-const changelogData = [
+const changelogEntries = [
+  {
+    date: '2025-01-01',
+    version: '1.4.0',
+    title: 'Blank Spaces in Digital Binders',
+    tags: ['product', 'ux', 'feature'],
+    description: 'Decided on hybrid approach for handling blank spaces from physical binders in digital views.',
+    details: [
+      'Analyzed JTBD: Balance physical authenticity with digital efficiency',
+      'Pros of mirroring blanks: Mental model match, wishlist potential',
+      'Cons: Wasted screen space, UX friction on mobile',
+      'Recommendation: Default to optimized (remove blanks) with toggle for "Physical View"',
+      'Implementation plan: Store positions in DB, add view toggle in binder component'
+    ],
+    impact: 'Improves UX flexibility while preserving option for 1:1 physical mapping. MVP: Optimized default, toggle in v1.1.',
+    related: ['Product Discussion #1']
+  },
   {
     date: 'January 2, 2025 (Late Night Session)',
     title: 'Smart Training System & CircuitDS Button Consistency',
@@ -111,21 +128,88 @@ const changelogData = [
 ];
 
 export default function ChangelogPage() {
+  const copyToClipboard = async (entry: typeof changelogEntries[0]) => {
+    const formattedText = `${entry.title}
+${entry.date}
+
+${entry.description}
+
+Key Changes:
+${entry.details.map(detail => `• ${detail}`).join('\n')}
+
+Tags: ${entry.tags.join(', ')}`;
+
+    try {
+      await navigator.clipboard.writeText(formattedText);
+      // Simple feedback - could enhance with toast notification
+      const button = document.activeElement as HTMLButtonElement;
+      const originalText = button.textContent;
+      button.textContent = '✅ Copied!';
+      setTimeout(() => {
+        button.textContent = originalText;
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = formattedText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    }
+  };
+
   return (
     <PageLayout
       title="📜 Project Changelog"
       description="A reverse-chronological log of major features, architectural changes, and bug fixes for Project Arceus."
     >
       <div className="changelog-feed">
-        {changelogData.map((entry, index) => (
+        {changelogEntries.map((entry, index) => (
           <ContentSection key={index} title="" headingLevel={2}>
             <div className="changelog-entry">
               <div className="changelog-meta">
                 <time className="changelog-date">{entry.date}</time>
+                <div className="changelog-actions">
+                  <button 
+                    className="copy-button"
+                    onClick={() => copyToClipboard(entry)}
+                    title="Copy changelog entry to clipboard"
+                  >
+                    📋 Copy
+                  </button>
                 <div className="changelog-tags">
-                  {entry.tags.map(tag => (
-                    <span key={tag} className={`changelog-tag tag-${tag.toLowerCase().split('/')[0]}`}>{tag}</span>
-                  ))}
+                    {entry.tags.map(tag => {
+                      // Map tag text to CircuitDS variants
+                      const variant = (() => {
+                        const normalizedTag = tag.toLowerCase().split('/')[0];
+                        switch (normalizedTag) {
+                          case 'feature': return 'feature';
+                          case 'ux': return 'success';
+                          case 'design': return 'info';
+                          case 'training': return 'warning';
+                          case 'bugfix': return 'error';
+                          case 'milestone': return 'warning';
+                          case 'architecture': return 'info';
+                          case 'database': return 'info';
+                          case 'worker': return 'warning';
+                          case 'api': return 'success';
+                          case 'stability': return 'default';
+                          case 'refactor': return 'info';
+                          case 'ai': return 'feature';
+                          case 'handbook': return 'default';
+                          case 'product': return 'info';
+                          default: return 'default';
+                        }
+                      })();
+                      return (
+                        <Tag key={tag} variant={variant} size="small">
+                          {tag.toUpperCase()}
+                        </Tag>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               <h2 className="changelog-title">{entry.title}</h2>
@@ -166,29 +250,9 @@ export default function ChangelogPage() {
         }
         .changelog-tags {
           display: flex;
-          gap: var(--sds-size-space-200);
+          gap: var(--sds-size-space-150);
+          flex-wrap: wrap;
         }
-        .changelog-tag {
-          display: inline-block;
-          padding: var(--sds-size-space-50) var(--sds-size-space-200);
-          border-radius: var(--sds-size-radius-100);
-          font-size: var(--font-size-75);
-          font-weight: 500;
-          text-transform: uppercase;
-        }
-        .tag-architecture { background-color: #e0f2fe; color: #0c4a6e; }
-        .tag-ux { background-color: #dcfce7; color: #166534; }
-        .tag-database { background-color: #fefce8; color: #854d0e; }
-        .tag-bugfix { background-color: #fee2e2; color: #991b1b; }
-        .tag-refactor { background-color: #f3e8ff; color: #581c87; }
-        .tag-stability { background-color: #e5e7eb; color: #374151; }
-        .tag-feature { background-color: #e0e7ff; color: #312e81; }
-        .tag-api { background-color: #ede9fe; color: #5b21b6; }
-        .tag-worker { background-color: #fae8ff; color: #86198f; }
-        .tag-design { background-color: #ffcf60; color: #1a4a47; }
-        .tag-training { background-color: #f0fdf4; color: #166534; }
-        .tag-milestone { background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: #422006; font-weight: 600; }
-        .tag-ai { background-color: #d1fae5; color: #065f46; }
         
         .changelog-title {
           margin: 0 0 var(--sds-size-space-200) 0;

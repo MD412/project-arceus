@@ -47,7 +47,7 @@ export default function VisionPipelinePRDPage() {
         <ul className="list-disc pl-6 body-medium space-y-2">
           <li><strong>Supabase Storage</strong> – raw images (bucket: <code>scans</code>), card crops, summary images.</li>
           <li><strong>job_queue</strong> table + <code>dequeue_and_start_job()</code> RPC – single-row locking for workers.</li>
-          <li><strong>Python Worker</strong> (<code>worker/normalized_worker_v3.py</code>) – detection, enrichment, persistence.</li>
+                      <li><strong>Python Worker</strong> (<code>worker/worker.py</code>) – detection, enrichment, persistence with CLIP-based identification.</li>
           <li><strong>Computer Vision</strong> – YOLOv8 (ultralytics) weights <code>pokemon_cards_trained.pt</code>.</li>
           <li><strong>OCR / LLM Assist</strong> – PaddleOCR or Tesseract (future); placeholder <code>mock_enrich_card()</code>.</li>
           <li><strong>External Card Data</strong> – PokémonTCG.io API for ground-truth metadata &amp; prices (<a href="https://pokemontcg.io/" target="_blank">link</a>).</li>

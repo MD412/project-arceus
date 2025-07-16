@@ -38,9 +38,9 @@ export async function getJobById(jobId: string) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        console.log(`Job with id ${jobId} not found.`);
-        return null;
-      }
+      console.log(`Job with id ${jobId} not found.`);
+      return null;
+    }
       const errorData = await response.json();
       throw new Error(errorData.error || `Failed to fetch job ${jobId}`);
     }

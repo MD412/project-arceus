@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/browser';
+import { convertHeicToJpeg } from '@/lib/utils';
 
 import { ScanSchema } from '@/schemas/scan';
 import { Input } from '../forms';
@@ -25,11 +26,33 @@ async function createBulkScans(data: any) {
   const title = data.title || `Bulk Upload - ${new Date().toLocaleDateString()}`;
   formData.append('title', title);
   formData.append('user_id', userId);
+
+  // Convert HEIC files to JPEG before uploading
+  const files = Array.from(data.files) as File[];
+  let convertedCount = 0;
   
-  // Append all files
-  Array.from(data.files).forEach((file: any) => {
-    formData.append('files', file);
-  });
+  for (const file of files) {
+    let processedFile = file;
+    
+    // Check if it's a HEIC file
+    if (file.type.includes('heic') || file.type.includes('heif') || 
+        file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
+      try {
+        processedFile = await convertHeicToJpeg(file);
+        if (processedFile !== file) {
+          convertedCount++;
+        }
+      } catch (error) {
+        console.warn(`Failed to convert HEIC file ${file.name}, will try server-side conversion`, error);
+      }
+    }
+    
+    formData.append('files', processedFile);
+  }
+  
+  if (convertedCount > 0) {
+    toast.success(`Converted ${convertedCount} HEIC file(s) to JPEG`);
+  }
 
   const response = await fetch('/api/scans/bulk', {
     method: 'POST',
@@ -83,6 +106,18 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
   const onSubmit = (data: any) => {
     const fileInput = (document.getElementById('file') as HTMLInputElement).files;
     if (fileInput && fileInput.length > 0) {
+      // Debug logging
+      console.group('File Upload Debug');
+      Array.from(fileInput).forEach((file: File, index: number) => {
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'unknown';
+        console.log(`File ${index + 1}:`);
+        console.log(`- Name: ${file.name}`);
+        console.log(`- Type: ${file.type || 'empty'}`);
+        console.log(`- Extension: ${ext}`);
+        console.log(`- Size: ${(file.size / 1024).toFixed(2)} KB`);
+      });
+      console.groupEnd();
+      
       const submissionData = { ...data, files: fileInput };
       mutation.mutate(submissionData);
     } else {
@@ -112,6 +147,7 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
           {...register('file')}
           error={errors.file?.message as string}
           multiple // Allow multiple file selection
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif,.HEIC,.HEIF"
         />
 
         <div className="circuit-form-actions">

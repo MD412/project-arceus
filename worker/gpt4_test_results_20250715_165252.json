@@ -1,0 +1,118 @@
+{
+  "summary": {
+    "success_rate": 100.0,
+    "total_cost": 0.01089105,
+    "avg_response_time": 1.6359079837799073,
+    "avg_confidence": 0.95
+  },
+  "results": [
+    {
+      "crop_file": "tile_8_5_detections.jpg",
+      "result": {
+        "success": true,
+        "card": {
+          "name": "Heliolisk",
+          "set_code": "swsh1",
+          "number": "027/197",
+          "confidence": 0.95
+        },
+        "cost_usd": 0.0021784499999999997,
+        "tokens": {
+          "input": 14391,
+          "output": 33
+        },
+        "response_time_ms": 2106,
+        "raw_response": "{\"name\": \"Heliolisk\", \"set_code\": \"swsh1\", \"number\": \"027/197\", \"confidence\": 0.95}"
+      },
+      "test_time": 2.107140302658081
+    },
+    {
+      "crop_file": "tile_8_4_final.jpg",
+      "result": {
+        "success": true,
+        "card": {
+          "name": "Heliolisk",
+          "set_code": "xy5",
+          "number": "27/160",
+          "confidence": 0.95
+        },
+        "cost_usd": 0.00217785,
+        "tokens": {
+          "input": 14391,
+          "output": 32
+        },
+        "response_time_ms": 1139,
+        "raw_response": "{\"name\": \"Heliolisk\", \"set_code\": \"xy5\", \"number\": \"27/160\", \"confidence\": 0.95}"
+      },
+      "test_time": 1.1498439311981201
+    },
+    {
+      "crop_file": "tile_8_1_edges.jpg",
+      "result": {
+        "success": true,
+        "card": {
+          "name": "Heliolisk",
+          "set_code": "sv1",
+          "number": "44/72",
+          "confidence": 0.95
+        },
+        "cost_usd": 0.00217785,
+        "tokens": {
+          "input": 14391,
+          "output": 32
+        },
+        "response_time_ms": 1473,
+        "raw_response": "{\"name\": \"Heliolisk\", \"set_code\": \"sv1\", \"number\": \"44/72\", \"confidence\": 0.95}"
+      },
+      "test_time": 1.4836995601654053
+    },
+    {
+      "crop_file": "tile_8_2_contour.jpg",
+      "result": {
+        "success": true,
+        "card": {
+          "name": "Helioptile",
+          "set_code": "swsh1",
+          "number": "50/202",
+          "confidence": 0.95
+        },
+        "cost_usd": 0.0021790499999999997,
+        "tokens": {
+          "input": 14391,
+          "output": 34
+        },
+        "response_time_ms": 1538,
+        "raw_response": "{\"name\": \"Helioptile\", \"set_code\": \"swsh1\", \"number\": \"50/202\", \"confidence\": 0.95}"
+      },
+      "test_time": 1.5459222793579102
+    },
+    {
+      "crop_file": "tile_8_0_original.jpg",
+      "result": {
+        "success": true,
+        "card": {
+          "name": "Heliolisk",
+          "set_code": "xy5",
+          "number": "22/147",
+          "confidence": 0.95
+        },
+        "cost_usd": 0.00217785,
+        "tokens": {
+          "input": 14391,
+          "output": 32
+        },
+        "response_time_ms": 1881,
+        "raw_response": "{\"name\": \"Heliolisk\", \"set_code\": \"xy5\", \"number\": \"22/147\", \"confidence\": 0.95}"
+      },
+      "test_time": 1.8929338455200195
+    }
+  ],
+  "cost_summary": {
+    "date": "2025-07-15",
+    "total_cost": 0.021784049999999996,
+    "budget": 0.05,
+    "budget_used_pct": 43.56809999999999,
+    "requests_count": 10,
+    "avg_cost_per_request": 0.0021784049999999996
+  }
+}

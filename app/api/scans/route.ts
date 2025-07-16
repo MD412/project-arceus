@@ -29,8 +29,8 @@ function getSupabaseServiceRoleClient() {
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
-}
-
+    }
+    
 /**
  * GET /api/scans
  * Fetches all scans for the currently authenticated user.
@@ -38,11 +38,11 @@ function getSupabaseServiceRoleClient() {
 export async function GET(request: NextRequest) {
   const supabase = getSupabaseClientWithUser();
   const { data: { user } } = await supabase.auth.getUser();
-
+  
   if (!user) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
-  
+
   try {
     const { data: scans, error } = await getSupabaseServiceRoleClient()
       .from('scan_uploads')
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
     return NextResponse.json(scans || []);
-
+    
   } catch (error: any) {
     console.error('Error in GET /api/scans:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

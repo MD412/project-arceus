@@ -1,0 +1,4 @@
+{
+  "error": "name 'detection_data' is not defined",
+  "traceback": "Traceback (most recent call last):\n  File \"c:\\Users\\mdand\\Projects\\project-arceus\\worker\\normalized_worker_v3.py\", line 491, in main\n    pipeline_results = run_normalized_pipeline(job, yolo_model)\n  File \"c:\\Users\\mdand\\Projects\\project-arceus\\worker\\normalized_worker_v3.py\", line 371, in run_normalized_pipeline\n    raise e\n  File \"c:\\Users\\mdand\\Projects\\project-arceus\\worker\\normalized_worker_v3.py\", line 289, in run_normalized_pipeline\n    detection_data[\"is_blank\"] = is_blank\n    ^^^^^^^^^^^^^^\nNameError: name 'detection_data' is not defined. Did you mean: 'detection_image'?\n"
+}

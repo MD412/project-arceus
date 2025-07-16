@@ -8,11 +8,16 @@ import os
 from pathlib import Path
 from huggingface_hub import HfApi, upload_file
 import sys
+import zipfile
+from huggingface_hub import HfApi, create_repo
 
 # Configuration
 HF_USERNAME = "zanzoy"
 HF_REPO_NAME = "alkzm"
 MODEL_FILE = "pokemon_cards_trained.pt"
+
+HF_DATASET_REPO = "zanzoy/pokemon-card-training-data"
+TRAINING_FOLDERS = ["not_a_card", "missing_from_db", "wrong_id", "correct"]
 
 def upload_model():
     """Upload the trained model to Hugging Face."""
@@ -110,6 +115,55 @@ The model is optimized for detecting Pokemon cards in various lighting condition
     except Exception as e:
         print(f"⚠️  Failed to create model card: {e}")
 
+def sync_training_data():
+    hf_token = os.getenv("HF_TOKEN")
+    if not hf_token:
+        print("❌ HF_TOKEN not set")
+        return False
+    
+    api = HfApi()
+    
+    # Create repo if not exists
+    try:
+        create_repo(HF_DATASET_REPO, token=hf_token, repo_type="dataset", exist_ok=True)
+    except:
+        pass
+    
+    base_dir = Path(__file__).parent / "training_data"
+    
+    for folder in TRAINING_FOLDERS:
+        dir_path = base_dir / folder
+        if not dir_path.exists():
+            print(f"⚠️ Skipping {folder} - directory not found")
+            continue
+            
+        # Zip the folder
+        zip_path = base_dir / f"{folder}.zip"
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(dir_path):
+                for file in files:
+                    zipf.write(os.path.join(root, file), 
+                               os.path.relpath(os.path.join(root, file), dir_path))
+        
+        # Upload zip
+        try:
+            upload_file(
+                path_or_fileobj=str(zip_path),
+                path_in_repo=f"{folder}.zip",
+                repo_id=HF_DATASET_REPO,
+                token=hf_token,
+                repo_type="dataset"
+            )
+            print(f"✅ Uploaded {folder}.zip")
+        except Exception as e:
+            print(f"❌ Failed to upload {folder}: {e}")
+            continue
+            
+        # Clean up zip
+        os.remove(zip_path)
+    
+    return True
+
 if __name__ == "__main__":
     print("🚀 Pokemon Card Model Upload Tool")
     print("=" * 40)
@@ -129,3 +183,4 @@ if __name__ == "__main__":
         print("2. Set environment variable: export HF_TOKEN=your_token")
         print("3. Run this script again")
         sys.exit(1) 
+    sync_training_data() 

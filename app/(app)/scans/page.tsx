@@ -154,7 +154,7 @@ export default function ScansPage() {
             <p>You haven't uploaded any card scans for processing yet.</p>
             <Link href="/upload">
               <Button variant="primary">
-                Upload Your First Scan
+              Upload Your First Scan
               </Button>
             </Link>
           </div>
@@ -183,7 +183,7 @@ export default function ScansPage() {
                     🔧 Fix Stuck Scans
                   </Button>
                 )}
-              </div>
+                  </div>
                   
               <div className="scans-page__priority-grid">
                 {priorityUploads.map((upload) => (

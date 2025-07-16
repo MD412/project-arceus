@@ -124,8 +124,12 @@ class PokemonTCGAPI:
                 print("🚫 OCR found nothing usable")
                 return None
 
-            extracted_name = texts[0].lower()
-            extracted_set  = texts[1].lower() if len(texts) > 1 else ""
+            import re
+            raw_name = texts[0].lower()
+            # Remove problematic Lucene characters and stray symbols
+            extracted_name = re.sub(r"[^a-z0-9\s]", "", raw_name).strip()
+            raw_set = texts[1].lower() if len(texts) > 1 else ""
+            extracted_set = re.sub(r"[^a-z0-9\s]", "", raw_set).strip()
             print(f"📝 Clean OCR name: {extracted_name} | set: {extracted_set}")
             
             # Build query with name and set if available
@@ -136,14 +140,34 @@ class PokemonTCGAPI:
 
             if not candidates:
                 # wildcard fallback
-                wild_q = f'name:{extracted_name}*'
+                wild_q = f'name:"{extracted_name}*"'
                 print(f"🔎 Strict query empty – trying wildcard → {wild_q}")
                 candidates = self.search_cards(wild_q)
 
             if not candidates:
-                print("⚠️ No candidates found")
-                return None
-                
+                # --- Fuzzy name search (Levenshtein) ---
+                try:
+                    if len(extracted_name) >= 3:
+                        fuzzy_q = f'name:{extracted_name}~'
+                        print(f"🔎 Wildcard empty – trying fuzzy → {fuzzy_q}")
+                        candidates = self.search_cards(fuzzy_q)
+                        if not candidates and " " in extracted_name:
+                            # Try fuzzy on each word to be resilient to multi-word errors
+                            parts = extracted_name.split()
+                            fuzzy_parts = " ".join([f'name:{p}~' for p in parts if len(p) >= 3])
+                            if fuzzy_parts:
+                                print(f"🔎 Fuzzy per-word query → {fuzzy_parts}")
+                                candidates = self.search_cards(fuzzy_parts)
+                except Exception as fuzzy_err:
+                    print(f"⚠️ Fuzzy search failed: {fuzzy_err}")
+
+                if not candidates:
+                    print("⚠️ No candidates found after all search strategies")
+                    return None
+
+                if not candidates:
+                    return None
+
             # Compute crop hash
             crop_img = PilImage.open(crop_image_path)
             crop_hash = phash(crop_img)

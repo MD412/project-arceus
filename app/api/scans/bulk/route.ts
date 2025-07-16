@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
   // -------- 3  Upload + enqueue in parallel
   const results = await Promise.allSettled(
     files.map(async (file) => {
-      if (!['image/jpeg', 'image/png'].includes(file.type)) {
-        throw new Error('Invalid file type: only JPEG/PNG allowed');
+      if (!['image/jpeg', 'image/png', 'image/heic', 'image/heif'].includes(file.type)) {
+        throw new Error('Invalid file type: only JPEG/PNG/HEIC/HEIF allowed');
       }
 
       const scanId = uuid();
