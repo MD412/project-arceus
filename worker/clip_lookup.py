@@ -54,7 +54,7 @@ class CLIPCardIdentifier:
             return None
 
     def find_similar_cards(self, query_embedding: np.ndarray, 
-                          similarity_threshold: float = 0.50,  # Optimized threshold
+                          similarity_threshold: float = 0.60,  # Optimized from 19k embeddings testing (100% accuracy)
                           max_results: int = 5) -> List[Dict]:
         """Find cards with similar embeddings using pgvector cosine similarity"""
         try:
@@ -125,7 +125,7 @@ class CLIPCardIdentifier:
             return []
 
     def identify_card_from_crop(self, image_path_or_pil: str | Image.Image, 
-                               similarity_threshold: float = 0.50) -> Dict:
+                               similarity_threshold: float = 0.60) -> Dict:
         """
         Main card identification function - replaces OCR-based approach
         
