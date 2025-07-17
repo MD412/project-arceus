@@ -9,6 +9,7 @@ import numpy as np
 from typing import Dict, Optional, Union
 from PIL import Image
 import logging
+from config import is_gpt_fallback_enabled
 
 from clip_lookup import CLIPCardIdentifier
 from gpt4_vision_identifier import GPT4VisionIdentifier
@@ -87,6 +88,27 @@ class HybridCardIdentifierV2:
                 
                 logger.info(f"✅ HIGH CONFIDENCE CLIP: {clip_confidence:.3f} >= {self.HIGH_CONFIDENCE_THRESHOLD}")
                 
+                # Enrich with pokemontcg.io data if we have set_code and number
+                set_code = clip_result.get('set_code', 'unknown')
+                card_number = clip_result.get('number', 'unknown')
+                enriched_data = {}
+                
+                if set_code != 'unknown' and card_number != 'unknown':
+                    try:
+                        logger.info(f"🔍 Enriching {set_code} #{card_number} via pokemontcg.io...")
+                        enrichment_result = self.tcg_api.search_by_set_and_number(set_code, card_number)
+                        if enrichment_result:
+                            enriched_data = {
+                                'set_name': enrichment_result.get('set', {}).get('name', 'Unknown Set'),
+                                'rarity': enrichment_result.get('rarity', 'Unknown'),
+                                'api_id': enrichment_result.get('id', None)
+                            }
+                            logger.info(f"✅ Enriched: {enriched_data.get('set_name')}")
+                        else:
+                            logger.warning(f"⚠️ No enrichment data found for {set_code} #{card_number}")
+                    except Exception as e:
+                        logger.error(f"❌ Enrichment failed: {e}")
+                
                 return {
                     "success": True,
                     "method": "clip",
@@ -95,8 +117,30 @@ class HybridCardIdentifierV2:
                         "name": clip_result.get('name', 'Unknown'),
                         "set_code": clip_result.get('set_code', 'unknown'),
                         "number": clip_result.get('number', 'unknown'),
-                        "confidence": clip_confidence
+                        "confidence": clip_confidence,
+                        **enriched_data  # Add enrichment data if available
                     },
+                    "similarity_score": clip_confidence,
+                    "cost_usd": 0.0,
+                    "response_time_ms": response_time,
+                    "cached_new_card": False
+                }
+            
+            # If GPT fallback is disabled, return needs_manual_review for low-confidence CLIP
+            if not is_gpt_fallback_enabled():
+                logger.info("🚫 GPT fallback disabled by config. Returning needs_manual_review.")
+                response_time = int((time.time() - start_time) * 1000)
+                return {
+                    "success": False,
+                    "method": "clip_only",
+                    "needs_manual_review": True,
+                    "card": {
+                        "id": clip_result.get('card_id'),
+                        "name": clip_result.get('name', 'Unknown'),
+                        "set_code": clip_result.get('set_code', 'unknown'),
+                        "number": clip_result.get('number', 'unknown'),
+                        "confidence": clip_confidence
+                    } if clip_result.get('card_id') else None,
                     "similarity_score": clip_confidence,
                     "cost_usd": 0.0,
                     "response_time_ms": response_time,

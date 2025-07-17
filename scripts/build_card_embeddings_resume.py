@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-ETL script to build card embeddings table
-Downloads Pokemon TCG bulk data, encodes card images with OpenCLIP ViT-B/32,
-and stores embeddings in Supabase card_embeddings table.
+Enhanced ETL script with resume capability
+Skips cards that already have embeddings to handle crashes gracefully
 """
 
 import os
@@ -12,7 +11,7 @@ import json
 import requests
 import numpy as np
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Set
 from PIL import Image
 import io
 
@@ -37,10 +36,44 @@ BATCH_SIZE = 50  # Process cards in batches
 IMAGE_SIZE = 224  # OpenCLIP input size
 MAX_RETRIES = 3
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-TEST_MODE = False  # Set to False for full ETL
+TEST_MODE = os.getenv("TEST_MODE", "false").lower() == "true"
 TEST_LIMIT = 100  # Limit cards in test mode
 
 print(f"🚀 Starting card embeddings ETL on device: {DEVICE}")
+print(f"📋 Mode: {'TEST' if TEST_MODE else 'PRODUCTION'}")
+
+def get_existing_card_ids(supabase_client) -> Set[str]:
+    """Fetch all card IDs that already have embeddings"""
+    print("🔍 Checking existing embeddings...")
+    existing_ids = set()
+    
+    try:
+        # Fetch in batches to handle large tables
+        offset = 0
+        batch_size = 1000
+        
+        while True:
+            response = supabase_client.from_("card_embeddings").select("card_id").range(
+                offset, offset + batch_size - 1
+            ).execute()
+            
+            if not response.data:
+                break
+                
+            for row in response.data:
+                existing_ids.add(row["card_id"])
+            
+            if len(response.data) < batch_size:
+                break
+                
+            offset += batch_size
+            
+        print(f"✅ Found {len(existing_ids)} existing embeddings")
+        return existing_ids
+        
+    except Exception as e:
+        print(f"⚠️ Could not fetch existing embeddings: {e}")
+        return set()
 
 def download_all_cards() -> List[Dict]:
     """Download all Pokemon TCG cards via pagination"""
@@ -87,15 +120,17 @@ def download_all_cards() -> List[Dict]:
     print(f"✅ Downloaded {len(all_cards)} total cards")
     return all_cards
 
-def filter_english_cards(cards: List[Dict]) -> List[Dict]:
-    """Filter to English cards with valid images"""
+def filter_english_cards(cards: List[Dict], existing_ids: Set[str]) -> List[Dict]:
+    """Filter to English cards with valid images that aren't already embedded"""
     filtered = []
-    
-    print(f"🔍 Debugging first few cards:")
-    for i, card in enumerate(cards[:3]):
-        print(f"  Card {i+1}: {card.get('name')} | lang: {card.get('language')} | images: {bool(card.get('images', {}).get('small'))}")
+    skipped_existing = 0
     
     for card in cards:
+        # Skip if already embedded
+        if card.get("id") in existing_ids:
+            skipped_existing += 1
+            continue
+            
         # Skip non-English cards
         lang = card.get("language", "en")  # Default to English if not specified
         if lang and lang != "en":
@@ -104,17 +139,16 @@ def filter_english_cards(cards: List[Dict]) -> List[Dict]:
         # Must have images
         images = card.get("images", {})
         if not images.get("small"):
-            print(f"  ⚠️ Skipping {card.get('name')} - no small image")
             continue
             
         # Must have basic metadata
         if not all([card.get("id"), card.get("name"), card.get("set", {}).get("id")]):
-            print(f"  ⚠️ Skipping {card.get('name')} - missing metadata")
             continue
             
         filtered.append(card)
     
-    print(f"✅ Filtered to {len(filtered)} English cards with images")
+    print(f"✅ Filtered to {len(filtered)} new English cards to process")
+    print(f"⏭️  Skipped {skipped_existing} cards that already have embeddings")
     return filtered
 
 def load_clip_model():
@@ -185,8 +219,8 @@ def store_embeddings_batch(supabase_client, embeddings_batch: List[Dict]):
         return 0
 
 def main():
-    """Main ETL pipeline"""
-    print("🎯 Building Pokemon card embeddings database")
+    """Main ETL pipeline with resume capability"""
+    print("🎯 Building Pokemon card embeddings database (with resume support)")
     
     # Initialize Supabase client
     try:
@@ -196,23 +230,16 @@ def main():
         print(f"❌ Failed to connect to Supabase: {e}")
         sys.exit(1)
     
-    # Check if embeddings already exist
-    try:
-        existing_count = supabase_client.from_("card_embeddings").select("card_id", count="exact").execute()
-        existing_total = existing_count.count or 0
-        print(f"📊 Found {existing_total} existing embeddings")
-        
-        if existing_total > 1000:
-            user_input = input(f"⚠️ {existing_total} embeddings already exist. Continue? (y/N): ")
-            if user_input.lower() != 'y':
-                print("🛑 Aborted by user")
-                sys.exit(0)
-    except Exception as e:
-        print(f"⚠️ Could not check existing embeddings: {e}")
+    # Get existing embeddings to skip
+    existing_ids = get_existing_card_ids(supabase_client)
     
     # Download bulk data
     cards = download_all_cards()
-    cards = filter_english_cards(cards)  # Additional filtering for images/metadata
+    cards = filter_english_cards(cards, existing_ids)  # Skip already embedded
+    
+    if not cards:
+        print("🎉 All cards already have embeddings! Nothing to process.")
+        return
     
     # Load CLIP model
     model, preprocess = load_clip_model()
@@ -222,7 +249,7 @@ def main():
     total_successful = 0
     embeddings_batch = []
     
-    print(f"🔄 Processing {len(cards)} cards in batches of {BATCH_SIZE}...")
+    print(f"🔄 Processing {len(cards)} new cards in batches of {BATCH_SIZE}...")
     
     for i, card in enumerate(cards):
         card_id = card["id"]
@@ -261,6 +288,7 @@ def main():
 📊 Total processed: {total_processed}
 ✅ Successful encodings: {total_successful} ({final_success_rate:.1f}%)
 ❌ Failed encodings: {total_processed - total_successful}
+⏭️  Previously embedded: {len(existing_ids)}
     """)
     
     # Verify final count in database
