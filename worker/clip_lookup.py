@@ -32,6 +32,36 @@ class CLIPCardIdentifier:
             self.supabase_client = get_supabase_client()
             if not self.supabase_client:
                 raise ValueError("Failed to initialize Supabase client")
+        
+        # Cache for API-resolved names to avoid duplicate API calls
+        self._name_cache = {}
+
+    def _get_name_from_api_id(self, api_id: str) -> str:
+        """Resolve card name from Pokemon TCG API ID (cached)"""
+        if api_id in self._name_cache:
+            return self._name_cache[api_id]
+        
+        try:
+            from pokemon_tcg_api import PokemonTCGAPI
+            tcg_api = PokemonTCGAPI()
+            card_data = tcg_api.get_card_by_id(api_id)
+            
+            if card_data and card_data.get('name'):
+                name = card_data['name']
+                self._name_cache[api_id] = name
+                print(f"🔍 Resolved {api_id} → {name}")
+                return name
+            else:
+                # Fallback to formatted ID
+                fallback = f"Card {api_id}"
+                self._name_cache[api_id] = fallback
+                return fallback
+                
+        except Exception as e:
+            print(f"⚠️ Failed to resolve name for {api_id}: {e}")
+            fallback = f"Card {api_id}"
+            self._name_cache[api_id] = fallback
+            return fallback
 
     def encode_image(self, image: Image.Image) -> np.ndarray:
         """Encode a PIL Image to CLIP embedding vector (512-D)"""
@@ -101,7 +131,8 @@ class CLIPCardIdentifier:
                 extracted_number = parts[1] if len(parts) > 1 else ''
                 
                 # Use JOIN data if available, otherwise fall back to extracted info
-                name = row['name'] if row['name'] != 'Unknown Card' else f"Card {api_id}"
+                # If database doesn't have proper name, use a better fallback
+                name = row['name'] if row['name'] and row['name'] != 'Unknown Card' else self._get_name_from_api_id(api_id)
                 set_code = row['set_code'] if row['set_code'] else extracted_set
                 card_number = row['card_number'] if row['card_number'] else extracted_number
                 
