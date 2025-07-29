@@ -21,21 +21,22 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Primary Button */
+/* Primary Button - Circuit Yellow */
 .button_button_primary_uCVc {
-  background-color: var(--interactive-primary);
-  color: var(--text-inverse);
-  border-color: var(--interactive-primary);
+  background-color: var(--circuit-bright-yellow);
+  color: var(--circuit-darker-teal);
+  border-color: var(--circuit-bright-yellow);
+  font-weight: 600;
 }
 
 .button_button_primary_uCVc:hover:not(:disabled) {
-  background-color: var(--interactive-primary-hover);
-  border-color: var(--interactive-primary-hover);
+  background-color: #ffdc73; /* Lighter yellow */
+  border-color: #ffdc73;
 }
 
 .button_button_primary_uCVc:active:not(:disabled) {
-  background-color: var(--interactive-primary-pressed);
-  border-color: var(--interactive-primary-pressed);
+  background-color: #f0c052; /* Darker yellow */
+  border-color: #f0c052;
 }
 
 /* Secondary Button */

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
 import PageLayout from '@/components/layout/PageLayout';
+import { useState } from 'react';
 import ExampleShowcase from '@/components/layout/ExampleShowcase';
 
 export default function MobileExperiencePage() {

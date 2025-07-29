@@ -1,4 +1,4 @@
-import { supabaseServer } from '@/lib/supabase/server';
+import { supabaseServer, supabaseAdmin } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
 
 // GET /api/scans/[id] - fetch scan details with cards
@@ -32,12 +32,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         card:guess_card_id (
           id,
           name,
-          pokemon_tcg_api_id,
           set_code,
           set_name,
           card_number,
           rarity,
-          image_urls,
+          image_url,
           market_price
         )
       `)
@@ -48,31 +47,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       console.error('Error fetching detections:', detectionsError);
     }
 
-    // Helper function to resolve Pokemon name from API ID
-    const getPokemonName = async (apiId: string): Promise<string> => {
-      if (!apiId || apiId === 'Unknown Card') return 'Unknown Card';
-      
-      try {
-        // Try Pokemon TCG API to get real name
-        const response = await fetch(`https://api.pokemontcg.io/v2/cards/${apiId}`);
-        if (response.ok) {
-          const data = await response.json();
-          return data.data?.name || `Card ${apiId}`;
-        }
-      } catch (error) {
-        console.log(`Failed to resolve name for ${apiId}:`, error);
-      }
-      
-      return `Card ${apiId}`; // Fallback to formatted ID
-    };
 
-    // Transform the data to match the expected format with resolved names
-    const enrichedCards = await Promise.all(detections?.map(async (detection, index) => {
-      // Get the proper Pokemon name using the pokemon_tcg_api_id
-      const apiId = detection.card?.pokemon_tcg_api_id;
-      const cardName = apiId 
-        ? await getPokemonName(apiId)
-        : (detection.card?.name || 'Unknown Card');
+    // Transform the data to match the expected format (simplified approach)
+    const enrichedCards = (detections ?? []).map((detection, index) => {
+      const cardName = detection.card?.name || 'Unknown Card';
 
       return {
         card_index: index,
@@ -88,9 +66,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         identification_confidence: (detection.confidence || 0) * 100,
         error_message: detection.guess_card_id ? null : 'Card not identified',
         detection_id: detection.id,
-        card_id: detection.guess_card_id
+        card_id: detection.guess_card_id,
+        image_url: detection.card?.image_url
       };
-    }) || []);
+    });
 
     // Merge the data
     const scanWithCards = {

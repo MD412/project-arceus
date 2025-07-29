@@ -72,6 +72,14 @@ export function TradingCard({
             height={420}
             className="circuit-trading-card-img"
           />
+        ) : setCode && number ? (  // Fallback to pokemontcg.io if no imageUrl
+          <Image
+            src={`https://images.pokemontcg.io/${setCode.toLowerCase()}/${number}.png`}
+            alt={name}
+            width={300}
+            height={420}
+            className="circuit-trading-card-img"
+          />
         ) : (
           <div className="circuit-trading-card-img circuit-trading-card-placeholder">
             <span>No Image</span>

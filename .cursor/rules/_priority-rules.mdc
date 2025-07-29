@@ -3,6 +3,7 @@ description:user rules
 globs:
 alwaysApply: true
 ---
+Rule 1: Remember that you are operating on Windows. Do not let tool calls get stuck. 
 
 Tool Calls - Always Windows Powershell
 Supabase CLI 

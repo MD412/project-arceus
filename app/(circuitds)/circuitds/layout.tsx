@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
@@ -58,9 +58,13 @@ const circuitDSNavItems: NavigationConfigItem[] = [
       { type: 'link', label: 'Dropdown', href: '/circuitds/components/dropdown' },
       { type: 'link', label: 'Accordion', href: '/circuitds/components/accordion' },
       { type: 'link', label: 'Input', href: '/circuitds/forms/input' }, 
+      { type: 'link', label: 'Card Search Input', href: '/circuitds/components/card-search-input' },
       { type: 'link', label: 'Review UI', href: '/circuitds/review-ui' },
       { type: 'link', label: 'Processing Queue Card', href: '/circuitds/components/processing-queue-card' },
       { type: 'link', label: 'Scan History Table', href: '/circuitds/components/scan-history-table' },
+      { type: 'link', label: 'Card Detail Layout', href: '/circuitds/components/card-detail-layout' },
+      { type: 'link', label: 'Approve Scan Button', href: '/circuitds/components/approve-scan-button' },
+      { type: 'link', label: 'Scan Review Layout', href: '/circuitds/components/scan-review-layout' },
       // Add Button, Card etc. here as NavLinkItem
     ],
   },

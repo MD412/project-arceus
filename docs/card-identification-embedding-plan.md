@@ -96,7 +96,7 @@ flowchart TD
 ---
 Once M4 is stable we can revisit fancy escalations (Google Vision / GPT-4o) and condition grading. 
 
-## 7. Success Criteria & Test Matrix
+## 7.Success Criteria & Test Matrix
 
 | ID | Category | Metric / Expectation | Test Method |
 |----|----------|----------------------|-------------|

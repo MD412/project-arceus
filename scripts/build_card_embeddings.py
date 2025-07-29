@@ -1,274 +1,238 @@
 #!/usr/bin/env python3
 """
-ETL script to build card embeddings table
-Downloads Pokemon TCG bulk data, encodes card images with OpenCLIP ViT-B/32,
-and stores embeddings in Supabase card_embeddings table.
+Build Card Embeddings from Local JSON Data
+
+This script iterates through the `pokemon-tcg-data` JSON files,
+generates CLIP embeddings for each card image, and upserts the
+data into the `card_embeddings` table in Supabase.
 """
-
-import os
-import sys
-import time
-import json
-import requests
-import numpy as np
-from pathlib import Path
-from typing import List, Dict, Optional
-from PIL import Image
 import io
+import json
+import os
+import time
+from pathlib import Path
 
-# Add worker to path for config import
-sys.path.append(str(Path(__file__).parent.parent / "worker"))
+import requests
+import torch
+from PIL import Image
+from alive_progress import alive_bar
+
+# Assuming clip_lookup and config are in the parent directory or accessible
+import sys
+
+# Add the parent directory of 'scripts' to the Python path
+# This allows importing from the 'worker' directory
+# (e.g., `from worker.clip_lookup import CLIPCardIdentifier`)
+#
+# Project structure:
+# project-arceus/
+#  ├─ scripts/
+#  │  └─ build_card_embeddings.py
+#  └─ worker/
+#     └─ clip_lookup.py
+#
+# To run from the project root: `python scripts/build_card_embeddings.py`
+current_dir = Path(__file__).parent
+project_root = current_dir.parent
+# Add project root and worker directory to path to resolve imports correctly
+sys.path.insert(0, str(project_root))
+sys.path.insert(0, str(project_root / "worker"))
+
+
+from clip_lookup import CLIPCardIdentifier
 from config import get_supabase_client
 
-# ML dependencies
-try:
-    import torch
-    import open_clip
-    from torchvision import transforms
-except ImportError:
-    print("❌ Missing ML dependencies. Install with:")
-    print("pip install torch torchvision open-clip-torch")
-    sys.exit(1)
+# --- Configuration ---
+BATCH_SIZE = 16  # Process N cards at a time
+DATA_DIR = project_root / "pokemon-tcg-data" / "cards" / "en"
+DRY_RUN = False # If True, don't actually write to the database
+REPROCESS_EXISTING = False # If False, skip cards already in the DB
 
-# Configuration
-API_BASE_URL = "https://api.pokemontcg.io/v2/cards"
-PAGE_SIZE = 250  # Max allowed by API
-BATCH_SIZE = 50  # Process cards in batches
-IMAGE_SIZE = 224  # OpenCLIP input size
-MAX_RETRIES = 3
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-TEST_MODE = False  # Set to False for full ETL
-TEST_LIMIT = 100  # Limit cards in test mode
-
-print(f"🚀 Starting card embeddings ETL on device: {DEVICE}")
-
-def download_all_cards() -> List[Dict]:
-    """Download all Pokemon TCG cards via pagination"""
-    print("📥 Downloading Pokemon TCG cards via pagination...")
-    
-    all_cards = []
-    page = 1
-    
-    while True:
+def fetch_image_from_url(url: str, max_retries: int = 3) -> Image.Image | None:
+    """Downloads an image from a URL and returns a PIL Image object."""
+    for attempt in range(max_retries):
         try:
-            params = {
-                "page": page,
-                "pageSize": PAGE_SIZE,
-            }
-            
-            response = requests.get(API_BASE_URL, params=params, timeout=30)
+            response = requests.get(url, timeout=20)
             response.raise_for_status()
-            data = response.json()
-            
-            page_cards = data.get("data", [])
-            if not page_cards:
-                break
-                
-            all_cards.extend(page_cards)
-            print(f"✅ Page {page}: Downloaded {len(page_cards)} cards (total: {len(all_cards)})")
-            
-            # Early exit in test mode
-            if TEST_MODE and len(all_cards) >= TEST_LIMIT:
-                print(f"🧪 Test mode: stopping at {len(all_cards)} cards")
-                break
-                
-            # Check if we've reached the end
-            total_count = data.get("totalCount", 0)
-            if len(all_cards) >= total_count:
-                break
-                
-            page += 1
-            time.sleep(0.1)  # Rate limiting courtesy
-            
-        except Exception as e:
-            print(f"❌ Failed to download page {page}: {e}")
-            sys.exit(1)
-    
-    print(f"✅ Downloaded {len(all_cards)} total cards")
-    return all_cards
-
-def filter_english_cards(cards: List[Dict]) -> List[Dict]:
-    """Filter to English cards with valid images"""
-    filtered = []
-    
-    print(f"🔍 Debugging first few cards:")
-    for i, card in enumerate(cards[:3]):
-        print(f"  Card {i+1}: {card.get('name')} | lang: {card.get('language')} | images: {bool(card.get('images', {}).get('small'))}")
-    
-    for card in cards:
-        # Skip non-English cards
-        lang = card.get("language", "en")  # Default to English if not specified
-        if lang and lang != "en":
-            continue
-            
-        # Must have images
-        images = card.get("images", {})
-        if not images.get("small"):
-            print(f"  ⚠️ Skipping {card.get('name')} - no small image")
-            continue
-            
-        # Must have basic metadata
-        if not all([card.get("id"), card.get("name"), card.get("set", {}).get("id")]):
-            print(f"  ⚠️ Skipping {card.get('name')} - missing metadata")
-            continue
-            
-        filtered.append(card)
-    
-    print(f"✅ Filtered to {len(filtered)} English cards with images")
-    return filtered
-
-def load_clip_model():
-    """Load OpenCLIP ViT-B/32 model"""
-    print("🧠 Loading OpenCLIP ViT-B/32 model...")
-    
-    try:
-        model, _, preprocess = open_clip.create_model_and_transforms(
-            'ViT-B-32', 
-            pretrained='openai',
-            device=DEVICE
-        )
-        model.eval()
-        
-        print(f"✅ OpenCLIP model loaded on {DEVICE}")
-        return model, preprocess
-        
-    except Exception as e:
-        print(f"❌ Failed to load OpenCLIP model: {e}")
-        sys.exit(1)
-
-def download_and_encode_image(image_url: str, model, preprocess) -> Optional[np.ndarray]:
-    """Download card image and encode with OpenCLIP"""
-    for attempt in range(MAX_RETRIES):
-        try:
-            # Download image
-            response = requests.get(image_url, timeout=10)
-            response.raise_for_status()
-            
-            # Load and preprocess
-            image = Image.open(io.BytesIO(response.content)).convert('RGB')
-            image_tensor = preprocess(image).unsqueeze(0).to(DEVICE)
-            
-            # Encode with CLIP
-            with torch.no_grad():
-                embedding = model.encode_image(image_tensor)
-                embedding = embedding.cpu().numpy().flatten()
-                
-            return embedding
-            
-        except Exception as e:
-            if attempt == MAX_RETRIES - 1:
-                print(f"⚠️ Failed to encode {image_url} after {MAX_RETRIES} attempts: {e}")
+            image_bytes = io.BytesIO(response.content)
+            return Image.open(image_bytes).convert("RGB")
+        except (requests.RequestException, IOError) as e:
+            print(f"\n[WARN] Attempt {attempt + 1} failed for {url}: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(2**attempt)  # Exponential backoff
+            else:
+                print(f"\n[ERROR] Could not fetch image after {max_retries} attempts: {url}")
                 return None
-            time.sleep(1)  # Brief retry delay
-    
-    return None
 
-def store_embeddings_batch(supabase_client, embeddings_batch: List[Dict]):
-    """Store batch of embeddings in Supabase"""
+def process_batch(batch: list, clip_identifier: CLIPCardIdentifier, supabase_client):
+    """Processes a batch of cards: fetch images, create embeddings, upsert to DB."""
+    embeddings_to_upsert = []
+    
+    # 1. Fetch images and generate embeddings
+    images = []
+    card_data_for_batch = []
+    for card in batch:
+        # Prefer high-res images, fall back to low-res
+        image_url = card.get("images", {}).get("large") or card.get("images", {}).get("small")
+        if not image_url:
+            continue
+            
+        image = fetch_image_from_url(image_url)
+        if image:
+            images.append(image)
+            card_data_for_batch.append(card)
+
+    if not images:
+        return 0
+
+    embeddings = clip_identifier.encode_images_batch(images)
+
+    # 2. Prepare data for Supabase
+    for card, embedding in zip(card_data_for_batch, embeddings):
+        if embedding is None:
+            continue
+        
+        # The unique ID for a card is its set slug plus its number, e.g., "sv1-1"
+        card_id = card.get("id")
+        
+        embeddings_to_upsert.append({
+            "card_id": card_id,
+            "name": card.get("name"),
+            "set_code": card_id.split('-')[0] if card_id else None,
+            "card_number": card.get("number"),
+            "rarity": card.get("rarity"),
+            "image_url": card.get("images", {}).get("large") or card.get("images", {}).get("small"),
+            "embedding": embedding.tolist(), # Convert numpy array to list for JSON
+        })
+
+    # 3. Upsert to Supabase
+    if not DRY_RUN and embeddings_to_upsert:
+        try:
+            supabase_client.from_("card_embeddings").upsert(embeddings_to_upsert).execute()
+        except Exception as e:
+            print(f"\n[ERROR] Supabase upsert failed: {e}")
+            # Optionally, you could try to upsert one by one here to isolate the bad record
+            return 0
+            
+    return len(embeddings_to_upsert)
+
+def force_requeue_stale_jobs(supabase_client):
+    """Finds all jobs stuck in 'processing' and resets them to 'pending'."""
+    print("\n[FIX] Attempting to requeue jobs stuck in 'processing' state...")
     try:
-        # Convert numpy arrays to lists for JSON serialization
-        for item in embeddings_batch:
-            if isinstance(item['embedding'], np.ndarray):
-                item['embedding'] = item['embedding'].tolist()
+        # Find jobs stuck in 'processing'
+        stale_jobs_response = supabase_client.from_("job_queue").select("id").eq("status", "processing").execute()
+        stale_jobs = stale_jobs_response.data or []
         
-        response = supabase_client.from_("card_embeddings").upsert(
-            embeddings_batch, 
-            on_conflict="card_id"
-        ).execute()
+        if not stale_jobs:
+            print("[OK] No jobs found in 'processing' state. Nothing to do.")
+            return
+
+        print(f"[INFO] Found {len(stale_jobs)} stuck jobs. Resetting to 'pending'...")
         
-        if response.data:
-            return len(response.data)
-        return 0
+        job_ids_to_reset = [job['id'] for job in stale_jobs]
         
+        # Reset them to 'pending'
+        update_response = supabase_client.from_("job_queue").update({
+            "status": "pending", 
+            "started_at": None, 
+            "visibility_timeout_at": None, 
+            "picked_at": None,
+            "retry_count": 0 # Reset retry count as well
+        }).in_("id", job_ids_to_reset).execute()
+        
+        if len(update_response.data) > 0:
+            print(f"[SUCCESS] Successfully reset {len(update_response.data)} jobs to 'pending'.")
+        else:
+             print("[WARN] The update command did not return any updated rows. They may have been processed by another worker.")
+
     except Exception as e:
-        print(f"❌ Failed to store embeddings batch: {e}")
-        return 0
+        print(f"[ERROR] Failed to requeue stale jobs: {e}")
+
 
 def main():
-    """Main ETL pipeline"""
-    print("🎯 Building Pokemon card embeddings database")
+    """Main function to build card embeddings."""
     
-    # Initialize Supabase client
-    try:
-        supabase_client = get_supabase_client()
-        print("✅ Connected to Supabase")
-    except Exception as e:
-        print(f"❌ Failed to connect to Supabase: {e}")
-        sys.exit(1)
+    # --- TEMPORARY FIX ---
+    # We will call the requeue function directly for a one-time fix.
+    supabase_client_for_fix = get_supabase_client()
+    force_requeue_stale_jobs(supabase_client_for_fix)
+    print("[INFO] One-time job requeue complete. You can now comment out or remove this call.")
+    return # We will exit after the fix to avoid running the full script.
+    # --- END TEMP FIX ---
+
+    print("--- Card Embedding Builder ---")
     
-    # Check if embeddings already exist
-    try:
-        existing_count = supabase_client.from_("card_embeddings").select("card_id", count="exact").execute()
-        existing_total = existing_count.count or 0
-        print(f"📊 Found {existing_total} existing embeddings")
-        
-        if existing_total > 1000:
-            user_input = input(f"⚠️ {existing_total} embeddings already exist. Continue? (y/N): ")
-            if user_input.lower() != 'y':
-                print("🛑 Aborted by user")
-                sys.exit(0)
-    except Exception as e:
-        print(f"⚠️ Could not check existing embeddings: {e}")
+    if DRY_RUN:
+        print("[INFO] Running in DRY RUN mode. No data will be written to the database.")
+
+    # Get all JSON file paths
+    json_files = sorted(list(DATA_DIR.glob("*.json")))
+    if not json_files:
+        print(f"[ERROR] No JSON files found in {DATA_DIR}")
+        return
+
+    print(f"[INFO] Found {len(json_files)} JSON files to process.")
+
+    # Initialize Supabase and CLIP
+    print("[INFO] Initializing services...")
+    supabase_client = get_supabase_client()
+    clip_identifier = CLIPCardIdentifier(supabase_client=supabase_client)
+    print("[OK] Services initialized.")
+
+    existing_card_ids = set()
+    if not REPROCESS_EXISTING:
+        print("[INFO] Fetching existing card IDs to avoid reprocessing...")
+        try:
+            response = supabase_client.from_("card_embeddings").select("card_id", count='exact').execute()
+            if response.data:
+                existing_card_ids = {item['card_id'] for item in response.data}
+            print(f"[OK] Found {len(existing_card_ids)} existing cards.")
+        except Exception as e:
+            print(f"[WARN] Could not fetch existing card IDs: {e}. Will reprocess all.")
+
+
+    total_cards_processed = 0
     
-    # Download bulk data
-    cards = download_all_cards()
-    cards = filter_english_cards(cards)  # Additional filtering for images/metadata
-    
-    # Load CLIP model
-    model, preprocess = load_clip_model()
-    
-    # Process cards in batches
-    total_processed = 0
-    total_successful = 0
-    embeddings_batch = []
-    
-    print(f"🔄 Processing {len(cards)} cards in batches of {BATCH_SIZE}...")
-    
-    for i, card in enumerate(cards):
-        card_id = card["id"]
-        image_url = card["images"]["small"]
-        
-        print(f"[{i+1}/{len(cards)}] Processing {card['name']} ({card_id})")
-        
-        # Encode image
-        embedding = download_and_encode_image(image_url, model, preprocess)
-        
-        if embedding is not None:
-            embeddings_batch.append({
-                "card_id": card_id,
-                "embedding": embedding
-            })
-            total_successful += 1
-        
-        total_processed += 1
-        
-        # Store batch when full or at end
-        if len(embeddings_batch) >= BATCH_SIZE or i == len(cards) - 1:
-            if embeddings_batch:
-                stored_count = store_embeddings_batch(supabase_client, embeddings_batch)
-                print(f"✅ Stored {stored_count} embeddings in batch")
-                embeddings_batch = []
-        
-        # Progress update every 100 cards
-        if (i + 1) % 100 == 0:
-            success_rate = (total_successful / total_processed) * 100
-            print(f"📊 Progress: {i+1}/{len(cards)} ({success_rate:.1f}% success rate)")
-    
-    # Final summary
-    final_success_rate = (total_successful / total_processed) * 100 if total_processed > 0 else 0
-    print(f"""
-🎉 ETL Complete!
-📊 Total processed: {total_processed}
-✅ Successful encodings: {total_successful} ({final_success_rate:.1f}%)
-❌ Failed encodings: {total_processed - total_successful}
-    """)
-    
-    # Verify final count in database
-    try:
-        final_count = supabase_client.from_("card_embeddings").select("card_id", count="exact").execute()
-        print(f"🗄️ Total embeddings in database: {final_count.count}")
-    except Exception as e:
-        print(f"⚠️ Could not verify final count: {e}")
+    with alive_bar(len(json_files), title="Processing Sets") as bar:
+        card_batch = []
+        for file_path in json_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    cards = json.load(f)
+                    
+                for card in cards:
+                    card_id = card.get("id")
+                    if not card_id:
+                        continue
+
+                    if not REPROCESS_EXISTING and card_id in existing_card_ids:
+                        continue
+
+                    card_batch.append(card)
+                    
+                    if len(card_batch) >= BATCH_SIZE:
+                        processed_count = process_batch(card_batch, clip_identifier, supabase_client)
+                        total_cards_processed += processed_count
+                        card_batch = [] # Reset batch
+                        
+            except (json.JSONDecodeError, IOError) as e:
+                print(f"\n[ERROR] Skipping file {file_path.name} due to error: {e}")
+            
+            bar()
+            
+        # Process any remaining cards in the last batch
+        if card_batch:
+            processed_count = process_batch(card_batch, clip_identifier, supabase_client)
+            total_cards_processed += processed_count
+
+    print("\n---_---_---_---_---_---_---_---_---_---")
+    print(f"[SUCCESS] Embedding build complete!")
+    print(f"  Total cards processed and upserted: {total_cards_processed}")
+    if DRY_RUN:
+        print("[INFO] This was a DRY RUN. No data was actually changed.")
+    print("---_---_---_---_---_---_---_---_---_---")
+
 
 if __name__ == "__main__":
     main() 

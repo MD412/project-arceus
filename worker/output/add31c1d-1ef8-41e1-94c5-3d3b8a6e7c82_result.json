@@ -1,0 +1,18 @@
+{
+  "detection_records": [
+    "b917b1a3-1aa2-46c5-b130-10dad3ff7302",
+    "530b632d-fc92-4aa6-8476-ce9cd471b45a",
+    "8d657499-016b-4c84-8375-b9310f14e5fc",
+    "498830c8-acfc-4dbd-87f1-ea811164076e",
+    "5287cc29-46c4-4f04-9ea4-41560af64ef9",
+    "5ba8ad35-2269-4162-a440-944092aebeeb",
+    "e4ab8f55-0848-44e0-a29f-5b41bd59a018",
+    "27f401d2-11b0-4d3a-a1fe-6975831b6ecd",
+    "2524297c-0edc-4e21-8944-c34f2ab64866"
+  ],
+  "scan_id": "8abe45ca-b97a-4e92-81c1-78b1c9185fe0",
+  "status": "ready",
+  "summary_image_path": "8abe45ca-b97a-4e92-81c1-78b1c9185fe0/summary.jpeg",
+  "total_detections": 9,
+  "user_cards_created": 9
+}

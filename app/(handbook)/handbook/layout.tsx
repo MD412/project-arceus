@@ -31,6 +31,7 @@ const handbookNavItems: NavigationConfigItem[] = [
     children: [
       { type: 'link', label: 'Optimistic CRUD Pipeline', href: '/handbook/patterns/optimistic-crud-pipeline' },
       { type: 'link', label: 'Worker Pipeline', href: '/handbook/worker-pipeline' },
+      { type: 'link', label: 'Windows Terminal Patterns', href: '/handbook/patterns/windows-terminal' },
       // { type: 'link', label: 'Frontend Architecture', href: '/handbook/patterns/frontend-architecture' },
     ],
   },

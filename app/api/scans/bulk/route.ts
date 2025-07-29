@@ -1,7 +1,7 @@
 // app/api/scans/bulk/route.ts
-import { createClient } from '@supabase/supabase-js';
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { v4 as uuid } from 'uuid';
+import { supabaseServer } from '@/lib/supabase/server';
 
 /**
  * POST /api/scans/bulk
@@ -11,14 +11,22 @@ import { v4 as uuid } from 'uuid';
  *  2. Inserts a row into `scans` and `job_queue` via the RPC `enqueue_scan_job`
  */
 export async function POST(request: NextRequest) {
-  // -------- 1  Parse form data
+  // -------- 1  Init Supabase client and get user
+  const supabase = await supabaseServer();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 401 });
+  }
+  const userId = user.id;
+
+  // -------- 2  Parse form data
   const formData = await request.formData();
   const files = formData.getAll('files') as File[];
-  const userId = formData.get('user_id') as string;
-
-  if (!userId || files.length === 0) {
+  
+  if (files.length === 0) {
     return NextResponse.json(
-      { error: 'user_id and at least one file are required' },
+      { error: 'At least one file is required' },
       { status: 400 },
     );
   }
@@ -29,65 +37,72 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // -------- 2  Init Supabase client
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceKey) {
-    throw new Error('Missing Supabase env vars');
-  }
-  const supabase = createClient(supabaseUrl, serviceKey);
-
   // -------- 3  Upload + enqueue in parallel
-  const results = await Promise.allSettled(
-    files.map(async (file) => {
-      if (!['image/jpeg', 'image/png', 'image/heic', 'image/heif'].includes(file.type)) {
-        throw new Error('Invalid file type: only JPEG/PNG/HEIC/HEIF allowed');
-      }
-
-      const scanId = uuid();
-      const filePath = `${userId}/${scanId}.jpg`;
-
-      // 3a  Upload raw image to storage
-      const { error: uploadError } = await supabase
-        .storage
-        .from('scans')
-        .upload(filePath, file, {
-          contentType: file.type,
-        });
-      if (uploadError) throw uploadError;
-
-      // 3b  Insert DB row & queue job through a stored procedure
-      const { error: rpcError } = await supabase.rpc('enqueue_scan_job', {
-        p_scan_id:       scanId,
-        p_user_id:       userId,
-        p_storage_path:  filePath,
+  const scanPromises = files.map(async (file) => {
+    const scanId = uuid();
+    const filePath = `${userId}/${scanId}.jpg`;
+    
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from('scans')
+      .upload(filePath, file, {
+        contentType: file.type || 'image/jpeg',
+        upsert: true
       });
-      if (rpcError) {
-        // Clean up orphaned upload
-        await supabase.storage.from('scans').remove([filePath]);
-        throw rpcError;
-      }
 
-      return { scan_id: scanId, path: filePath };
-    }),
-  );
+    if (uploadError) {
+      console.error(`Upload failed for ${filePath}:`, uploadError);
+      return { error: `Upload failed: ${uploadError.message}` };
+    }
+    
+    // Enqueue job
+    const { data: job, error: rpcError } = await supabase.rpc('enqueue_scan_job', {
+      p_user_id: userId,
+      p_scan_id: scanId,
+      p_storage_path: filePath,
+    });
+    
+    if (rpcError) {
+      console.error(`🔴 RPC Error: enqueue_scan_job failed for scan_id ${scanId}:`, JSON.stringify(rpcError, null, 2));
+      return { 
+        error: `Failed to queue job: ${rpcError.message}`, 
+        details: rpcError 
+      };
+    }
 
-  // -------- 4  Aggregate errors
-  const failed = results.filter((r) => r.status === 'rejected') as PromiseRejectedResult[];
-  if (failed.length) {
-    console.error('Bulk scan upload failures:', failed.map((f) => f.reason));
+    return { scan_id: scanId, path: filePath };
+  });
+  
+  const results = await Promise.all(scanPromises);
+  const successfulScans = results.filter(r => !r.error);
+  const failedScans = results.filter(r => r.error);
+
+  if (failedScans.length > 0) {
+    console.error('Some scans failed to process:', failedScans);
+    // Return the details of the first failure for debugging
     return NextResponse.json(
-      { error: `Failed to process ${failed.length} of ${files.length} files` },
+      { 
+        error: 'Some scans failed to process.', 
+        details: failedScans[0] 
+      },
       { status: 500 },
     );
   }
 
-  const success = results
-    .filter((r) => r.status === 'fulfilled')
-    .map((r) => (r as PromiseFulfilledResult<{ scan_id: string; path: string }>).value);
+  if (successfulScans.length === 0) {
+    return NextResponse.json(
+      { error: 'All scans failed to process.', details: failedScans },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json(
-    { message: 'Scans queued', count: success.length, scans: success },
+    {
+      message: `${successfulScans.length} of ${files.length} scans queued successfully.`,
+      scans: successfulScans,
+      failures: failedScans,
+      count: successfulScans.length,
+    },
     { status: 201 },
   );
 }

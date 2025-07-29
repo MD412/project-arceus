@@ -18,10 +18,18 @@ import traceback
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from ultralytics import YOLO
 from config import get_supabase_client
-from hybrid_card_identifier_v2 import HybridCardIdentifierV2  # Premium AI vision
-from paddleocr import PaddleOCR
-import faiss
-import open_clip
+from clip_lookup import CLIPCardIdentifier  # CLIP-only identification
+import logging  # NEW
+
+# ---------------- Logging Setup ----------------
+# Reduce noise from verbose third-party libraries while keeping our own messages.
+logging.basicConfig(
+    level=logging.INFO,  # Overall default
+    format="%(message)s"  # Cleaner, one-line log output
+)
+for noisy_logger in ("httpx", "faiss", "faiss.loader", "open_clip"):
+    logging.getLogger(noisy_logger).setLevel(logging.WARNING)
+# ------------------------------------------------
 
 # --- Custom Logger ---
 def log_to_db(supabase_client, message: str, payload: Optional[Dict] = None):
@@ -46,14 +54,14 @@ STORAGE_BUCKET = "scans"
 def get_yolo_model(model_path=str(Path(__file__).parent / 'pokemon_cards_trained.pt')):
     model_path = Path(model_path)
     if not model_path.exists():
-        print(f"❌ Trained model not found at: {model_path}")
+        print(f"[ERROR] Trained model not found at: {model_path}")
         exit(1)
     try:
         model = YOLO(str(model_path))
-        print("✅ YOLO model loaded.")
+        print("[OK] YOLO model loaded.")
         return model
     except Exception as e:
-        print(f"🔥 Failed to load YOLO model: {e}")
+        print(f"[ERROR] Failed to load YOLO model: {e}")
         exit(1)
 
 def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
@@ -78,13 +86,13 @@ def find_or_create_card(supabase_client, enrichment: Dict) -> Optional[str]:
         if response.data:
             card_id = response.data[0]["id"]
             action = "found/created" if set_code and card_number else "found/created (by name)"
-            print(f"✅ {action} card: {enrichment['name']} ({set_code} {card_number}) -> {card_id}")
+            print(f"[OK] {action} card: {enrichment['name']} ({set_code} {card_number}) -> {card_id}")
             return card_id
         else:
-            print(f"⚠️ Upsert returned no data for card: {enrichment['name']}")
+            print(f"[WARN] Upsert returned no data for card: {enrichment['name']}")
             return None
     except Exception as e:
-        print(f"⚠️ Error finding/creating card: {e}")
+        print(f"[WARN] Error finding/creating card: {e}")
     return None
 
 def safe_bbox_calculation(box: List[int]) -> List[int]:
@@ -102,32 +110,6 @@ def get_tile_source(tile_index: int) -> str:
     col = str((tile_index % 3) + 1)
     return f"{row}{col}"
 
-def map_hybrid_to_worker_format(hybrid_result: Dict) -> Dict:
-    """Map HybridCardIdentifierV2 response to legacy worker format"""
-    if hybrid_result.get('success'):
-        card = hybrid_result['card']
-        return {
-            'success': True,
-            'name': card['name'],
-            'set_code': card.get('set_code'),
-            'number': card.get('number'),
-            'confidence': card['confidence'],
-            'method': hybrid_result['method'],
-            'cost_usd': hybrid_result['cost_usd'],
-            # Legacy fields for compatibility
-            'card_id': card.get('id'),
-            'image_url': None,  # Not provided by hybrid system
-            'rarity': None,     # Not provided by hybrid system
-            'estimated_value': None  # Not provided by hybrid system
-        }
-    else:
-        return {
-            'success': False,
-            'method': hybrid_result.get('method', 'failed'),
-            'cost_usd': hybrid_result.get('cost_usd', 0.0),
-            'error': hybrid_result.get('error', 'Unknown error')
-        }
-
 def download_image_with_retry(supabase_client, storage_path: str, max_retries: int = 3) -> bytes:
     for attempt in range(max_retries):
         try:
@@ -135,12 +117,12 @@ def download_image_with_retry(supabase_client, storage_path: str, max_retries: i
             return image_bytes
         except Exception as e:
             if attempt < max_retries - 1:
-                print(f"⚠️ Download attempt {attempt + 1} failed: {e}, retrying...")
+                print(f"[WARN] Download attempt {attempt + 1} failed: {e}, retrying...")
                 time.sleep(2 ** attempt)
             else:
                 raise e
 
-def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, hybrid_identifier: HybridCardIdentifierV2):
+def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identifier: CLIPCardIdentifier):
     job_id_for_logging = job.get('id')
     log_to_db(supabase_client, f"Starting pipeline", {"job_id": job_id_for_logging})
 
@@ -164,10 +146,10 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, hybrid_iden
     user_id, scan_title = legacy_scan.data[0]["user_id"], legacy_scan.data[0].get("scan_title", "Untitled Scan")
     log_to_db(supabase_client, f"Got user_id: {user_id}", {"job_id": job_id_for_logging, "user_id": user_id})
 
-    print(f"🚀 Starting normalized pipeline v3 for user {user_id}")
+    print(f"[START] Starting normalized pipeline v3 for user {user_id}")
     scan_id = None
     try:
-        print(f"📝 Creating scan record...")
+        print(f"[INFO] Creating scan record...")
         log_to_db(supabase_client, "Attempting to insert into scans table.", {"job_id": job_id_for_logging})
         
         try:
@@ -189,28 +171,28 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, hybrid_iden
             log_to_db(supabase_client, f"Insert into scans failed: {str(insert_exc)}", {"job_id": job_id_for_logging, "traceback": traceback.format_exc()})
             raise
 
-        print(f"✅ Created scan: {scan_id}")
+        print(f"[OK] Created scan: {scan_id}")
         image_bytes = download_image_with_retry(supabase_client, storage_path)
         
         try:
             original_image = Image.open(io.BytesIO(image_bytes))
         except Exception:
-            print("⚠️ Standard open failed, attempting HEIC conversion...")
+            print("[WARN] Standard open failed, attempting HEIC conversion...")
             try:
                 import pillow_heif
                 heif_file = pillow_heif.read_heif(io.BytesIO(image_bytes))
                 original_image = Image.frombytes(heif_file.mode, heif_file.size, heif_file.data, "raw")
-                print("✅ HEIC conversion successful.")
+                print("[OK] HEIC conversion successful.")
             except Exception as heic_error:
                 raise Exception(f"Pillow and pillow-heif failed. Error: {heic_error}")
 
         image = ImageOps.exif_transpose(original_image)
         w, h = image.size
-        print(f"📐 Image size: {w}x{h}")
+        print(f"[INFO] Image size: {w}x{h}")
         
         supabase_client.from_("scans").update({"progress": 30.0}).eq("id", scan_id).execute()
         detection_image, scale = resize_for_detection(image)
-        print(f"🔬 Detecting on resized {detection_image.size}...")
+        print(f"[INFO] Detecting on resized {detection_image.size}...")
         results = model.predict(detection_image, conf=CONFIDENCE_THRESHOLD, verbose=False)
         detections = []
         for r in results:
@@ -235,13 +217,19 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, hybrid_iden
             summary_img = image.copy()
             draw = ImageDraw.Draw(summary_img)
             font = ImageFont.load_default()
-            print(f"🖼️ Processing {len(final_detections)} detections...")
+            print(f"[INFO] Processing {len(final_detections)} detections...")
             
+            # First, prepare all crops and save them
+            card_crops = []
+            crop_paths = []
             for i, det in enumerate(final_detections):
                 box = det['box']
                 draw.rectangle(box, outline="red", width=3)
                 draw.text((box[0] + 5, box[1] + 5), f"Card {i+1}", fill="red", font=font)
                 card_crop = image.crop(box)
+                card_crops.append(card_crop)
+                
+                # Save crop for storage
                 card_buffer = io.BytesIO()
                 card_crop.save(card_buffer, format='JPEG', quality=95)
                 card_buffer.seek(0)
@@ -250,36 +238,37 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, hybrid_iden
                     path=crop_path, file=card_buffer.getvalue(), 
                     file_options={"content-type": "image/jpeg", "upsert": "true"}
                 )
-                
-                local_crop_path = f"/tmp/crop_{scan_id}_{i+1}.jpeg"
-                with open(local_crop_path, 'wb') as f:
-                    f.write(card_buffer.getvalue())
-                
-                print(f"🧠 Identifying card {i+1} with Premium AI Vision...")
-                hybrid_result = hybrid_identifier.identify_card(local_crop_path)
-                
-                # Map hybrid result to legacy enrichment format
-                enrichment = map_hybrid_to_worker_format(hybrid_result)
-                
-                # Log AI vision performance
-                print(f"   Method: {hybrid_result.get('method', 'unknown')} | Cost: ${hybrid_result.get('cost_usd', 0.0):.4f}")
-                if hybrid_result.get('success'):
-                    card = hybrid_result['card']
-                    print(f"   ✅ Identified: {card['name']} | Confidence: {card['confidence']:.2f}")
+                crop_paths.append(crop_path)
+            
+            # Batch identify all cards at once
+            print(f"[CLIP] Identifying {len(card_crops)} cards in batch...")
+            batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.75)
+            
+            # Process results
+            for i, (det, clip_result, crop_path) in enumerate(zip(final_detections, batch_results, crop_paths)):
+                # Create enrichment data from CLIP result
+                if clip_result.get('success'):
+                    enrichment = {
+                        'success': True,
+                        'name': clip_result.get('name', ''),
+                        'set_code': clip_result.get('set_code', ''),
+                        'number': clip_result.get('number', ''),
+                        'image_url': clip_result.get('image_url'),
+                        'rarity': clip_result.get('rarity'),
+                        'confidence': clip_result.get('confidence', 0.0)
+                    }
+                    print(f"   Card {i+1}: {enrichment['name']} | Similarity: {enrichment['confidence']:.2f}")
                 else:
-                    print(f"   ❌ Failed: {hybrid_result.get('error', 'Unknown error')}")
-                
-                import os
-                os.remove(local_crop_path)
+                    enrichment = {'success': False}
+                    print(f"   Card {i+1}: No match found")
 
-                # Base detection data (always compatible)
+                # Base detection data
                 detection_data = {
                     "scan_id": scan_id, "crop_url": crop_path, "bbox": det['bbox'],
                     "confidence": det['confidence'], "tile_source": get_tile_source(i % 9),
-                    # AI Vision tracking (new columns) - will gracefully fail if not available
-                    "identification_method": hybrid_result.get('method', 'unknown'),
-                    "identification_cost": hybrid_result.get('cost_usd', 0.0),
-                    "identification_confidence": hybrid_result['card']['confidence'] if hybrid_result.get('success') else 0.0
+                    "identification_method": 'clip',
+                    "identification_cost": 0.0,  # CLIP is free
+                    "identification_confidence": enrichment.get('confidence', 0.0) if enrichment.get('success') else 0.0
                 }
                 
                 is_blank = det['confidence'] < 0.3 or not enrichment.get("success")
@@ -294,7 +283,7 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, hybrid_iden
                     detection_response = supabase_client.from_("card_detections").insert(detection_data).execute()
                 except Exception as e:
                     if "identification_confidence" in str(e) or "identification_method" in str(e):
-                        print("⚠️ AI tracking columns not available, using basic schema")
+                        print("[WARN] AI tracking columns not available, using basic schema")
                         # Remove AI tracking columns and retry
                         basic_data = {k: v for k, v in detection_data.items() 
                                      if k not in ['identification_method', 'identification_cost', 'identification_confidence']}
@@ -315,9 +304,9 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, hybrid_iden
                     try:
                         supabase_client.from_("user_cards").upsert(user_card_data, on_conflict="user_id,card_id").execute()
                         user_cards_created += 1
-                        print(f"✅ Created/updated user card: {enrichment['name']}")
+                        print(f"[OK] Created/updated user card: {enrichment['name']}")
                     except Exception as e:
-                        print(f"⚠️ Upsert failed, trying insert: {e}")
+                        print(f"[WARN] Upsert failed, trying insert: {e}")
                         supabase_client.from_("user_cards").insert(user_card_data).execute()
                         user_cards_created += 1
                 
@@ -336,20 +325,21 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, hybrid_iden
             supabase_client.from_("scans").update({
                 "status": "ready", "progress": 100.0, "summary_image_path": summary_path
             }).eq("id", scan_id).execute()
-            print("✅ Summary image uploaded and scan completed.")
+            print("[OK] Summary image uploaded and scan completed.")
 
         return {
             "scan_id": scan_id, "total_detections": len(final_detections),
-            "user_cards_created": user_cards_created, "detection_records": detection_records
+            "user_cards_created": user_cards_created, "detection_records": detection_records,
+            "summary_image_path": summary_path if final_detections else None, "status": "ready"
         }
         
     except Exception as e:
         if scan_id:
             try:
                 supabase_client.from_("scans").update({"status": "error", "error_message": str(e)}).eq("id", scan_id).execute()
-                print(f"🔥 Marked scan {scan_id} as error: {e}")
+                print(f"[ERROR] Marked scan {scan_id} as error: {e}")
             except Exception as update_error:
-                print(f"🔥 Failed to update scan error status: {update_error}")
+                print(f"[ERROR] Failed to update scan error status: {update_error}")
         log_to_db(supabase_client, f"Pipeline failed: {str(e)}", {"job_id": job_id_for_logging, "traceback": traceback.format_exc()})
         raise e
 
@@ -359,21 +349,14 @@ def save_output_log(job_id: str, results: Dict):
     file_path = output_dir / f"{job_id}_result.json"
     with open(file_path, 'w') as f:
         json.dump(results, f, indent=2, sort_keys=True)
-    print(f"📄 Saved detailed output log to: {file_path}")
+    print(f"[LOG] Saved detailed output log to: {file_path}")
 
-def run_ocr(image_path: str, ocr_engine: PaddleOCR) -> tuple[str, float]:
-    print(f"🔩 [STUB] Running OCR on {image_path}")
-    return "", 0.0
-
-def run_clip_knn(image_path: str) -> tuple[str, float]:
-    print(f"🔩 [STUB] Running CLIP+Faiss on {image_path}")
-    return "", 0.0
 
 def send_heartbeat(supabase_client):
     try:
         supabase_client.from_("worker_health").upsert({"id": "primary", "last_heartbeat": datetime.now(timezone.utc).isoformat()}, on_conflict="id").execute()
     except Exception as e:
-        print(f"⚠️ Heartbeat failed: {e}")
+        print(f"[WARN] Heartbeat failed: {e}")
         supabase_client.from_("worker_health").insert({"id": "primary", "last_heartbeat": datetime.now(timezone.utc).isoformat()}).execute()
 
 def requeue_stale_jobs(supabase_client):
@@ -396,7 +379,7 @@ def requeue_stale_jobs(supabase_client):
         if not stale_jobs: 
             return
         
-        print(f"🔄 Found {len(stale_jobs)} stale jobs to requeue...")
+        print(f"[REQUEUE] Found {len(stale_jobs)} stale jobs to requeue...")
         
         for job_id, job_data in stale_jobs.items():
             retry_count = job_data.get('retry_count', 0)
@@ -404,7 +387,7 @@ def requeue_stale_jobs(supabase_client):
             
             # Check retry limit (max 3 auto-retries)
             if retry_count >= 3:
-                print(f"  ❌ Job {job_id} exceeded retry limit, marking as failed")
+                print(f"  [FAIL] Job {job_id} exceeded retry limit, marking as failed")
                 # Mark as permanently failed
                 supabase_client.from_("job_queue").update({
                     "status": "failed", 
@@ -420,7 +403,7 @@ def requeue_stale_jobs(supabase_client):
                     }).eq("id", scan_upload_id).execute()
             else:
                 # Increment retry and requeue
-                print(f"  🔄 Re-queuing job {job_id} (retry {retry_count + 1})")
+                print(f"  [RETRY] Re-queuing job {job_id} (retry {retry_count + 1})")
                 supabase_client.from_("job_queue").update({
                     "status": "pending", 
                     "started_at": None, 
@@ -437,7 +420,7 @@ def requeue_stale_jobs(supabase_client):
                     }).eq("id", scan_upload_id).execute()
                     
     except Exception as e:
-        print(f"⚠️ Requeue stale jobs failed: {e}")
+        print(f"[WARN] Requeue stale jobs failed: {e}")
         log_to_db(supabase_client, f"Stale job requeue failed: {str(e)}", {"error": str(e)})
 
 def fetch_and_lock_job(supabase_client):
@@ -448,10 +431,10 @@ def fetch_and_lock_job(supabase_client):
             try:
                 supabase_client.from_("job_queue").update({"visibility_timeout_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()}).eq("id", job["id"]).execute()
             except Exception as e:
-                print(f"⚠️ Failed to set visibility_timeout_at: {e}")
+                print(f"[WARN] Failed to set visibility_timeout_at: {e}")
         return job
     except Exception as e:
-        print(f"🔥 Error fetching job: {e}")
+        print(f"[ERROR] Error fetching job: {e}")
         return None
 
 def update_job_status(supabase_client, job_id, upload_id, status, error_message=None, results=None):
@@ -461,32 +444,41 @@ def update_job_status(supabase_client, job_id, upload_id, status, error_message=
             job_update_data['finished_at'] = datetime.now(timezone.utc).isoformat()
             job_update_data['started_at'] = None
         supabase_client.from_("job_queue").update(job_update_data).eq("id", job_id).execute()
+        
         upload_update_data = {"processing_status": status}
-        if error_message: upload_update_data["error_message"] = error_message
-        if results: upload_update_data["results"] = results
+        if error_message: 
+            upload_update_data["error_message"] = error_message
+        if results: 
+            # Ensure the scan_id is available for the review page
+            enhanced_results = {
+                **results,
+                "scan_id": results.get("scan_id"),  # Critical for review page linkage
+                "processing_completed_at": datetime.now(timezone.utc).isoformat()
+            }
+            upload_update_data["results"] = enhanced_results
+        
         supabase_client.from_("scan_uploads").update(upload_update_data).eq("id", upload_id).execute()
-        print(f"🔔 Status for job {job_id} updated to {status}.")
+        print(f"[UPDATE] Status for job {job_id} updated to {status}.")
+        if results and results.get("scan_id"):
+            print(f"[UPDATE] Linked scan_uploads.results.scan_id = {results['scan_id']}")
     except Exception as e:
-        print(f"🔥 Failed to update job/upload status for job {job_id}: {e}")
+        print(f"[ERROR] Failed to update job/upload status for job {job_id}: {e}")
 
 def main():
-    print("🚀 Normalized Worker v3 starting…")
+    print("[START] Normalized Worker v3 starting...")
     yolo_model = get_yolo_model()
     
-    # Initialize Supabase client and hybrid identifier once at startup
+    # Initialize Supabase client and CLIP identifier once at startup
     try:
         supabase_client = get_supabase_client()
         
-        # Initialize premium AI vision system
-        print("🧠 Initializing Hybrid AI Vision (CLIP + GPT-4o Mini)...")
-        hybrid_identifier = HybridCardIdentifierV2(
-            supabase_client=supabase_client,
-            gpt_daily_budget=0.10  # Production budget: $0.10/day
-        )
-        print("✅ Premium AI vision system ready!")
-        print("✅ Worker initialized successfully, starting main loop...")
+        # Initialize CLIP-only identification system
+        print("[AI] Initializing CLIP identification system...")
+        clip_identifier = CLIPCardIdentifier(supabase_client=supabase_client)
+        print("[OK] CLIP identification system ready!")
+        print("[OK] Worker initialized successfully, starting main loop...")
     except Exception as e:
-        print(f"🔥 Failed to initialize worker: {e}")
+        print(f"[ERROR] Failed to initialize worker: {e}")
         return
     
     while True:
@@ -495,28 +487,28 @@ def main():
             requeue_stale_jobs(supabase_client)
             job = fetch_and_lock_job(supabase_client)
             if not job:
-                print("💤 No jobs found, waiting...")
+                print("[WAIT] No jobs found, waiting...")
                 time.sleep(10)
                 continue
 
             job_id, upload_id = job.get('id'), job.get('scan_upload_id')
-            print(f"⚙️ Processing job: {job_id} for upload: {upload_id}")
+            print(f"[PROCESS] Processing job: {job_id} for upload: {upload_id}")
             
             try:
-                pipeline_results = run_normalized_pipeline(supabase_client, job, yolo_model, hybrid_identifier)
+                pipeline_results = run_normalized_pipeline(supabase_client, job, yolo_model, clip_identifier)
                 update_job_status(supabase_client, job_id, upload_id, 'completed', results=pipeline_results)
-                print(f"✅ Job {job_id} completed successfully.")
+                print(f"[COMPLETE] Job {job_id} completed successfully.")
                 if pipeline_results:
-                    print(f"   📊 Created {pipeline_results.get('user_cards_created', 0)} user cards from {pipeline_results.get('total_detections', 0)} detections")
+                    print(f"   [STATS] Created {pipeline_results.get('user_cards_created', 0)} user cards from {pipeline_results.get('total_detections', 0)} detections")
                 save_output_log(job_id, pipeline_results)
             except Exception as e:
-                print(f"🔥 Job {job_id} failed: {e}")
+                print(f"[ERROR] Job {job_id} failed: {e}")
                 traceback.print_exc()
                 update_job_status(supabase_client, job_id, upload_id, 'failed', error_message=str(e))
                 save_output_log(job_id, {"error": str(e), "traceback": traceback.format_exc()})
 
         except Exception as e:
-            print(f"🔥 A critical error occurred in the main loop: {e}")
+            print(f"[CRITICAL] A critical error occurred in the main loop: {e}")
             print("   This might be due to missing env vars or a DB connection issue.")
             print("   Waiting for 30 seconds before retrying...")
             time.sleep(30)

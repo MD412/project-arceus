@@ -27,8 +27,8 @@ async function createBulkScans(data: any) {
   formData.append('title', title);
   formData.append('user_id', userId);
 
-  // Convert HEIC files to JPEG before uploading
-  const files = Array.from(data.files) as File[];
+  // The form state under "file" is a FileList
+  const files = Array.from(data.file) as File[];
   let convertedCount = 0;
   
   for (const file of files) {
@@ -103,12 +103,12 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
   });
 
   // After validation, handleSubmit provides the transformed output data
-  const onSubmit = (data: any) => {
-    const fileInput = (document.getElementById('file') as HTMLInputElement).files;
-    if (fileInput && fileInput.length > 0) {
+  const onSubmit = (data: ScanFormValues) => {
+    // data.file is a FileList, no need to get it from the DOM
+    if (data.file && data.file.length > 0) {
       // Debug logging
       console.group('File Upload Debug');
-      Array.from(fileInput).forEach((file: File, index: number) => {
+      Array.from(data.file as FileList).forEach((file: File, index: number) => {
         const ext = file.name.split('.').pop()?.toLowerCase() || 'unknown';
         console.log(`File ${index + 1}:`);
         console.log(`- Name: ${file.name}`);
@@ -118,8 +118,8 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
       });
       console.groupEnd();
       
-      const submissionData = { ...data, files: fileInput };
-      mutation.mutate(submissionData);
+      // The data object from react-hook-form already contains the FileList
+      mutation.mutate(data);
     } else {
       toast.error('Please select at least one file to upload.');
     }
@@ -131,15 +131,6 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
       <p className="circuit-form-description">Upload one or more photos of your cards to start processing.</p>
       
       <form onSubmit={handleSubmit(onSubmit)} className="circuit-form">
-        <Input
-          id="title"
-          label="Batch Title (Optional)"
-          type="text"
-          {...register('title')}
-          error={errors.title?.message as string}
-          placeholder="e.g., 'Modern Horizons 3 Binder'"
-        />
-
         <Input
           id="file"
           label="Card Photos"

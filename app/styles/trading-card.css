@@ -44,6 +44,8 @@
   width: 100%;
   min-width: 0; /* Prevent image from breaking grid */
   aspect-ratio: 2.5 / 3.5; /* Standard trading card ratio */
+  max-height: 600px; /* Constrain maximum height */
+  max-width: calc(600px * (2.5 / 3.5)); /* Maintain aspect ratio: ~428px */
   margin-bottom: var(--sds-size-space-200);
   overflow: hidden;
   border-radius: var(--sds-size-radius-300);

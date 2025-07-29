@@ -1,0 +1,205 @@
+{
+  "requests": [
+    {
+      "timestamp": "2025-07-22T12:33:22.711215",
+      "input_tokens": 37059,
+      "output_tokens": 33,
+      "cost_usd": 0.00557865,
+      "success": true,
+      "response_time_ms": 1943
+    },
+    {
+      "timestamp": "2025-07-22T12:35:04.204828",
+      "input_tokens": 37059,
+      "output_tokens": 33,
+      "cost_usd": 0.00557865,
+      "success": true,
+      "response_time_ms": 3302
+    },
+    {
+      "timestamp": "2025-07-22T12:36:34.320912",
+      "input_tokens": 37059,
+      "output_tokens": 34,
+      "cost_usd": 0.00557925,
+      "success": true,
+      "response_time_ms": 1804
+    },
+    {
+      "timestamp": "2025-07-22T12:37:58.936366",
+      "input_tokens": 37059,
+      "output_tokens": 33,
+      "cost_usd": 0.00557865,
+      "success": true,
+      "response_time_ms": 2449
+    },
+    {
+      "timestamp": "2025-07-22T12:39:41.832933",
+      "input_tokens": 37059,
+      "output_tokens": 33,
+      "cost_usd": 0.00557865,
+      "success": true,
+      "response_time_ms": 2989
+    },
+    {
+      "timestamp": "2025-07-22T12:41:35.634091",
+      "input_tokens": 37059,
+      "output_tokens": 35,
+      "cost_usd": 0.00557985,
+      "success": true,
+      "response_time_ms": 2501
+    },
+    {
+      "timestamp": "2025-07-22T12:43:27.599807",
+      "input_tokens": 37059,
+      "output_tokens": 34,
+      "cost_usd": 0.00557925,
+      "success": true,
+      "response_time_ms": 3135
+    },
+    {
+      "timestamp": "2025-07-22T12:44:51.761363",
+      "input_tokens": 25725,
+      "output_tokens": 33,
+      "cost_usd": 0.0038785499999999997,
+      "success": true,
+      "response_time_ms": 2273
+    },
+    {
+      "timestamp": "2025-07-22T12:46:55.566411",
+      "input_tokens": 37059,
+      "output_tokens": 35,
+      "cost_usd": 0.00557985,
+      "success": true,
+      "response_time_ms": 1845
+    },
+    {
+      "timestamp": "2025-07-22T12:47:26.161775",
+      "input_tokens": 14391,
+      "output_tokens": 32,
+      "cost_usd": 0.00217785,
+      "success": true,
+      "response_time_ms": 1189
+    },
+    {
+      "timestamp": "2025-07-22T12:47:50.337305",
+      "input_tokens": 14391,
+      "output_tokens": 33,
+      "cost_usd": 0.0021784499999999997,
+      "success": true,
+      "response_time_ms": 1114
+    },
+    {
+      "timestamp": "2025-07-22T12:48:19.483716",
+      "input_tokens": 14391,
+      "output_tokens": 34,
+      "cost_usd": 0.0021790499999999997,
+      "success": true,
+      "response_time_ms": 2673
+    },
+    {
+      "timestamp": "2025-07-22T12:48:44.332561",
+      "input_tokens": 14391,
+      "output_tokens": 32,
+      "cost_usd": 0.00217785,
+      "success": true,
+      "response_time_ms": 1759
+    },
+    {
+      "timestamp": "2025-07-22T12:49:15.551680",
+      "input_tokens": 14391,
+      "output_tokens": 32,
+      "cost_usd": 0.00217785,
+      "success": true,
+      "response_time_ms": 1895
+    },
+    {
+      "timestamp": "2025-07-22T12:49:48.916028",
+      "input_tokens": 14391,
+      "output_tokens": 34,
+      "cost_usd": 0.0021790499999999997,
+      "success": true,
+      "response_time_ms": 4435
+    },
+    {
+      "timestamp": "2025-07-22T12:50:25.042179",
+      "input_tokens": 14391,
+      "output_tokens": 35,
+      "cost_usd": 0.00217965,
+      "success": true,
+      "response_time_ms": 1355
+    },
+    {
+      "timestamp": "2025-07-22T12:50:51.015365",
+      "input_tokens": 14391,
+      "output_tokens": 33,
+      "cost_usd": 0.0021784499999999997,
+      "success": true,
+      "response_time_ms": 1599
+    },
+    {
+      "timestamp": "2025-07-22T12:51:14.526052",
+      "input_tokens": 14391,
+      "output_tokens": 32,
+      "cost_usd": 0.00217785,
+      "success": true,
+      "response_time_ms": 1426
+    },
+    {
+      "timestamp": "2025-07-22T12:51:34.518584",
+      "input_tokens": 14391,
+      "output_tokens": 27,
+      "cost_usd": 0.00217485,
+      "success": true,
+      "response_time_ms": 1328
+    },
+    {
+      "timestamp": "2025-07-22T12:51:52.299673",
+      "input_tokens": 14391,
+      "output_tokens": 34,
+      "cost_usd": 0.0021790499999999997,
+      "success": true,
+      "response_time_ms": 1111
+    },
+    {
+      "timestamp": "2025-07-22T15:37:00.024867",
+      "input_tokens": 37059,
+      "output_tokens": 33,
+      "cost_usd": 0.00557865,
+      "success": true,
+      "response_time_ms": 3038
+    },
+    {
+      "timestamp": "2025-07-22T15:38:27.831158",
+      "input_tokens": 37059,
+      "output_tokens": 33,
+      "cost_usd": 0.00557865,
+      "success": true,
+      "response_time_ms": 2488
+    },
+    {
+      "timestamp": "2025-07-22T15:39:49.512676",
+      "input_tokens": 37059,
+      "output_tokens": 34,
+      "cost_usd": 0.00557925,
+      "success": true,
+      "response_time_ms": 2992
+    },
+    {
+      "timestamp": "2025-07-22T15:41:12.013347",
+      "input_tokens": 37059,
+      "output_tokens": 33,
+      "cost_usd": 0.00557865,
+      "success": true,
+      "response_time_ms": 1993
+    },
+    {
+      "timestamp": "2025-07-22T15:42:44.593690",
+      "input_tokens": 37059,
+      "output_tokens": 36,
+      "cost_usd": 0.00558045,
+      "success": true,
+      "response_time_ms": 2219
+    }
+  ],
+  "total_cost": 0.10036695000000002
+}

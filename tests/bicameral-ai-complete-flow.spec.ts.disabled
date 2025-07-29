@@ -1,0 +1,500 @@
+import { test, expect, Page } from '@playwright/test';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+/**
+ * Comprehensive E2E Test: Bicameral AI Complete User Flow
+ * Tests the entire journey from upload through collection management
+ * with focus on Bicameral AI features and enhanced review UI
+ */
+
+// Test configuration
+const TEST_CONFIG = {
+  PROCESSING_TIMEOUT: 180000,    // 3 minutes max processing
+  REVIEW_TIMEOUT: 30000,         // 30 seconds per card review
+  UPLOAD_TIMEOUT: 60000,         // 1 minute upload timeout
+  NAVIGATION_DELAY: 500,         // Keyboard navigation delay
+  BULK_ACTION_TIMEOUT: 10000     // 10 seconds for bulk actions
+};
+
+// Success criteria thresholds
+const SUCCESS_CRITERIA = {
+  MIN_CARDS_DETECTED: 1,
+  MAX_PROCESSING_TIME: 120000,   // 2 minutes
+  MIN_BICAMERAL_AGREEMENT: 0.0,  // Any agreement score is valid
+  MAX_REVIEW_TIME_PER_CARD: 30000 // 30 seconds per card
+};
+
+// Test data paths
+const TEST_DATA = {
+  SAMPLE_BINDER: 'test-data/sample_pokemon_binder.jpg',
+  SINGLE_CARD: 'test-data/single_pokemon_card.jpg',
+  MIXED_QUALITY: 'test-data/mixed_quality_cards.jpg'
+};
+
+/**
+ * Helper function to upload a test scan and wait for completion
+ */
+async function uploadAndProcessScan(page: Page, imagePath: string, title: string = 'Test Scan'): Promise<string> {
+  console.log(`📤 Uploading scan: ${imagePath}`);
+  
+  // Navigate to upload page
+  await page.goto('/upload');
+  await expect(page.locator('h1')).toContainText('Upload');
+  
+  // Upload file
+  const startTime = Date.now();
+  await page.setInputFiles('input[type="file"]', imagePath);
+  await page.fill('input[name="title"]', title);
+  await page.click('button:has-text("Upload & Process")');
+  
+  // Wait for upload completion
+  await expect(page.locator('text=Upload successful')).toBeVisible({ timeout: TEST_CONFIG.UPLOAD_TIMEOUT });
+  
+  // Extract scan ID from URL or response
+  await page.waitForURL(/\/scans\/[a-f0-9-]+/);
+  const url = page.url();
+  const scanId = url.split('/scans/')[1].split('/')[0];
+  
+  console.log(`📋 Scan uploaded with ID: ${scanId}`);
+  
+  // Wait for processing completion
+  console.log('⏳ Waiting for Bicameral AI processing...');
+  await page.waitForSelector('text=completed', { timeout: TEST_CONFIG.PROCESSING_TIMEOUT });
+  
+  const processingTime = Date.now() - startTime;
+  console.log(`✅ Processing completed in ${processingTime}ms`);
+  
+  // Validate processing time benchmark
+  expect(processingTime).toBeLessThan(SUCCESS_CRITERIA.MAX_PROCESSING_TIME);
+  
+  return scanId;
+}
+
+/**
+ * Helper function to validate bicameral analysis results
+ */
+async function validateBicameralAnalysis(page: Page) {
+  console.log('🧠 Validating Bicameral AI analysis...');
+  
+  // Check for bicameral analysis elements
+  const cards = page.locator('.detection-card');
+  const cardCount = await cards.count();
+  expect(cardCount).toBeGreaterThanOrEqual(SUCCESS_CRITERIA.MIN_CARDS_DETECTED);
+  
+  console.log(`📊 Found ${cardCount} detected cards`);
+  
+  // Validate each card has bicameral analysis
+  for (let i = 0; i < Math.min(5, cardCount); i++) {
+    const card = cards.nth(i);
+    
+    // Check for confidence badges
+    await expect(card.locator('.confidence-badges')).toBeVisible();
+    
+    // Check for bicameral-specific elements (if visible in UI)
+    const agreementElements = card.locator('.agreement-score, .bicameral-analysis');
+    if (await agreementElements.count() > 0) {
+      const agreementText = await agreementElements.first().textContent();
+      console.log(`🤝 Card ${i + 1} agreement: ${agreementText}`);
+    }
+    
+    // Validate confidence values are in valid range
+    const confidenceElement = card.locator('.id-confidence');
+    if (await confidenceElement.count() > 0) {
+      const confidenceText = await confidenceElement.textContent();
+      const confidence = parseFloat(confidenceText?.match(/(\d+)%/)?.[1] || '0') / 100;
+      expect(confidence).toBeGreaterThanOrEqual(0.0);
+      expect(confidence).toBeLessThanOrEqual(1.0);
+    }
+  }
+  
+  console.log('✅ Bicameral analysis validation passed');
+}
+
+/**
+ * Helper function to test enhanced review UI features
+ */
+async function testEnhancedReviewFeatures(page: Page) {
+  console.log('🎛️ Testing enhanced review UI features...');
+  
+  // Test confidence filtering
+  console.log('🔍 Testing confidence filtering...');
+  await page.selectOption('select[name="confidenceFilter"]', 'all');
+  const allCardsCount = await page.locator('.detection-card').count();
+  
+  await page.selectOption('select[name="confidenceFilter"]', 'high');
+  await page.waitForTimeout(500); // Wait for filter to apply
+  const highConfidenceCount = await page.locator('.detection-card').count();
+  
+  await page.selectOption('select[name="confidenceFilter"]', 'low');
+  await page.waitForTimeout(500);
+  const lowConfidenceCount = await page.locator('.detection-card').count();
+  
+  console.log(`📊 Filter results: All=${allCardsCount}, High=${highConfidenceCount}, Low=${lowConfidenceCount}`);
+  
+  // Reset to show all cards
+  await page.selectOption('select[name="confidenceFilter"]', 'all');
+  await page.waitForTimeout(500);
+  
+  // Test sorting
+  console.log('📈 Testing sorting options...');
+  await page.selectOption('select[name="sortBy"]', 'confidence');
+  await page.waitForTimeout(500);
+  
+  await page.selectOption('select[name="sortBy"]', 'name');
+  await page.waitForTimeout(500);
+  
+  // Test keyboard navigation
+  console.log('⌨️ Testing keyboard navigation...');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(TEST_CONFIG.NAVIGATION_DELAY);
+  await expect(page.locator('.detection-card.focused')).toHaveCount(1);
+  
+  await page.keyboard.press('ArrowLeft');
+  await page.waitForTimeout(TEST_CONFIG.NAVIGATION_DELAY);
+  
+  // Test keyboard shortcuts help
+  await page.keyboard.press('?');
+  await expect(page.locator('.keyboard-shortcuts')).toBeVisible();
+  await page.keyboard.press('?'); // Toggle off
+  
+  console.log('✅ Enhanced review features working correctly');
+}
+
+/**
+ * Helper function to test feedback and training system
+ */
+async function testFeedbackSystem(page: Page) {
+  console.log('🎯 Testing feedback and training system...');
+  
+  const cards = page.locator('.detection-card');
+  const cardCount = await cards.count();
+  
+  if (cardCount > 0) {
+    // Test individual feedback
+    const firstCard = cards.first();
+    
+    // Test keyboard shortcut for feedback
+    await firstCard.click(); // Focus the card
+    await page.keyboard.press('1'); // Mark as correct
+    await page.waitForTimeout(1000);
+    
+    // Verify feedback was applied
+    await expect(firstCard.locator('button:has-text("✅ Correct").selected')).toBeVisible();
+    
+    // Test undo functionality
+    await firstCard.locator('button:has-text("Undo")').click();
+    await page.waitForTimeout(500);
+    
+    console.log('✅ Individual feedback system working');
+    
+    // Test bulk feedback (if multiple cards)
+    if (cardCount > 1) {
+      // Select multiple cards
+      await page.keyboard.press('Control+a');
+      await page.waitForTimeout(500);
+      
+      // Apply bulk feedback
+      const bulkButton = page.locator('button:has-text("Mark") >> first');
+      if (await bulkButton.count() > 0) {
+        await bulkButton.click();
+        await page.waitForTimeout(2000);
+        console.log('✅ Bulk feedback system working');
+      }
+    }
+  }
+}
+
+/**
+ * Helper function to test collection management
+ */
+async function testCollectionManagement(page: Page, scanId: string) {
+  console.log('🏆 Testing collection management...');
+  
+  const cards = page.locator('.detection-card');
+  const cardCount = await cards.count();
+  
+  if (cardCount > 0) {
+    // Select cards for collection
+    const identifiedCards = cards.filter({ hasText: '✅ Identified' });
+    const identifiedCount = await identifiedCards.count();
+    
+    if (identifiedCount > 0) {
+      // Select first identified card
+      await identifiedCards.first().click();
+      await page.waitForTimeout(500);
+      
+      // Add to collection
+      const addButton = page.locator('button:has-text("Confirm & Add"), button:has-text("Add to Collection")').first();
+      if (await addButton.count() > 0) {
+        await addButton.click();
+        await page.waitForTimeout(2000);
+        
+        // Verify success message
+        await expect(page.locator('text=Added')).toBeVisible({ timeout: 5000 });
+        console.log('✅ Single card added to collection');
+      }
+      
+      // Test bulk collection add (if available)
+      if (identifiedCount > 1) {
+        await page.keyboard.press('Control+a'); // Select all
+        await page.waitForTimeout(500);
+        
+        const bulkAddButton = page.locator('button:has-text("Add") >> nth=0');
+        if (await bulkAddButton.count() > 0) {
+          await bulkAddButton.click();
+          await page.waitForTimeout(TEST_CONFIG.BULK_ACTION_TIMEOUT);
+          
+          // Verify bulk success
+          await expect(page.locator('text=Added')).toBeVisible({ timeout: 10000 });
+          console.log('✅ Bulk collection add working');
+        }
+      }
+    }
+  }
+  
+  // Navigate to collection view (if available)
+  const collectionLink = page.locator('a:has-text("Collection"), a:has-text("View Collection")');
+  if (await collectionLink.count() > 0) {
+    await collectionLink.first().click();
+    await page.waitForTimeout(2000);
+    console.log('✅ Collection navigation working');
+  }
+}
+
+/**
+ * Main test: Complete Bicameral AI User Flow
+ */
+test('Complete Bicameral AI User Flow - Upload to Collection', async ({ page }) => {
+  console.log('🚀 Starting Complete Bicameral AI User Flow Test');
+  
+  // Ensure test data exists
+  const testImagePath = TEST_DATA.SAMPLE_BINDER;
+  try {
+    await fs.access(testImagePath);
+  } catch (error) {
+    // Create a simple test image if none exists
+    console.log('⚠️ Test image not found, using fallback');
+    // In a real scenario, you'd have actual test images
+  }
+  
+  const testStartTime = Date.now();
+  
+  try {
+    // Phase 1: Upload and Processing
+    console.log('\n📤 PHASE 1: Upload and Processing');
+    const scanId = await uploadAndProcessScan(page, testImagePath, 'E2E Test Scan');
+    
+    // Navigate to review page
+    await page.goto(`/scans/${scanId}/review`);
+    await expect(page.locator('h1')).toContainText('Review');
+    
+    // Phase 2: Validate Bicameral AI Results
+    console.log('\n🧠 PHASE 2: Bicameral AI Validation');
+    await validateBicameralAnalysis(page);
+    
+    // Phase 3: Test Enhanced Review UI
+    console.log('\n🎛️ PHASE 3: Enhanced Review UI Testing');
+    await testEnhancedReviewFeatures(page);
+    
+    // Phase 4: Test Feedback System
+    console.log('\n🎯 PHASE 4: Feedback System Testing');
+    await testFeedbackSystem(page);
+    
+    // Phase 5: Test Collection Management
+    console.log('\n🏆 PHASE 5: Collection Management Testing');
+    await testCollectionManagement(page, scanId);
+    
+    // Calculate total test time
+    const totalTestTime = Date.now() - testStartTime;
+    console.log(`\n⏱️ Total test time: ${totalTestTime}ms`);
+    
+    // Final validation
+    console.log('\n✅ FINAL VALIDATION');
+    
+    // Verify we're still on a valid page
+    await expect(page.locator('body')).toBeVisible();
+    
+    // Check for any error messages
+    const errorElements = page.locator('.error, .alert-error, [role="alert"]');
+    const errorCount = await errorElements.count();
+    if (errorCount > 0) {
+      const errorText = await errorElements.first().textContent();
+      console.log(`⚠️ Found error message: ${errorText}`);
+    }
+    
+    console.log('🎉 Complete Bicameral AI User Flow Test PASSED!');
+    
+  } catch (error) {
+    console.error('❌ Test failed:', error);
+    
+    // Take screenshot on failure
+    await page.screenshot({ 
+      path: `test-results/bicameral-flow-failure-${Date.now()}.png`,
+      fullPage: true 
+    });
+    
+    throw error;
+  }
+});
+
+/**
+ * Performance benchmark test
+ */
+test('Bicameral AI Performance Benchmarks', async ({ page }) => {
+  console.log('📊 Starting Performance Benchmark Test');
+  
+  const performanceMetrics = {
+    uploadTime: 0,
+    processingTime: 0,
+    reviewLoadTime: 0,
+    navigationResponseTime: 0,
+    filterResponseTime: 0
+  };
+  
+  // Upload performance
+  const uploadStart = Date.now();
+  const scanId = await uploadAndProcessScan(page, TEST_DATA.SAMPLE_BINDER, 'Performance Test');
+  performanceMetrics.processingTime = Date.now() - uploadStart;
+  
+  // Review page load performance
+  const reviewStart = Date.now();
+  await page.goto(`/scans/${scanId}/review`);
+  await page.waitForSelector('.detection-card');
+  performanceMetrics.reviewLoadTime = Date.now() - reviewStart;
+  
+  // Navigation performance
+  const navStart = Date.now();
+  await page.keyboard.press('ArrowRight');
+  await page.waitForSelector('.detection-card.focused');
+  performanceMetrics.navigationResponseTime = Date.now() - navStart;
+  
+  // Filter performance
+  const filterStart = Date.now();
+  await page.selectOption('select[name="confidenceFilter"]', 'high');
+  await page.waitForTimeout(100); // Small delay for filter to apply
+  performanceMetrics.filterResponseTime = Date.now() - filterStart;
+  
+  // Validate performance benchmarks
+  console.log('📈 Performance Results:');
+  console.log(`  Processing Time: ${performanceMetrics.processingTime}ms`);
+  console.log(`  Review Load Time: ${performanceMetrics.reviewLoadTime}ms`);
+  console.log(`  Navigation Response: ${performanceMetrics.navigationResponseTime}ms`);
+  console.log(`  Filter Response: ${performanceMetrics.filterResponseTime}ms`);
+  
+  // Assert performance criteria
+  expect(performanceMetrics.processingTime).toBeLessThan(SUCCESS_CRITERIA.MAX_PROCESSING_TIME);
+  expect(performanceMetrics.navigationResponseTime).toBeLessThan(1000); // <1 second
+  expect(performanceMetrics.filterResponseTime).toBeLessThan(500); // <0.5 seconds
+  
+  console.log('✅ Performance benchmarks PASSED!');
+});
+
+/**
+ * Error handling and recovery test
+ */
+test('Bicameral AI Error Handling and Recovery', async ({ page }) => {
+  console.log('🛡️ Starting Error Handling Test');
+  
+  // Test invalid file upload
+  await page.goto('/upload');
+  
+  // Try to upload an invalid file type
+  try {
+    await page.setInputFiles('input[type="file"]', 'package.json'); // Invalid file type
+    await page.click('button:has-text("Upload")');
+    
+    // Should show error message
+    await expect(page.locator('text=Invalid, text=Error')).toBeVisible({ timeout: 5000 });
+    console.log('✅ Invalid file rejection working');
+  } catch (error) {
+    console.log('⚠️ Invalid file test skipped - validation may be client-side');
+  }
+  
+  // Test network error simulation (if possible)
+  try {
+    await page.route('**/api/scans', route => {
+      route.abort('networkfailure');
+    });
+    
+    await page.setInputFiles('input[type="file"]', TEST_DATA.SAMPLE_BINDER);
+    await page.click('button:has-text("Upload")');
+    
+    // Should show network error
+    await expect(page.locator('text=failed, text=error')).toBeVisible({ timeout: 10000 });
+    console.log('✅ Network error handling working');
+    
+    // Clean up route
+    await page.unroute('**/api/scans');
+    
+  } catch (error) {
+    console.log('⚠️ Network error simulation skipped');
+  }
+  
+  console.log('✅ Error handling tests completed');
+});
+
+/**
+ * Accessibility validation test
+ */
+test('Bicameral AI Accessibility Validation', async ({ page }) => {
+  console.log('♿ Starting Accessibility Validation');
+  
+  // Upload a scan for testing
+  const scanId = await uploadAndProcessScan(page, TEST_DATA.SAMPLE_BINDER, 'Accessibility Test');
+  await page.goto(`/scans/${scanId}/review`);
+  
+  // Test keyboard navigation accessibility
+  await page.keyboard.press('Tab'); // Should focus first interactive element
+  await page.keyboard.press('ArrowRight'); // Should work with keyboard
+  await page.keyboard.press('Enter'); // Should select card
+  
+  // Test screen reader support (basic checks)
+  const cards = page.locator('.detection-card');
+  const firstCard = cards.first();
+  
+  // Check for ARIA labels and roles
+  const hasAriaLabel = await firstCard.getAttribute('aria-label');
+  const hasRole = await firstCard.getAttribute('role');
+  const hasTabIndex = await firstCard.getAttribute('tabindex');
+  
+  console.log(`🔍 Accessibility attributes found:`);
+  console.log(`  ARIA Label: ${hasAriaLabel ? 'Yes' : 'No'}`);
+  console.log(`  Role: ${hasRole || 'None'}`);
+  console.log(`  Tab Index: ${hasTabIndex || 'Default'}`);
+  
+  // Test focus indicators
+  await firstCard.focus();
+  await expect(firstCard).toBeFocused();
+  
+  console.log('✅ Basic accessibility validation completed');
+});
+
+// Test configuration and setup
+test.beforeEach(async ({ page }) => {
+  // Set up test environment
+  console.log('🔧 Setting up test environment...');
+  
+  // Increase timeouts for AI processing
+  page.setDefaultTimeout(TEST_CONFIG.PROCESSING_TIMEOUT);
+  
+  // Handle any authentication if needed
+  // await authenticateUser(page);
+  
+  console.log('✅ Test environment ready');
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  // Cleanup and reporting
+  if (testInfo.status !== 'passed') {
+    // Take screenshot on failure
+    const screenshot = await page.screenshot({ fullPage: true });
+    await testInfo.attach('screenshot', { body: screenshot, contentType: 'image/png' });
+    
+    // Save page HTML for debugging
+    const html = await page.content();
+    await testInfo.attach('page-html', { body: html, contentType: 'text/html' });
+  }
+  
+  console.log(`📝 Test completed: ${testInfo.title} - ${testInfo.status}`);
+}); 

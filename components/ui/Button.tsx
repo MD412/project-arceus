@@ -1,5 +1,4 @@
 'use client';
-import { clsx } from 'clsx';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const buttonVariants = cva(
@@ -29,19 +28,18 @@ const buttonVariants = cva(
   }
 );
 
-interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+type NativeButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'>;
 
-export function Button({ 
-  className, 
+interface ButtonProps extends NativeButtonProps, VariantProps<typeof buttonVariants> {}
+
+export function Button({
   variant,
   size,
-  ...props 
+  ...props
 }: ButtonProps) {
   return (
     <button
-      className={clsx(buttonVariants({ variant, size }), className)}
+      className={buttonVariants({ variant, size })}
       {...props}
     />
   );

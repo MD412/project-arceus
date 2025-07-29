@@ -8,7 +8,7 @@ const createJestConfig = nextJest({
 // Add any custom config to be passed to Jest
 const customJestConfig = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you based on your tsconfig.json paths)
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/app/(.*)$': '<rootDir>/app/$1',
@@ -17,6 +17,7 @@ const customJestConfig = {
     '^@/services/(.*)$': '<rootDir>/services/$1',
   },
   testEnvironment: 'jest-environment-jsdom',
+  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'], // Only run unit tests, exclude Playwright specs
   collectCoverageFrom: [
     'app/**/*.{js,jsx,ts,tsx}',
     'components/**/*.{js,jsx,ts,tsx}',

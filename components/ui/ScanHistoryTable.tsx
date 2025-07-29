@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import {
   useReactTable,
@@ -64,12 +66,9 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
       accessorKey: 'scan_title',
       header: 'Scan Title',
       cell: ({ row }) => (
-        <Link 
-          href={`/scans/${row.original.id}`}
-          className="scan-history-table__title-link"
-        >
+        <span className="scan-history-table__title">
           {row.getValue('scan_title') || 'Untitled Scan'}
-        </Link>
+        </span>
       ),
     },
     {
@@ -111,43 +110,111 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
       id: 'actions',
       header: 'Actions',
       cell: ({ row }) => (
-        <div className="scan-history-table__actions">
+        <div 
+          className="scan-history-table__actions"
+          style={{ 
+            display: 'flex',
+            gap: 'var(--sds-size-space-200)',
+            justifyContent: 'flex-end'
+          }}
+        >
+          {/* Review link removed */}
           {onFlagForTraining && row.original.processing_status === 'completed' && (
-            <Button 
-              variant="info"
-              size="sm"
+            <button 
+              className="scan-history-table__action-link"
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: '#6b7280',
+                fontSize: '12px',
+                textDecoration: 'underline',
+                textDecorationColor: 'transparent',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+                              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = '#2d6a65';
+                target.style.textDecorationColor = '#2d6a65';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = '#6b7280';
+                target.style.textDecorationColor = 'transparent';
+              }}
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation();
                 onFlagForTraining(row.original.id);
               }}
               title="Add this scan to the training dataset"
             >
-              🎯 Training
-            </Button>
+              Training
+            </button>
           )}
           {onRename && (
-            <Button 
-              variant="ghost"
-              size="sm"
+            <button 
+              className="scan-history-table__action-link"
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: '#6b7280',
+                fontSize: '12px',
+                textDecoration: 'underline',
+                textDecorationColor: 'transparent',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = '#2d6a65';
+                target.style.textDecorationColor = '#2d6a65';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = '#6b7280';
+                target.style.textDecorationColor = 'transparent';
+              }}
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation();
                 onRename(row.original);
               }}
             >
               Rename
-            </Button>
+            </button>
           )}
           {onDelete && (
-            <Button 
-              variant="destructive"
-              size="sm"
+            <button 
+              className="scan-history-table__action-link scan-history-table__action-link--danger"
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: '#6b7280',
+                fontSize: '12px',
+                textDecoration: 'underline',
+                textDecorationColor: 'transparent',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseEnter={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = '#dc2626';
+                target.style.textDecorationColor = '#dc2626';
+              }}
+              onMouseLeave={(e) => {
+                const target = e.target as HTMLButtonElement;
+                target.style.color = '#6b7280';
+                target.style.textDecorationColor = 'transparent';
+              }}
               onClick={(e) => {
-                e.preventDefault();
+                e.stopPropagation();
                 onDelete(row.original.id, row.original.scan_title || 'Untitled Scan');
               }}
             >
               Delete
-            </Button>
+            </button>
           )}
         </div>
       ),
@@ -208,7 +275,15 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
         </thead>
         <tbody className="scan-history-table__body">
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className="scan-history-table__row">
+            <tr 
+              key={row.id} 
+              className="scan-history-table__row"
+              onClick={() => {
+                // Navigate to scan detail page
+                window.location.href = `/scans/${row.original.id}`;
+              }}
+
+            >
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className="scan-history-table__cell">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -279,10 +354,25 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
         .scan-history-table__row {
           border-bottom: 1px solid var(--border-subtle);
           transition: background-color 0.15s ease;
+          cursor: pointer;
         }
 
         .scan-history-table__row:hover {
           background: var(--surface-secondary);
+        }
+
+        .scan-history-table__row:hover .scan-history-table__title {
+          color: var(--interactive-primary);
+        }
+
+        /* Hide actions by default, reveal on row hover */
+        .scan-history-table__actions {
+          opacity: 0;
+          transition: opacity 0.15s ease;
+        }
+
+        .scan-history-table__row:hover .scan-history-table__actions {
+          opacity: 1;
         }
 
         .scan-history-table__row:last-child {
@@ -296,6 +386,11 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
           font-weight: 300;
           color: var(--text-primary);
           vertical-align: middle;
+        }
+
+        .scan-history-table__title {
+          color: var(--text-primary);
+          font-weight: 500;
         }
 
         .scan-history-table__title-link {
@@ -349,12 +444,29 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
           font-size: var(--font-size-75);
         }
 
-        .scan-history-table__actions {
-          display: flex;
-          gap: var(--sds-size-space-100);
-          justify-content: flex-end;
+        /* Action link base style */
+        .scan-history-table__action-link {
+          background: none;
+          border: none;
+          padding: 0;
+          color: #6b7280;
+          font-size: 12px;
+          text-decoration: underline;
+          text-decoration-color: transparent;
+          cursor: pointer;
+          transition: color 0.15s ease, text-decoration-color 0.15s ease;
         }
 
+        .scan-history-table__action-link:hover {
+          color: #2d6a65;
+          text-decoration-color: #2d6a65;
+        }
+
+        .scan-history-table__action-link--danger:hover {
+          color: #dc2626;
+          text-decoration-color: #dc2626;
+        }
+         
         .scan-history-table__empty {
           padding: var(--sds-size-space-600) var(--sds-size-space-400);
           text-align: center;

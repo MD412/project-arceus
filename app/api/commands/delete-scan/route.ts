@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'scanId is required' }, { status: 400 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabase = supabaseAdmin();
 
   try {
     // 1) Soft delete (mark deleted_at)

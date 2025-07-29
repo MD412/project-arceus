@@ -1,13 +1,13 @@
 // app/api/scans/route.ts
 import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { v4 as uuid } from 'uuid';
 
 // --- Helper for creating a Supabase client with user context ---
-function getSupabaseClientWithUser() {
-  const cookieStore = cookies();
+async function getSupabaseClientWithUser() {
+  const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -25,10 +25,7 @@ function getSupabaseClientWithUser() {
 
 // --- Helper for creating a Supabase client with service role ---
 function getSupabaseServiceRoleClient() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    return supabaseAdmin();
     }
     
 /**
@@ -36,7 +33,7 @@ function getSupabaseServiceRoleClient() {
  * Fetches all scans for the currently authenticated user.
  */
 export async function GET(request: NextRequest) {
-  const supabase = getSupabaseClientWithUser();
+  const supabase = await getSupabaseClientWithUser();
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
@@ -64,7 +61,7 @@ export async function GET(request: NextRequest) {
  * This is now a wrapper around the same logic as the bulk endpoint for consistency.
  */
 export async function POST(request: NextRequest) {
-  const supabaseUserClient = getSupabaseClientWithUser();
+  const supabaseUserClient = await getSupabaseClientWithUser();
   const { data: { user } } = await supabaseUserClient.auth.getUser();
 
   if (!user) {

@@ -165,6 +165,7 @@ DAILY_BUDGET = 0.10                 # GPT-4o Mini daily budget ($)
 
 - **Handbook**: `/handbook` - System architecture and patterns
 - **Design System**: `/circuitds` - UI components and guidelines
+- **Codebase Overview & Grep Guide**: `docs/CODEBASE_OVERVIEW.md` - Directory map & search cheatsheet
 - **API Reference**: `/api` - Backend endpoint documentation
 
 ## 🚨 **Troubleshooting**

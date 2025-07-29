@@ -1,0 +1,95 @@
+name: CLIP Threshold Auto-Tuner
+
+on:
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  tune-thresholds:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        cd worker
+        pip install -r requirements.txt
+    
+    - name: Run CLIP threshold analysis
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      run: |
+        cd scripts
+        python analyze_clip_thresholds.py > threshold_analysis.log 2>&1
+        
+        # Extract suggested threshold from log
+        SUGGESTED_THRESHOLD=$(grep "💡 Suggested threshold:" threshold_analysis.log | sed 's/.*: \([0-9.]*\)/\1/')
+        echo "SUGGESTED_THRESHOLD=$SUGGESTED_THRESHOLD" >> $GITHUB_ENV
+        
+        # Show analysis results
+        cat threshold_analysis.log
+    
+    - name: Update thresholds in code
+      if: env.SUGGESTED_THRESHOLD != ''
+      run: |
+        # Update HIGH_CONFIDENCE_THRESHOLD in hybrid_card_identifier_v2.py
+        sed -i "s/self\.HIGH_CONFIDENCE_THRESHOLD = [0-9.]*/self.HIGH_CONFIDENCE_THRESHOLD = $SUGGESTED_THRESHOLD/" worker/hybrid_card_identifier_v2.py
+        
+        # Log the change
+        echo "Updated HIGH_CONFIDENCE_THRESHOLD to $SUGGESTED_THRESHOLD"
+        git diff worker/hybrid_card_identifier_v2.py
+    
+    - name: Run accuracy tests
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      run: |
+        cd __tests__/ocr
+        
+        # Run 95% accuracy validation test (will fail CI if below threshold)
+        python test_clip_accuracy.py
+        
+        # Run comprehensive CLIP automation test
+        python test_clip_automation.py
+        
+        # Run existing pipeline tests
+        python -m pytest test_clip_pipeline.py -v --tb=short
+    
+    - name: Commit and push changes
+      if: env.SUGGESTED_THRESHOLD != ''
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "CLIP Threshold Auto-Tuner"
+        
+        if git diff --quiet; then
+          echo "No threshold changes needed"
+          exit 0
+        fi
+        
+        git add worker/hybrid_card_identifier_v2.py
+        git commit -m "🤖 Auto-tune CLIP threshold to $SUGGESTED_THRESHOLD
+
+        - Nightly analysis suggested optimal threshold: $SUGGESTED_THRESHOLD
+        - Previous accuracy tests passed
+        - Auto-committed by GitHub Action"
+        
+        git push
+    
+    - name: Upload analysis log
+      uses: actions/upload-artifact@v3
+      with:
+        name: threshold-analysis-log
+        path: scripts/threshold_analysis.log
+        retention-days: 30 
