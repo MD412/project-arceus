@@ -79,7 +79,7 @@
 /* Individual detection item */
 .detectionItem {
   display: grid;
-  grid-template-columns: 80px auto 120px;
+  grid-template-columns: 24px 80px auto 120px;
   gap: var(--sds-size-space-300);
   align-items: center;
   padding: var(--sds-size-space-300);
@@ -88,6 +88,19 @@
   background: var(--surface-background-subtle);
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
+}
+
+.selectionCheckbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary-500);
+}
+
+.detectionItemSelected {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50);
 }
 
 .detectionItem:hover,

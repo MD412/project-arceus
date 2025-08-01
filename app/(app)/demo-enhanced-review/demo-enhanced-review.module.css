@@ -1,0 +1,145 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--sds-color-gray-900);
+  margin-bottom: 8px;
+}
+
+.header p {
+  font-size: 1.125rem;
+  color: var(--sds-color-gray-600);
+}
+
+.confidenceOverview {
+  margin-bottom: 48px;
+  padding: 24px;
+  background: var(--sds-color-gray-50);
+  border-radius: 12px;
+  border: 1px solid var(--sds-color-gray-200);
+}
+
+.confidenceOverview h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--sds-color-gray-900);
+}
+
+.confidenceStats {
+  display: flex;
+  gap: 32px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.confidenceStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--sds-color-gray-200);
+  min-width: 120px;
+}
+
+.confidenceStat span {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sds-color-gray-700);
+  text-align: center;
+}
+
+.reviewSection {
+  margin-bottom: 48px;
+}
+
+.reviewSection h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--sds-color-gray-900);
+}
+
+.features {
+  padding: 24px;
+  background: var(--sds-color-gray-50);
+  border-radius: 12px;
+  border: 1px solid var(--sds-color-gray-200);
+}
+
+.features h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--sds-color-gray-900);
+  text-align: center;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid var(--sds-color-gray-200);
+  gap: 16px;
+}
+
+.feature svg {
+  color: var(--sds-color-primary-600);
+}
+
+.feature h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--sds-color-gray-900);
+  margin: 0;
+}
+
+.feature p {
+  font-size: 14px;
+  color: var(--sds-color-gray-600);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .confidenceStats {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+} 

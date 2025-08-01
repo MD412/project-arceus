@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { ConfidenceIndicator } from './ConfidenceIndicator';
+import { BatchActions } from './BatchActions';
 import styles from './ScanReviewLayout.module.css';
 
 interface Detection {
@@ -23,6 +25,10 @@ interface ScanReviewLayoutProps {
   className?: string;
   onDetectionHover?: (detection: Detection | null) => void;
   onDetectionClick?: (detection: Detection) => void;
+  onBatchApprove?: (detectionIds: string[]) => void;
+  onBatchReject?: (detectionIds: string[]) => void;
+  onBatchSearch?: (detectionIds: string[]) => void;
+  onBatchDelete?: (detectionIds: string[]) => void;
 }
 
 export function ScanReviewLayout({ 
@@ -30,13 +36,60 @@ export function ScanReviewLayout({
   detections, 
   className,
   onDetectionHover,
-  onDetectionClick
+  onDetectionClick,
+  onBatchApprove,
+  onBatchReject,
+  onBatchSearch,
+  onBatchDelete
 }: ScanReviewLayoutProps) {
   const [hoveredDetection, setHoveredDetection] = useState<Detection | null>(null);
+  const [selectedDetections, setSelectedDetections] = useState<Set<string>>(new Set());
 
   const handleDetectionHover = (detection: Detection | null) => {
     setHoveredDetection(detection);
     onDetectionHover?.(detection);
+  };
+
+  const handleDetectionClick = (detection: Detection) => {
+    onDetectionClick?.(detection);
+  };
+
+  const handleDetectionSelect = (detectionId: string, checked: boolean) => {
+    const newSelected = new Set(selectedDetections);
+    if (checked) {
+      newSelected.add(detectionId);
+    } else {
+      newSelected.delete(detectionId);
+    }
+    setSelectedDetections(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedDetections(new Set(detections.map(d => d.id)));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedDetections(new Set());
+  };
+
+  const handleBatchApprove = () => {
+    onBatchApprove?.(Array.from(selectedDetections));
+    setSelectedDetections(new Set());
+  };
+
+  const handleBatchReject = () => {
+    onBatchReject?.(Array.from(selectedDetections));
+    setSelectedDetections(new Set());
+  };
+
+  const handleBatchSearch = () => {
+    onBatchSearch?.(Array.from(selectedDetections));
+    setSelectedDetections(new Set());
+  };
+
+  const handleBatchDelete = () => {
+    onBatchDelete?.(Array.from(selectedDetections));
+    setSelectedDetections(new Set());
   };
 
   return (
@@ -60,19 +113,45 @@ export function ScanReviewLayout({
           <h3 className={styles.detectionsTitle}>Detected Cards</h3>
           <span className={styles.detectionsCount}>{detections.length} cards found</span>
         </div>
+
+        {/* Batch Actions */}
+        <BatchActions
+          cards={detections.map(d => ({
+            id: d.id,
+            card_name: d.card_name,
+            confidence: d.similarity_score
+          }))}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+          onApproveSelected={handleBatchApprove}
+          onRejectSelected={handleBatchReject}
+          onSearchSelected={handleBatchSearch}
+          onDeleteSelected={handleBatchDelete}
+          selectedCount={selectedDetections.size}
+          totalCount={detections.length}
+        />
         
         <div className={styles.detectionsContainer}>
           {detections.map((detection) => {
             const isHovered = hoveredDetection?.id === detection.id;
             
+            const isSelected = selectedDetections.has(detection.id);
+            
             return (
               <div
                 key={detection.id}
-                className={`${styles.detectionItem} ${isHovered ? styles.detectionItemHovered : ''}`}
+                className={`${styles.detectionItem} ${isHovered ? styles.detectionItemHovered : ''} ${isSelected ? styles.detectionItemSelected : ''}`}
                 onMouseEnter={() => handleDetectionHover(detection)}
                 onMouseLeave={() => handleDetectionHover(null)}
-                onClick={() => onDetectionClick?.(detection)}
               >
+                {/* Selection Checkbox */}
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={(e) => handleDetectionSelect(detection.id, e.target.checked)}
+                  className={styles.selectionCheckbox}
+                  onClick={(e) => e.stopPropagation()}
+                />
                 {/* Crop from original image */}
                 <div className={styles.cropContainer}>
                   {detection.crop_url ? (
@@ -97,7 +176,7 @@ export function ScanReviewLayout({
                 </div>
 
                 {/* Identified card */}
-                <div className={styles.identifiedCard}>
+                <div className={styles.identifiedCard} onClick={() => handleDetectionClick(detection)}>
                   {detection.identified_card ? (
                     <>
                       <div className={styles.identifiedCardImage}>
@@ -116,15 +195,22 @@ export function ScanReviewLayout({
                           <span className={styles.setInfo}>
                             {detection.identified_card.set_code} #{detection.identified_card.card_number}
                           </span>
-                          <span className={styles.confidenceScore}>
-                            {Math.round(detection.similarity_score * 100)}% match
-                          </span>
+                          <ConfidenceIndicator 
+                            confidence={detection.similarity_score}
+                            size="small"
+                            showIcon={false}
+                          />
                         </div>
                       </div>
                     </>
                   ) : (
                     <div className={styles.unidentifiedCard}>
                       <span>Unidentified</span>
+                      <ConfidenceIndicator 
+                        confidence={detection.similarity_score}
+                        size="small"
+                        showIcon={false}
+                      />
                     </div>
                   )}
                 </div>
