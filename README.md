@@ -1,14 +1,14 @@
-# Project Arceus - Premium Pokemon Card Detection & Collection Management
+# Project Arceus - Pokemon Card Detection & Collection Management
 
 A production-ready Pokemon card scanning system with AI-powered identification and automatic collection management.
 
 ## 🚀 **Key Features**
 
-### **Premium AI Vision System**
-- **95%+ Accuracy**: GPT-4o Mini + CLIP hybrid identification
-- **Smart Cost Optimization**: $0.0004/card average cost (375x ROI)
-- **Dual-Phase Recognition**: CLIP similarity search → GPT-4o Mini fallback
-- **Real-time Processing**: 1.6s average identification time
+### **AI-Powered Card Identification**
+- **CLIP Similarity Search**: Fast embedding-based card matching
+- **YOLO Detection**: Custom-trained model for Pokemon card detection
+- **High Accuracy**: Robust identification for known cards
+- **Real-time Processing**: Fast identification with no API costs
 
 ### **Autonomous Operation**
 - **Zero-Downtime**: Automatic stuck job recovery (30s detection, 10s resolution)
@@ -17,7 +17,6 @@ A production-ready Pokemon card scanning system with AI-powered identification a
 - **Health Monitoring**: Real-time system status and performance metrics
 
 ### **Card Management**
-- **YOLO Detection**: Custom-trained model for Pokemon card detection
 - **Collection Tracking**: Automatic inventory management
 - **Training System**: 4-category ML feedback (🚫 Not a Card, 📚 Missing from DB, ❌ Wrong ID, ✅ Correct)
 - **Review Interface**: Modern spatial and grid layout views
@@ -53,9 +52,8 @@ SELECT * FROM get_stuck_jobs();
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **Accuracy** | 95%+ | Premium AI vision (vs 0% OCR) |
-| **Cost** | $0.0004/card | Blended CLIP + GPT-4o Mini |
-| **Speed** | 1.6s/card | Average identification time |
+| **Processing** | CLIP-only | No API costs, free processing |
+| **Detection** | YOLO model | Custom-trained for Pokemon cards |
 | **Recovery** | <30s | Automatic stuck job detection |
 | **Uptime** | 99.9%+ | Self-healing infrastructure |
 
@@ -64,23 +62,21 @@ SELECT * FROM get_stuck_jobs();
 ### **Core Components**
 - **Next.js 15 Frontend**: React with CSS Modules (no Tailwind)
 - **Supabase Backend**: PostgreSQL + Edge Functions + RLS
-- **Python Worker**: YOLO + CLIP + GPT-4o Mini pipeline
+- **Python Worker**: YOLO + CLIP pipeline
 - **Auto-Recovery**: Autonomous job monitoring and healing
 
 ### **AI Pipeline**
 1. **YOLO Detection**: Locate cards in uploaded images
-2. **CLIP Similarity**: Fast embedding-based card matching (80%+ confidence → done)
-3. **GPT-4o Mini Fallback**: Premium AI vision for difficult cases (<80% confidence)
-4. **Database Integration**: Automatic card creation and inventory updates
+2. **CLIP Similarity**: Fast embedding-based card matching
+3. **Database Integration**: Automatic card creation and inventory updates
+4. **Result Storage**: Save detection results and update job status
 
-### **CLIP-Only Mode (No GPT Fallback)**
-To reduce costs or focus on improving non-LLM accuracy, you can disable the GPT-4o fallback entirely. Set the environment variable `ENABLE_GPT_FALLBACK=false` in your worker environment. In this mode:
-- The pipeline uses CLIP similarity search for all card crops
-- No GPT-4o Mini calls are made (no OpenAI API cost)
-- Low-confidence results are marked as `needs_manual_review` for later correction or training
-- All ambiguous cases are logged for future analysis
-
-This is ideal for development, cost control, or when iterating on your own models. Re-enable GPT fallback by setting `ENABLE_GPT_FALLBACK=true` (default).
+### **CLIP Similarity Search**
+The system uses OpenAI CLIP ViT-B-32-quickgelu model with Pokemon card embeddings for fast, accurate identification:
+- **Model**: ViT-B-32-quickgelu (optimized for performance)
+- **Database**: 19k+ Pokemon card embeddings
+- **Cost**: Free processing (no API calls)
+- **Accuracy**: High confidence matches for known cards
 
 ### **Reliability Features**
 - **Smart Retry Logic**: 3 automatic retries with failure escalation
@@ -95,15 +91,14 @@ This is ideal for development, cost control, or when iterating on your own model
 start_production_system.py       # Complete system startup
 worker/worker.py                 # Main processing worker
 worker/auto_recovery_system.py   # Autonomous job recovery
-worker/hybrid_card_identifier_v2.py # Premium AI vision system
+worker/clip_lookup.py            # CLIP similarity search
 auto_recovery_migration.sql      # Database schema for auto-recovery
 ```
 
 ### **AI Components**
 ```
-worker/gpt4_vision_identifier.py    # GPT-4o Mini integration
-worker/clip_lookup.py               # CLIP similarity search
-worker/pokemon_tcg_api.py           # Card database integration
+worker/clip_lookup.py            # CLIP similarity search
+worker/pokemon_tcg_api.py        # Card database integration
 ```
 
 ### **Frontend**
@@ -121,9 +116,6 @@ components/ui/                   # Reusable UI components
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_key
 
-# OpenAI (for premium AI vision)
-OPENAI_API_KEY=your_openai_key
-
 # Optional: Hugging Face (for model downloads)
 HUGGING_FACE_TOKEN=your_hf_token
 ```
@@ -135,10 +127,8 @@ STUCK_JOB_TIMEOUT_MINUTES = 10      # Detection threshold
 MAX_AUTO_RETRIES = 3                # Retry limit
 CHECK_INTERVAL_SECONDS = 30         # Monitoring frequency
 
-# AI vision settings (worker/hybrid_card_identifier_v2.py)
-HIGH_CONFIDENCE_THRESHOLD = 0.8     # CLIP confidence threshold
-LOW_CONFIDENCE_THRESHOLD = 0.5      # GPT fallback trigger
-DAILY_BUDGET = 0.10                 # GPT-4o Mini daily budget ($)
+# CLIP settings (worker/clip_lookup.py)
+SIMILARITY_THRESHOLD = 0.75         # CLIP confidence threshold
 ```
 
 ## 🎯 **Usage**
@@ -153,7 +143,7 @@ DAILY_BUDGET = 0.10                 # GPT-4o Mini daily budget ($)
 ### **Monitor System Health**
 - **Dashboard**: Real-time job queue and worker status
 - **Auto-Recovery**: Automatic stuck job resolution
-- **Performance**: Cost and accuracy tracking
+- **Performance**: System monitoring and logging
 - **Logs**: Comprehensive system logging
 
 ### **Training & Feedback**
@@ -185,17 +175,16 @@ SELECT * FROM auto_recover_stuck_jobs(); # Automated recovery
 
 ### **Performance Optimization**
 - **CLIP Model**: Uses QuickGELU for 2-3% performance improvement
-- **Cost Control**: Built-in daily budget limits for GPT-4o Mini
 - **Error Handling**: Graceful degradation with comprehensive logging
+- **Batch Processing**: Efficient card identification in batches
 
-## 🏆 **Business Metrics**
+## 🏆 **System Benefits**
 
-- **Accuracy**: 95%+ vs 0% (OCR baseline)
-- **Cost**: $0.0004/card vs $0.15 (premium pricing)
-- **Margin**: 375x ROI on AI investment
-- **Uptime**: 99.9%+ with auto-recovery
-- **Speed**: Real-time processing with 1.6s identification
+- **Cost-Effective**: Free processing with CLIP similarity search
+- **Reliable**: 99.9%+ uptime with auto-recovery
+- **Fast**: Real-time processing with efficient AI pipeline
+- **Scalable**: No per-card API costs, unlimited processing
 
 ---
 
-**Project Arceus delivers production-ready Pokemon card detection with premium AI vision, autonomous operation, and SaaS-level reliability.**
+**Project Arceus delivers production-ready Pokemon card detection with AI-powered identification, autonomous operation, and reliable infrastructure.**

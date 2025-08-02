@@ -10,6 +10,8 @@
   --circuit-medium-light-teal: #3b847e;
   --circuit-light-teal: #4a9b94;
   --circuit-bright-teal: #5dbfb7; /* New color for hover states */
+  --circuit-hover-teal: #6dd1c9; /* Lighter teal for hover states */
+  --circuit-hover-bg: #1a3a38; /* Slightly lighter than --background (#0f2b29) */
   --circuit-bright-yellow: #FFCF60; /* UPDATED: User request for a new yellow */ 
   --circuit-light-yellow: #fff2d1; 
   --circuit-magenta: #e91e63;

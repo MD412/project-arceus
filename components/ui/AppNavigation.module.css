@@ -1,0 +1,301 @@
+/* === AppNavigation: Generic Sidebar Navigation Styles === */
+
+/* Base Nav Container */
+.sidebar-nav {
+  background-color: var(--surface-background);
+  padding: 0; /* Remove base padding - let specific containers handle it */
+  border-right: var(--sds-size-stroke-border) solid var(--border-subtle);
+  /* width is best controlled by parent or instance-specific class */
+}
+
+/* Header within the navigation */
+.sidebar-nav-header {
+  /* padding-bottom: var(--sds-size-space-300); */ /* Removed, space now handled by title's padding-bottom */
+  margin-bottom: var(--sds-size-space-300);
+}
+
+/* Sidebar title - clean header with no artificial spacing */
+.sidebar-nav-title {
+  font-family: var(--font-family-display); /* Monda */
+  font-size: var(--font-size-200); /* 18px */
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+  margin: 0; /* Reset all margins */
+  padding: 0; /* Reset all padding */
+  
+  /* Figma auto-layout: left-align and center vertically */
+  display: flex;
+  align-items: center; /* Vertical center */
+  justify-content: flex-start; /* Left align */
+  
+  /* Smooth transitions for minimize/expand animations */
+  transition: justify-content 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Figma auto-layout: prevent title from making sidebar too wide */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Main navigation list */
+.sidebar-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-200); /* 8px gap between items */
+}
+
+/* General list items - usually no specific style needed if links are padded */
+.sidebar-nav-item {
+  /* No default styles needed here */
+}
+
+/* Navigation links */
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-300); /* 12px gap between icon and text */
+  padding: var(--sds-size-space-150) var(--sds-size-space-300); /* 6px vertical, 12px horizontal */
+  margin: 0; /* Removed horizontal margin to eliminate lopsided spacing */
+  border-radius: var(--sds-size-radius-150); /* 6px radius */
+  
+  font-family: var(--font-family-display); /* Monda is back! */
+  font-size: var(--font-size-75); /* 12px */
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text-secondary); /* Muted text color */
+  
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  /* Smooth transitions for minimize/expand animations */
+  transition: padding 0.25s cubic-bezier(0.4, 0, 0.2, 1), justify-content 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Clean mobile interaction */
+  -webkit-tap-highlight-color: transparent;
+  
+  /* Compact height like ChatGPT */
+  min-height: 32px;
+  background: transparent;
+  
+  /* Reset button styles when used as button */
+  border: none;
+  width: 100%;
+  text-align: left;
+  
+  /* Figma auto-layout: prevent text from making sidebar too wide */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ensure buttons get same styling */
+button.sidebar-nav-link {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* ChatGPT-style hover state - exclude active/current page links */
+.sidebar-nav-link:not(.sidebar-nav-link-active):hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Subtle white overlay */
+  color: var(--text-primary);
+}
+
+/* Active state - yellow background like original */
+.sidebar-nav-link-active {
+  background-color: var(--interactive-primary);
+  color: var(--text-inverse);
+  font-weight: 600;
+  cursor: default; /* Show it's not interactive */
+  pointer-events: none; /* Disable all interactions on current page link */
+}
+
+/* Focus state - subtle ring */
+.sidebar-nav-link:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* No scale on press - just background change - exclude active/current page links */
+.sidebar-nav-link:not(.sidebar-nav-link-active):active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Group headings within the navigation */
+.sidebar-nav-group-heading {
+  font-family: var(--font-family-display); /* Monda */
+  font-size: var(--font-size-75); /* 12px consistent with nav links */
+  font-weight: 500;
+  color: var(--text-primary); /* Brighter like ChatGPT */
+  text-transform: none; /* No uppercase */
+  letter-spacing: normal;
+  
+  padding: var(--sds-size-space-150) var(--sds-size-space-300); /* 6px vertical, 12px horizontal */
+  margin: var(--sds-size-space-200) 0 var(--sds-size-space-100); /* Removed horizontal margin */
+  
+  /* Figma auto-layout: prevent text from making sidebar too wide */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sub-list under a group heading */
+.sidebar-nav-sublist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* No gap - items touch like ChatGPT */
+}
+
+/* Icon styling - ChatGPT uses 20px icons */
+.sidebar-nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: currentColor;
+  opacity: 0.8;
+  /* Removed transition for snappy shadcn-style hover */
+}
+
+/* Text content in navigation links */
+.sidebar-nav-text {
+  flex: 1;
+  min-width: 0; /* Allow text to shrink and ellipsis to work */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Keep icons consistent opacity */
+.sidebar-nav-link:not(.sidebar-nav-link-active):hover .sidebar-nav-icon,
+.sidebar-nav-link-active .sidebar-nav-icon {
+  opacity: 1;
+}
+
+/* Collapsible group toggle button */
+.sidebar-nav-group-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sds-size-space-300);
+  padding: var(--sds-size-space-150) var(--sds-size-space-300);
+  margin: 0; /* Removed horizontal margin */
+  background: transparent;
+  border: none;
+  border-radius: var(--sds-size-radius-150);
+  
+  font-family: var(--font-family-display); /* Monda */
+  font-size: var(--font-size-75); /* 12px consistent with nav links */
+  font-weight: 500;
+  color: var(--text-primary);
+  text-transform: none;
+  letter-spacing: normal;
+  text-align: left;
+  cursor: pointer;
+  /* Removed transition for snappy shadcn-style hover */
+  outline: none;
+  
+  margin-top: var(--sds-size-space-200);
+  margin-bottom: var(--sds-size-space-100);
+  
+  min-height: 32px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sidebar-nav-group-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-nav-group-toggle:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-nav-group-toggle:active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-nav-group-title {
+  flex: 1;
+  min-width: 0; /* Allow text to shrink for ellipsis */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-nav-group-arrow {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  /* Removed transition for snappy shadcn-style hover */
+  font-size: 12px;
+}
+
+.sidebar-nav-group-arrow--collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Remove indent for sub-items - ChatGPT style */
+.sidebar-nav-sublist .sidebar-nav-link {
+  padding-left: var(--sds-size-space-300); /* Same as parent */
+  font-size: var(--font-size-75); /* Same size as parent - 12px */
+}
+
+/* Remove the active indicator for sub-items */
+.sidebar-nav-sublist .sidebar-nav-link-active::before {
+  display: none;
+}
+
+/* Remove group separators - ChatGPT doesn't use them */
+.sidebar-nav-group + .sidebar-nav-group {
+  margin-top: var(--sds-size-space-300);
+}
+
+.sidebar-nav-group + .sidebar-nav-group::before {
+  display: none;
+}
+
+/* Mobile uses same styles as desktop for consistency */
+
+/* Ensure the root layout imports this CSS file. */
+/* Example: import './components/ui/AppNavigation.css'; (adjust path as needed) */
+
+/* Sidebar footer navigation - positions logout at bottom */
+.sidebar-nav-footer {
+  margin-top: auto; /* Push to bottom */
+  padding-top: var(--sds-size-space-300); /* Add some separation from main nav */
+  /* Removed ugly hairline border */
+}
+
+/* Footer nav containers - ensure identical overflow behavior */
+.sidebar-nav-footer .sidebar-nav {
+  padding: 0; /* Same as base .sidebar-nav */
+  border-right: none; /* Remove border in footer */
+  overflow: hidden; /* Prevent horizontal scroll */
+}
+
+.sidebar-nav-footer .sidebar-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-200); /* 8px gap same as main nav */
+  overflow: hidden; /* Prevent horizontal scroll */
+}
+
+.sidebar-nav-footer .sidebar-nav-link {
+  /* Explicitly inherit all link styles */
+  overflow: hidden; /* Prevent horizontal scroll */
+  text-overflow: ellipsis; /* Handle text overflow */
+} 

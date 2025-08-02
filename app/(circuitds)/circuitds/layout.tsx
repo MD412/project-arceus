@@ -58,6 +58,7 @@ const circuitDSNavItems: NavigationConfigItem[] = [
       { type: 'link', label: 'Dropdown', href: '/circuitds/components/dropdown' },
       { type: 'link', label: 'Accordion', href: '/circuitds/components/accordion' },
       { type: 'link', label: 'Input', href: '/circuitds/forms/input' }, 
+      { type: 'link', label: 'Dropzone', href: '/circuitds/components/dropzone' },
       { type: 'link', label: 'Card Search Input', href: '/circuitds/components/card-search-input' },
       { type: 'link', label: 'Review UI', href: '/circuitds/review-ui' },
       { type: 'link', label: 'Processing Queue Card', href: '/circuitds/components/processing-queue-card' },

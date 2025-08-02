@@ -1,4 +1,0 @@
-{
-  "error": "'SyncQueryRequestBuilder' object has no attribute 'select'",
-  "traceback": "Traceback (most recent call last):\n  File \"C:\\Users\\mdand\\Projects\\project-arceus\\worker\\normalized_worker_v3.py\", line 482, in main\n    pipeline_results = run_normalized_pipeline(job, yolo_model)\n  File \"C:\\Users\\mdand\\Projects\\project-arceus\\worker\\normalized_worker_v3.py\", line 362, in run_normalized_pipeline\n    raise e\n  File \"C:\\Users\\mdand\\Projects\\project-arceus\\worker\\normalized_worker_v3.py\", line 291, in run_normalized_pipeline\n    detection_response = supabase_client.from_(\"card_detections\").insert(detection_data).select(\"id\").single().execute()\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'SyncQueryRequestBuilder' object has no attribute 'select'\n"
-}

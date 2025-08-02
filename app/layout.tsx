@@ -6,7 +6,7 @@ import GlobalNavigationWrapper from "@/components/layout/GlobalNavigationWrapper
 import QueryProvider from "@/components/providers/QueryProvider";
 import ToastProvider from "@/components/providers/ToastProvider";
 import ErrorBoundary from "@/components/layout/ErrorBoundary";
-import StagewiseInitializer from "@/components/StagewiseInitializer";
+
 
 export const metadata: Metadata = {
   title: "Project Arceus",
@@ -45,7 +45,7 @@ export default function RootLayout({
             <div id="modal-root" />
           </ErrorBoundary>
         </QueryProvider>
-        <StagewiseInitializer />
+
       </body>
     </html>
   );

@@ -44,12 +44,12 @@ jobs:
     - name: Update thresholds in code
       if: env.SUGGESTED_THRESHOLD != ''
       run: |
-        # Update HIGH_CONFIDENCE_THRESHOLD in hybrid_card_identifier_v2.py
-        sed -i "s/self\.HIGH_CONFIDENCE_THRESHOLD = [0-9.]*/self.HIGH_CONFIDENCE_THRESHOLD = $SUGGESTED_THRESHOLD/" worker/hybrid_card_identifier_v2.py
+        # Update HIGH_CONFIDENCE_THRESHOLD in clip_lookup.py
+        sed -i "s/self\.HIGH_CONFIDENCE_THRESHOLD = [0-9.]*/self.HIGH_CONFIDENCE_THRESHOLD = $SUGGESTED_THRESHOLD/" worker/clip_lookup.py
         
         # Log the change
         echo "Updated HIGH_CONFIDENCE_THRESHOLD to $SUGGESTED_THRESHOLD"
-        git diff worker/hybrid_card_identifier_v2.py
+        git diff worker/clip_lookup.py
     
     - name: Run accuracy tests
       env:
@@ -78,7 +78,7 @@ jobs:
           exit 0
         fi
         
-        git add worker/hybrid_card_identifier_v2.py
+        git add worker/clip_lookup.py
         git commit -m "🤖 Auto-tune CLIP threshold to $SUGGESTED_THRESHOLD
 
         - Nightly analysis suggested optimal threshold: $SUGGESTED_THRESHOLD

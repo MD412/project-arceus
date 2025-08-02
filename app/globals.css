@@ -1,29 +1,39 @@
+/* Core CircuitDS Design System */
 @import './styles/circuit.css';
+
+/* Typography and Layout */
 @import './styles/typography.css';
 @import './styles/navigation.css';
-@import '../components/ui/AppNavigation.css';
 @import './styles/page-layout.css';
 @import './styles/content-section.css';
-@import './styles/example-showcase.css';
 @import './styles/circuitds-layout.css';
-@import './styles/spacing-page.css';
-@import './styles/player-card.css';
-@import './styles/control-bar.css';
-@import './styles/search-bar.css';
-@import './styles/radius-page.css';
-@import './styles/metric-card.css';
-@import './styles/form.css';
+
+/* UI Components */
 @import './styles/button.css';
+@import './styles/form.css';
 @import './styles/dropdown.css';
 @import './styles/accordion.css';
-@import './styles/action-toolbar.css';
+@import './styles/modal.css';
+@import './styles/sheet.css';
+
+/* Application Specific */
+@import './styles/player-card.css';
 @import './styles/trading-card.css';
 @import './styles/draggable-card.css';
-@import './styles/modal.css';
+@import './styles/control-bar.css';
+@import './styles/search-bar.css';
+@import './styles/action-toolbar.css';
 @import './styles/scans-page.css';
-@import './(app)/playground-card-component/playground-card-states.css';
-@import './styles/sheet.css';
+
+/* Documentation */
+@import './styles/spacing-page.css';
+@import './styles/radius-page.css';
+@import './styles/metric-card.css';
+@import './styles/example-showcase.css';
 @import './styles/handbook.css';
+
+/* Component Styles */
+@import '../components/ui/AppNavigation.css';
 
 /* Reset */
 *,

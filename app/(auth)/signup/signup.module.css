@@ -1,0 +1,165 @@
+/* === Signup Page Styles === */
+
+.signupContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background); /* Reverted to original background */
+  padding: var(--sds-size-space-400);
+  position: relative;
+  overflow: hidden; /* Ensures rotated background doesn't cause scrollbars */
+}
+
+/* Tiled and rotated background pattern using Arceus art */
+.signupContainer::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  right: -20%;
+  bottom: -20%;
+  background-image: url('/arceus-art.svg');
+  background-size: 120px 120px; /* Optimal size for tiling pattern */
+  background-repeat: repeat;
+  transform: rotate(15deg); /* Modern diagonal tiling effect */
+  z-index: 0; /* Behind all content */
+  pointer-events: none; /* Ensure it doesn't interfere with interactions */
+}
+
+/* Ensure signup card content appears above the background */
+.signupContainer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Card wrapper to contain both card and back button */
+.signupCardWrapper {
+  width: 100%;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.signupCard {
+  width: 100%;
+  background: var(--circuit-dark-teal); /* Circuit Dark Teal background */
+  border: var(--sds-size-stroke-border) solid var(--circuit-mid-teal); /* Circuit Mid Teal border */
+  border-radius: var(--sds-size-radius-400);
+  box-shadow: 0 var(--sds-size-depth-100) var(--sds-size-depth-200) var(--color-black-300);
+  padding: var(--sds-size-space-600) var(--sds-size-space-800);
+}
+
+/* Back Button Styles */
+.signupBackButton {
+  margin-top: var(--sds-size-space-500);
+  text-align: center;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  font: var(--font-body-small);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.backLink:hover {
+  color: var(--text-brand);
+  text-decoration: none;
+}
+
+/* Success Message Specific Styles */
+.successMessage {
+  text-align: center;
+  padding: var(--sds-size-space-400) 0; /* Add some vertical padding */
+}
+
+.successMessage h1 {
+  font: var(--font-heading); /* Use a heading font token */
+  color: var(--text-success); /* Use semantic success color */
+  margin-bottom: var(--sds-size-space-300);
+}
+
+.successMessage p {
+  font: var(--font-body-base);
+  color: var(--text-primary);
+  margin-bottom: var(--sds-size-space-400);
+}
+
+/* Signup Form Specific Styles */
+.signupHeader {
+  text-align: center;
+  margin-bottom: var(--sds-size-space-600);
+}
+
+.signupHeader h1 {
+  font: var(--font-subtitle);
+  font-weight: 700;
+  color: var(--text-heading-strong);
+  margin-bottom: var(--sds-size-space-100);
+}
+
+.signupHeader p {
+  font: var(--font-body-small);
+  color: var(--text-primary);
+}
+
+.signupForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-400); /* Gap for Input components */
+}
+
+/* Hide required asterisks for this form */
+.signupForm .circuit-field .circuit-label.required::after {
+  display: none;
+}
+
+.signupForm .circuit-field {
+  margin-bottom: var(--sds-size-space-100); /* Small gap between fields */
+}
+.signupForm .circuit-field:last-of-type {
+  margin-bottom: var(--sds-size-space-300); /* More space before button */
+}
+
+.signupFormButton { /* Class added to Button component in page.tsx */
+  max-width: 240px;
+  align-self: center; /* Center the button */
+}
+
+.signupFooter {
+  margin-top: var(--sds-size-space-600);
+  text-align: center;
+  font: var(--font-body-small);
+  color: var(--text-primary);
+}
+
+.signupFooter p {
+  margin-bottom: var(--sds-size-space-300);
+}
+
+/* Auth link styles used in both success message and footer */
+.authLink {
+  color: var(--text-brand);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.authLink:hover {
+  text-decoration: underline;
+  color: var(--eva-light-yellow);
+}
+
+/* General error messages (not field-specific, which Input component handles) */
+.generalError {
+  background-color: var(--color-red-100);
+  color: var(--color-red-600);
+  padding: var(--sds-size-space-300);
+  border-radius: var(--sds-size-radius-150);
+  border: var(--sds-size-stroke-border) solid var(--color-red-300);
+  margin-bottom: var(--sds-size-space-400);
+  text-align: center;
+  font: var(--font-body-small-strong);
+} 

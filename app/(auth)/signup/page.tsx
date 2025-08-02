@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase/browser';
-import './signup.css'; // Import the CSS file
+import styles from './signup.module.css';
 import { Input } from '@/components/forms/Input';
 import { Button } from '@/components/ui/Button';
 
@@ -130,13 +130,13 @@ const SignupPage: React.FC = () => {
 
   if (success) {
     return (
-      <div className="signup-container">
-        <div className="signup-card">
-          <div className="success-message">
+      <div className={styles.signupContainer}>
+        <div className={styles.signupCard}>
+          <div className={styles.successMessage}>
             <h1>Welcome to Project Arceus!</h1>
             <p>Your account has been created successfully.</p>
             <p>Redirecting you to the home page...</p>
-            <Link href="/login" className="auth-link">
+            <Link href="/login" className={styles.authLink}>
               Or click here to login now
             </Link>
           </div>
@@ -146,17 +146,17 @@ const SignupPage: React.FC = () => {
   }
 
   return (
-    <div className="signup-container">
-      <div className="signup-card-wrapper">
-      <div className="signup-card">
-        <div className="signup-header">
+    <div className={styles.signupContainer}>
+      <div className={styles.signupCardWrapper}>
+      <div className={styles.signupCard}>
+        <div className={styles.signupHeader}>
           <h1>Create Account</h1>
           <p>Join Project Arceus to start collecting</p>
         </div>
         
-        <form onSubmit={handleSubmit} className="signup-form">
+        <form onSubmit={handleSubmit} className={styles.signupForm}>
           {errors.general && (
-            <div className="error-message general-error">
+            <div className={`error-message ${styles.generalError}`}>
               {errors.general}
             </div>
           )}
@@ -204,23 +204,23 @@ const SignupPage: React.FC = () => {
             type="submit"
             disabled={isLoading}
             variant="primary"
-            className="signup-form-button" // For potential specific targeting
+            className={styles.signupFormButton}
           >
             {isLoading ? 'Creating Account...' : 'Sign Up'}
           </Button>
         </form>
         
-        <div className="signup-footer">
+        <div className={styles.signupFooter}>
           <p>
             Already have an account?{' '}
-            <Link href="/login" className="auth-link">
+            <Link href="/login" className={styles.authLink}>
               Log in
             </Link>
           </p>
         </div>
         </div>
-        <div className="signup-back-button">
-          <Link href="/login" className="back-link">
+        <div className={styles.signupBackButton}>
+          <Link href="/login" className={styles.backLink}>
             ← Back to Login
           </Link>
         </div>

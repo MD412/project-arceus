@@ -262,21 +262,42 @@ export default function ScanDetailPage({ params }: ScanDetailPageProps) {
       
       for (const detection of identifiedDetections) {
         try {
-          const { error: cardError } = await supabase
+          // Check if user already owns this card
+          const { data: existingCard } = await supabase
             .from('user_cards')
-            .upsert({
-              user_id: scan.user_id,
-              card_id: detection.guess_card_id,
-              detection_id: detection.id,
-              condition: 'unknown',
-              quantity: 1
-            }, {
-              onConflict: 'user_id,card_id'
-            });
+            .select('id, quantity')
+            .eq('user_id', scan.user_id)
+            .eq('card_id', detection.guess_card_id)
+            .single();
 
-          if (cardError) {
-            console.error('Error creating user card:', cardError);
-            // Don't throw, just log and continue
+          if (existingCard) {
+            // Update quantity if card already exists
+            const { error: cardError } = await supabase
+              .from('user_cards')
+              .update({ 
+                quantity: existingCard.quantity + 1,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingCard.id);
+            
+            if (cardError) {
+              console.error('Error updating user card:', cardError);
+            }
+          } else {
+            // Insert new card
+            const { error: cardError } = await supabase
+              .from('user_cards')
+              .insert({
+                user_id: scan.user_id,
+                card_id: detection.guess_card_id,
+                detection_id: detection.id,
+                condition: 'unknown',
+                quantity: 1
+              });
+            
+            if (cardError) {
+              console.error('Error creating user card:', cardError);
+            }
           }
         } catch (err) {
           console.error('Exception creating user card:', err);

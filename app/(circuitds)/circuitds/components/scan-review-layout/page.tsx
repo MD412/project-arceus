@@ -156,7 +156,6 @@ export default function ScanReviewLayoutPage() {
           <li>The component handles responsive layout automatically</li>
         </ul>
       </ContentSection>
-      </ContentSection>
 
       <ContentSection title="Design Considerations" headingLevel={2}>
         <h3>UX Benefits</h3>

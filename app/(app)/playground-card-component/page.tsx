@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { convertHeicToJpeg } from '@/lib/utils';
 import toast from 'react-hot-toast';
-import './playground-card-states.css';
+import styles from './playground-card-states.module.css';
 
 export default function PlaygroundCardStates() {
   const [heicTestResult, setHeicTestResult] = useState<string>('');
@@ -46,17 +46,17 @@ Status: ${converted !== file ? '✅ Converted successfully' : '⚠️ No convers
   };
 
   return (
-    <div className="playground-container">
-      <h1 className="playground-title">HEIC File Support Test</h1>
+    <div className={styles.playgroundContainer}>
+      <h1 className={styles.playgroundTitle}>HEIC File Support Test</h1>
       
-      <section className="playground-section">
-        <h2 className="playground-section-title">HEIC to JPEG Conversion</h2>
-        <p className="playground-description">
+      <section className={styles.playgroundSection}>
+        <h2 className={styles.playgroundSectionTitle}>HEIC to JPEG Conversion</h2>
+        <p className={styles.playgroundDescription}>
           Upload a HEIC file from your iPhone to test the conversion process. 
           The file will be converted to JPEG format for compatibility.
         </p>
         
-        <div className="playground-heic-test">
+        <div className={styles.playgroundHeicTest}>
           <div className="circuit-form-field">
             <label htmlFor="heic-upload" className="circuit-label">
               Select HEIC File
@@ -71,14 +71,14 @@ Status: ${converted !== file ? '✅ Converted successfully' : '⚠️ No convers
           </div>
           
           {heicTestResult && (
-            <div className="playground-test-result">
+            <div className={styles.playgroundTestResult}>
               <h3>Conversion Result:</h3>
-              <pre className="playground-heic-result">{heicTestResult}</pre>
+              <pre className={styles.playgroundHeicResult}>{heicTestResult}</pre>
             </div>
           )}
           
           {convertedImageUrl && (
-            <div className="playground-image-preview">
+            <div className={styles.playgroundImagePreview}>
               <h3>Converted Image Preview:</h3>
               <img 
                 src={convertedImageUrl} 

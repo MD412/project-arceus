@@ -8,20 +8,20 @@ export default function WorkerPipelinePage() {
   return (
     <PageLayout
       title="🔧 Worker Pipeline Architecture"
-      description="Production-ready Pokemon card processing pipeline with premium AI vision and autonomous recovery."
+      description="Production-ready Pokemon card processing pipeline with CLIP similarity search and autonomous recovery."
     >
       <ContentSection title="🚀 System Overview" headingLevel={2}>
         <p className="body-medium mb-4">
-          The Project Arceus worker pipeline combines YOLO detection, CLIP similarity, and GPT-4o Mini for 95%+ accuracy card identification with autonomous operation.
+          The Project Arceus worker pipeline combines YOLO detection with CLIP similarity search for fast, accurate card identification with autonomous operation.
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-green-800 mb-2">🎯 Performance Metrics</h3>
             <ul className="text-sm text-green-700 space-y-1">
-              <li>• <strong>Accuracy:</strong> 95%+ (vs 0% OCR baseline)</li>
-              <li>• <strong>Speed:</strong> 1.6s average identification</li>
-              <li>• <strong>Cost:</strong> $0.0004/card (375x ROI)</li>
+              <li>• <strong>Processing:</strong> CLIP-only identification</li>
+              <li>• <strong>Speed:</strong> Fast embedding-based matching</li>
+              <li>• <strong>Cost:</strong> Free processing (no API calls)</li>
               <li>• <strong>Uptime:</strong> 99.9%+ with auto-recovery</li>
             </ul>
           </div>
@@ -63,7 +63,7 @@ export default function WorkerPipelinePage() {
                 <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</span>
                 <div>
                   <strong>YOLO Detection:</strong> Custom YOLOv8 model detects individual cards
-                  <div className="text-gray-600 mt-1">Trained specifically for Pokemon cards with 99%+ detection accuracy</div>
+                  <div className="text-gray-600 mt-1">Trained specifically for Pokemon cards with high detection accuracy</div>
                 </div>
               </li>
               
@@ -78,16 +78,16 @@ export default function WorkerPipelinePage() {
               <li className="flex items-start space-x-3">
                 <span className="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">5</span>
                 <div>
-                  <strong>Premium AI Fallback:</strong> GPT-4o Mini for difficult identifications
-                  <div className="text-gray-600 mt-1">Triggered when CLIP confidence &lt; 80% for premium accuracy</div>
+                  <strong>Card Database Lookup:</strong> Match identified cards to database
+                  <div className="text-gray-600 mt-1">Automatic card creation and inventory updates with confidence tracking</div>
                 </div>
               </li>
               
               <li className="flex items-start space-x-3">
                 <span className="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">6</span>
                 <div>
-                  <strong>Database Integration:</strong> Card creation and inventory updates
-                  <div className="text-gray-600 mt-1">Automatic card database updates with confidence tracking</div>
+                  <strong>Result Storage:</strong> Save detection results and update job status
+                  <div className="text-gray-600 mt-1">Store bounding boxes, confidence scores, and processing metadata</div>
                 </div>
               </li>
             </ol>
@@ -95,59 +95,31 @@ export default function WorkerPipelinePage() {
         </div>
       </ContentSection>
 
-      <ContentSection title="🧠 HybridCardIdentifierV2" headingLevel={2}>
+      <ContentSection title="🧠 CLIP Card Identification System" headingLevel={2}>
         <p className="body-medium mb-4">
-          Our premium AI vision system combines multiple identification methods for optimal accuracy and cost efficiency.
+          Our production CLIP similarity search system provides fast, cost-effective card identification with high accuracy.
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <h4 className="font-semibold text-purple-800 mb-2">🔍 CLIP Similarity (Primary)</h4>
-            <ul className="text-sm text-purple-700 space-y-1">
-              <li>• <strong>Model:</strong> ViT-B-32-quickgelu (optimized)</li>
-              <li>• <strong>Speed:</strong> ~0.2s per card</li>
-              <li>• <strong>Cost:</strong> $0.0001/card</li>
-              <li>• <strong>Threshold:</strong> 80%+ confidence → done</li>
-              <li>• <strong>Coverage:</strong> ~85% of cards identified</li>
-            </ul>
-          </div>
-          
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-            <h4 className="font-semibold text-orange-800 mb-2">🚀 GPT-4o Mini (Fallback)</h4>
-            <ul className="text-sm text-orange-700 space-y-1">
-              <li>• <strong>Model:</strong> GPT-4o Mini vision</li>
-              <li>• <strong>Speed:</strong> ~1.4s per card</li>
-              <li>• <strong>Cost:</strong> $0.0015/card</li>
-              <li>• <strong>Trigger:</strong> &lt; 80% CLIP confidence</li>
-              <li>• <strong>Accuracy:</strong> 95%+ for difficult cases</li>
-            </ul>
-          </div>
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+          <h4 className="font-semibold text-purple-800 mb-2">🔍 CLIP Similarity Search</h4>
+          <ul className="text-sm text-purple-700 space-y-1">
+            <li>• <strong>Model:</strong> ViT-B-32-quickgelu (optimized)</li>
+            <li>• <strong>Speed:</strong> Fast embedding-based matching</li>
+            <li>• <strong>Cost:</strong> Free processing (no API calls)</li>
+            <li>• <strong>Database:</strong> 19k+ Pokemon card embeddings</li>
+            <li>• <strong>Accuracy:</strong> High confidence matches for known cards</li>
+          </ul>
         </div>
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h4 className="font-semibold text-blue-800 mb-2">💡 Cost Optimization Strategy</h4>
+          <h4 className="font-semibold text-blue-800 mb-2">💡 System Benefits</h4>
           <div className="text-sm text-blue-700 space-y-2">
-            <p>• <strong>Blended Cost:</strong> $0.0004/card average (85% CLIP + 15% GPT-4o Mini)</p>
-            <p>• <strong>Daily Budget:</strong> $0.10 limit with automatic throttling</p>
-            <p>• <strong>ROI Analysis:</strong> 375x return vs $0.15 premium pricing</p>
-            <p>• <strong>Fallback Chain:</strong> CLIP → GPT-4o Mini → Manual review</p>
+            <p>• <strong>Cost-Effective:</strong> No API costs, completely free processing</p>
+            <p>• <strong>Fast Performance:</strong> Embedding-based similarity search</p>
+            <p>• <strong>Scalable:</strong> No per-card costs, unlimited processing</p>
+            <p>• <strong>Reliable:</strong> Self-hosted model with local embeddings</p>
           </div>
         </div>
-      </ContentSection>
-
-      <ContentSection title="💸 CLIP-Only Mode (No GPT Fallback)" headingLevel={2}>
-        <p className="body-medium mb-4">
-          To reduce costs or focus on improving non-LLM accuracy, you can disable the GPT-4o fallback entirely. Set the environment variable <code>ENABLE_GPT_FALLBACK=false</code> in your worker environment. In this mode, the pipeline will:
-        </p>
-        <ul className="list-disc pl-6 body-medium mb-4">
-          <li>Use CLIP similarity search for all card crops</li>
-          <li>Skip all GPT-4o Mini calls (no OpenAI API cost)</li>
-          <li>Mark low-confidence results as <code>needs_manual_review</code> for later correction or training</li>
-          <li>Log all ambiguous cases for future analysis</li>
-        </ul>
-        <p className="body-small">
-          This is ideal for development, cost control, or when iterating on your own models. Re-enable GPT fallback by setting <code>ENABLE_GPT_FALLBACK=true</code> (default).
-        </p>
       </ContentSection>
 
       <ContentSection title="🔧 Auto-Recovery System" headingLevel={2}>
@@ -263,7 +235,7 @@ export default function WorkerPipelinePage() {
             <div className="space-y-3 text-sm text-blue-700">
               <div>
                 <pre className="bg-blue-100 p-2 rounded">cd worker && python worker.py</pre>
-                <p>Main processing worker (YOLO + AI vision)</p>
+                <p>Main processing worker (YOLO + CLIP identification)</p>
               </div>
               
               <div>
@@ -281,9 +253,9 @@ export default function WorkerPipelinePage() {
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
             <h4 className="font-semibold text-orange-800 mb-2">📋 Environment Configuration</h4>
             <div className="text-sm text-orange-700 space-y-2">
-              <p><strong>Required:</strong> SUPABASE_URL, SUPABASE_SERVICE_KEY, OPENAI_API_KEY</p>
+              <p><strong>Required:</strong> SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY</p>
               <p><strong>Optional:</strong> HUGGING_FACE_TOKEN (for model downloads)</p>
-              <p><strong>Settings:</strong> Daily budget limits, confidence thresholds, retry counts</p>
+              <p><strong>Settings:</strong> Confidence thresholds, retry counts</p>
             </div>
           </div>
         </div>
@@ -292,22 +264,22 @@ export default function WorkerPipelinePage() {
       <ContentSection title="📊 Performance & Monitoring" headingLevel={2}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <h4 className="font-semibold text-purple-800 mb-2">💰 Cost Tracking</h4>
+            <h4 className="font-semibold text-purple-800 mb-2">💰 Cost Analysis</h4>
             <ul className="text-sm text-purple-700 space-y-1">
-              <li>• <strong>Daily Logs:</strong> <code>worker/gpt4_costs_*.json</code></li>
-              <li>• <strong>Per-Card Cost:</strong> Logged in detected_cards table</li>
-              <li>• <strong>Budget Alerts:</strong> Automatic throttling at limits</li>
-              <li>• <strong>ROI Analysis:</strong> Real-time margin calculation</li>
+              <li>• <strong>Processing Cost:</strong> $0.00 (completely free)</li>
+              <li>• <strong>No API Dependencies:</strong> Self-hosted model</li>
+              <li>• <strong>Scalability:</strong> Unlimited processing capacity</li>
+              <li>• <strong>Infrastructure:</strong> Only hosting costs</li>
             </ul>
           </div>
           
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-semibold text-green-800 mb-2">📈 Accuracy Metrics</h4>
+            <h4 className="font-semibold text-green-800 mb-2">📈 System Metrics</h4>
             <ul className="text-sm text-green-700 space-y-1">
               <li>• <strong>Training Data:</strong> 4-category feedback system</li>
-              <li>• <strong>Confidence Tracking:</strong> CLIP vs GPT-4o Mini scores</li>
+              <li>• <strong>Confidence Tracking:</strong> CLIP similarity scores</li>
               <li>• <strong>Error Analysis:</strong> Misidentification patterns</li>
-              <li>• <strong>Model Performance:</strong> A/B testing and improvement</li>
+              <li>• <strong>Model Performance:</strong> Embedding quality monitoring</li>
             </ul>
           </div>
         </div>

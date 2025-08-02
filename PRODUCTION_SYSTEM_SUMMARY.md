@@ -224,9 +224,8 @@ SELECT * FROM auto_recover_stuck_jobs();
 - `auto_recovery_migration.sql` - Database schema for auto-recovery
 
 ### **AI Components**
-- `worker/hybrid_card_identifier_v2.py` - Premium AI vision system
+- `worker/clip_lookup.py` - CLIP similarity search system
 - `worker/gpt4_vision_identifier.py` - GPT-4o Mini integration
-- `worker/clip_lookup.py` - CLIP similarity search
 - `worker/pokemon_tcg_api.py` - Card database integration
 
 ### **Frontend & Documentation**

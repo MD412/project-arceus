@@ -36,7 +36,7 @@ export default function ContentSection({
 
   return (
     <section className={clsx('content-section', className)}>
-      {renderHeading()}
+      {title && renderHeading()}
       <div className="content-section-body">
         {children}
       </div>

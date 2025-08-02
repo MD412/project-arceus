@@ -1,0 +1,136 @@
+/* === Login Page Styles === */
+
+.loginContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  padding: var(--sds-size-space-400);
+  position: relative;
+  overflow: hidden; /* Ensures rotated background doesn't cause scrollbars */
+}
+
+/* Tiled and rotated background pattern using Arceus art */
+.loginContainer::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  right: -20%;
+  bottom: -20%;
+  background-image: url('/arceus-art.svg');
+  background-size: 120px 120px; /* Optimal size for tiling pattern */
+  background-repeat: repeat;
+  transform: rotate(15deg); /* Modern diagonal tiling effect */
+  z-index: 0; /* Behind all content */
+  pointer-events: none; /* Ensure it doesn't interfere with interactions */
+}
+
+/* Ensure login card content appears above the background */
+.loginContainer > * {
+  position: relative;
+  z-index: 1;
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 420px; /* Slightly wider for better spacing with new tokens */
+  background: var(--circuit-dark-teal); /* Circuit Dark Teal background */
+  border: var(--sds-size-stroke-border) solid var(--circuit-mid-teal); /* Circuit Mid Teal border */
+  border-radius: var(--sds-size-radius-400); /* Softer radius */
+  box-shadow: 0 var(--sds-size-depth-100) var(--sds-size-depth-200) var(--color-black-300); /* Subtle shadow using primitives */
+  padding: var(--sds-size-space-600) var(--sds-size-space-800); /* More padding horizontal */
+  margin-left: auto; /* Explicitly center the card */
+  margin-right: auto; /* Explicitly center the card */
+}
+
+.loginHeader {
+  text-align: center;
+  margin-bottom: var(--sds-size-space-600); /* Reduced from 800 for tighter header */
+}
+
+.loginHeader h1 {
+  font: var(--font-subtitle); /* Using Monda, 28px/1.2 */
+  font-weight: 700; /* Override weight from token for more emphasis */
+  color: var(--text-heading-strong); /* Changed for contrast on dark card */
+  margin-bottom: var(--sds-size-space-100); /* Tighter margin */
+}
+
+.loginHeader p {
+  font: var(--font-body-small);
+  color: var(--text-primary); /* Changed for contrast on dark card */
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-400);
+  /* text-align: center; /* Removed */
+}
+
+/* 
+  Styles for .form-group, .form-label, .form-input, .form-input:focus, .form-input.error 
+  are now largely handled by the Input component (components/forms/Input.tsx and its CSS form.css).
+  These can be removed or significantly simplified.
+  The Input component uses .circuit-field as a wrapper.
+*/
+
+.loginForm .circuit-field {
+  /* If specific adjustments needed for margin/padding around Input components in this form */
+  margin-bottom: var(--sds-size-space-100); /* Example: small gap between fields */
+}
+.loginForm .circuit-field:last-of-type {
+  margin-bottom: var(--sds-size-space-300); /* More space before button */
+}
+
+.loginForm .circuit-field .circuit-label.required::after {
+  display: none; /* Hide the asterisk for required fields in the login form */
+}
+
+/* Styles for .login-button are handled by the Button component */
+.loginFormButton { /* Class added to Button component in page.tsx */
+  /* width: 100%; /* Removed */
+  max-width: 240px; /* Keep a max-width for aesthetics */
+  /* margin-left: auto; /* Removed */
+  /* margin-right: auto; /* Removed */
+  align-self: center; /* Center the button within the column flex container (the form) */
+  /* The Button component should handle its internal text alignment */
+}
+
+.loginFooter {
+  margin-top: var(--sds-size-space-600);
+  text-align: center;
+  font: var(--font-body-small);
+  color: var(--text-primary); /* Changed for contrast on dark card */
+}
+
+.loginFooter p {
+  margin-bottom: var(--sds-size-space-300); /* Increased space */
+}
+
+.authLink {
+  color: var(--text-brand); /* Changed for visibility on dark card */
+  font-weight: 600; /* Increased weight for more prominence */
+  text-decoration: none;
+}
+
+.authLink:hover {
+  text-decoration: underline;
+  color: var(--eva-light-yellow); /* Adjusted hover color */
+}
+
+/* General error messages (not field-specific, which Input component handles) */
+.generalError {
+  background-color: var(--color-red-100); /* Light opaque red background for error box */
+  color: var(--color-red-600); /* Darker red text for contrast on light error bg */
+  padding: var(--sds-size-space-300);
+  border-radius: var(--sds-size-radius-150);
+  border: var(--sds-size-stroke-border) solid var(--color-red-300); /* Light red border for error box */
+  margin-bottom: var(--sds-size-space-400);
+  text-align: center;
+  font: var(--font-body-small-strong); /* Bolder text for error messages */
+}
+
+/* Remove previously defined .error-message as Input component handles field errors */
+/* .error-message { ... } */ 
