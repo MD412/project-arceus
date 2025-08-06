@@ -31,19 +31,8 @@ for noisy_logger in ("httpx", "faiss", "faiss.loader", "open_clip"):
     logging.getLogger(noisy_logger).setLevel(logging.WARNING)
 # ------------------------------------------------
 
-# --- Custom Logger ---
-def log_to_db(supabase_client, message: str, payload: Optional[Dict] = None):
-    """Inserts a log message into the worker_logs table."""
-    if not supabase_client:
-        print(f"!!! No Supabase client, cannot log to DB: {message}")
-        return
-    try:
-        supabase_client.from_("worker_logs").insert({
-            "message": message,
-            "payload": payload or {}
-        }).execute()
-    except Exception as e:
-        print(f"!!! Failed to log to DB: {e}")
+# --- Production logging: stdout only, no DB logging ---
+# Database logging removed for production best practices
 
 # --- Model and Configuration ---
 CONFIDENCE_THRESHOLD = 0.25
@@ -71,29 +60,8 @@ def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
     scale = max_size / max(w, h)
     return image.resize((int(w * scale), int(h * scale)), Image.Resampling.LANCZOS), scale
 
-def find_or_create_card(supabase_client, enrichment: Dict) -> Optional[str]:
-    if not enrichment.get("success"):
-        return None
-    try:
-        set_code = enrichment.get("set_code")
-        card_number = enrichment.get("number")
-        image_url = enrichment.get("image_url")
-        new_card = {
-            "name": enrichment.get("name"), "set_code": set_code, "card_number": card_number,
-            "image_url": image_url, "rarity": enrichment.get("rarity"),
-        }
-        response = supabase_client.from_("cards").upsert(new_card, on_conflict="set_code,card_number").execute()
-        if response.data:
-            card_id = response.data[0]["id"]
-            action = "found/created" if set_code and card_number else "found/created (by name)"
-            print(f"[OK] {action} card: {enrichment['name']} ({set_code} {card_number}) -> {card_id}")
-            return card_id
-        else:
-            print(f"[WARN] Upsert returned no data for card: {enrichment['name']}")
-            return None
-    except Exception as e:
-        print(f"[WARN] Error finding/creating card: {e}")
-    return None
+# REMOVED: find_or_create_card function - cards already exist in card_embeddings from ETL
+# Cards are identified by CLIP and card_id is returned directly
 
 def safe_bbox_calculation(box: List[int]) -> List[int]:
     x1, y1, x2, y2 = box
@@ -123,34 +91,34 @@ def download_image_with_retry(supabase_client, storage_path: str, max_retries: i
                 raise e
 
 def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identifier: CLIPCardIdentifier):
-    job_id_for_logging = job.get('id')
-    log_to_db(supabase_client, f"Starting pipeline", {"job_id": job_id_for_logging})
+    job_id_for_logging = job.get('job_id')
+    print(f"[INFO] Starting pipeline for job: {job_id_for_logging}")
 
     upload_id = job['scan_upload_id']
     storage_path = job.get('payload', {}).get('storage_path')
 
     if not storage_path:
-        log_to_db(supabase_client, f"Job payload missing storage_path, fetching from scan_uploads…", {"job_id": job_id_for_logging})
+        print(f"[INFO] Job payload missing storage_path, fetching from scan_uploads... (job: {job_id_for_logging})")
         legacy_path_resp = supabase_client.from_("scan_uploads").select("storage_path").eq("id", upload_id).execute()
         if legacy_path_resp.data:
             storage_path = legacy_path_resp.data[0].get("storage_path")
 
     if not storage_path:
-        log_to_db(supabase_client, f"Job {job_id_for_logging} has no storage_path.", {"job_id": job_id_for_logging})
+        print(f"[ERROR] Job {job_id_for_logging} has no storage_path.")
         raise ValueError(f"Job {job['id']} has no storage_path in payload or scan_uploads record.")
-    log_to_db(supabase_client, f"Got storage_path: {storage_path}", {"job_id": job_id_for_logging})
+    print(f"[INFO] Got storage_path: {storage_path} (job: {job_id_for_logging})")
 
     legacy_scan = supabase_client.from_("scan_uploads").select("user_id, scan_title").eq("id", upload_id).execute()
     if not legacy_scan.data:
         raise ValueError(f"No scan upload found for id: {upload_id}")
     user_id, scan_title = legacy_scan.data[0]["user_id"], legacy_scan.data[0].get("scan_title", "Untitled Scan")
-    log_to_db(supabase_client, f"Got user_id: {user_id}", {"job_id": job_id_for_logging, "user_id": user_id})
+    print(f"[INFO] Got user_id: {user_id} (job: {job_id_for_logging})")
 
     print(f"[START] Starting normalized pipeline v3 for user {user_id}")
     scan_id = None
     try:
         print(f"[INFO] Creating scan record...")
-        log_to_db(supabase_client, "Attempting to insert into scans table.", {"job_id": job_id_for_logging})
+        print(f"[INFO] Attempting to insert into scans table. (job: {job_id_for_logging})")
         
         try:
             scan_response = supabase_client.from_("scans").insert({
@@ -160,15 +128,16 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
             
             if scan_response.data:
                 scan_id = scan_response.data[0]["id"]
-                log_to_db(supabase_client, "Successfully inserted into scans table.", {"job_id": job_id_for_logging, "scan_id": scan_id})
+                print(f"[INFO] Successfully inserted into scans table. (job: {job_id_for_logging}, scan_id: {scan_id})")
             else:
                 error_payload = {}
                 if hasattr(scan_response, 'error') and scan_response.error:
                     error_payload = {"error": scan_response.error.message, "details": scan_response.error.details}
-                log_to_db(supabase_client, "Insert into scans returned no data and no explicit error.", {"job_id": job_id_for_logging, **error_payload})
+                print(f"[ERROR] Insert into scans returned no data and no explicit error. (job: {job_id_for_logging}, error: {error_payload})")
                 raise ValueError("Failed to create scan record: No data returned.")
         except Exception as insert_exc:
-            log_to_db(supabase_client, f"Insert into scans failed: {str(insert_exc)}", {"job_id": job_id_for_logging, "traceback": traceback.format_exc()})
+            print(f"[ERROR] Insert into scans failed: {str(insert_exc)}")
+            print(f"[ERROR] Traceback: {traceback.format_exc()}")
             raise
 
         print(f"[OK] Created scan: {scan_id}")
@@ -246,36 +215,34 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
             
             # Process results
             for i, (det, clip_result, crop_path) in enumerate(zip(final_detections, batch_results, crop_paths)):
-                # Create enrichment data from CLIP result
+                # Use CLIP result directly
                 if clip_result.get('success'):
-                    enrichment = {
-                        'success': True,
-                        'name': clip_result.get('name', ''),
-                        'set_code': clip_result.get('set_code', ''),
-                        'number': clip_result.get('number', ''),
-                        'image_url': clip_result.get('image_url'),
-                        'rarity': clip_result.get('rarity'),
-                        'confidence': clip_result.get('confidence', 0.0)
-                    }
-                    print(f"   Card {i+1}: {enrichment['name']} | Similarity: {enrichment['confidence']:.2f}")
+                    card_name = clip_result.get('name', '')
+                    card_id = clip_result.get('card_id')  # CLIP already provides this!
+                    confidence = clip_result.get('confidence', 0.0)
+                    print(f"   Card {i+1}: {card_name} ({card_id}) | Similarity: {confidence:.2f}")
+                    enrichment = clip_result  # Keep for backward compatibility
                 else:
-                    enrichment = {'success': False}
+                    card_name = None
+                    card_id = None
+                    confidence = 0.0
+                    enrichment = {'success': False}  # Keep for backward compatibility
                     print(f"   Card {i+1}: No match found")
 
-                # Base detection data
+                # Detection data matching actual card_detections schema
                 detection_data = {
-                    "scan_id": scan_id, "crop_url": crop_path, "bbox": det['bbox'],
-                    "confidence": det['confidence'], "tile_source": get_tile_source(i % 9),
+                    "scan_id": scan_id, 
+                    "crop_url": crop_path, 
+                    "bbox": det['bbox'],
+                    "confidence": det['confidence'], 
+                    "tile_source": get_tile_source(i % 9),
                     "identification_method": 'clip',
                     "identification_cost": 0.0,  # CLIP is free
-                    "identification_confidence": enrichment.get('confidence', 0.0) if enrichment.get('success') else 0.0
+                    "identification_confidence": confidence
                 }
                 
-                is_blank = det['confidence'] < 0.3 or not enrichment.get("success")
-                detection_data["is_blank"] = is_blank
-                card_id = None
-                if enrichment.get("success"):
-                    card_id = find_or_create_card(supabase_client, enrichment)
+                # Add card_id if we found a match
+                if card_id:
                     detection_data["guess_card_id"] = card_id
                 
                 # Try insert with AI columns first, fallback to basic columns if schema not updated
@@ -304,7 +271,7 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                     try:
                         supabase_client.from_("user_cards").upsert(user_card_data, on_conflict="user_id,card_id").execute()
                         user_cards_created += 1
-                        print(f"[OK] Created/updated user card: {enrichment['name']}")
+                        print(f"[OK] Created/updated user card: {card_name}")
                     except Exception as e:
                         print(f"[WARN] Upsert failed, trying insert: {e}")
                         supabase_client.from_("user_cards").insert(user_card_data).execute()
@@ -340,7 +307,8 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 print(f"[ERROR] Marked scan {scan_id} as error: {e}")
             except Exception as update_error:
                 print(f"[ERROR] Failed to update scan error status: {update_error}")
-        log_to_db(supabase_client, f"Pipeline failed: {str(e)}", {"job_id": job_id_for_logging, "traceback": traceback.format_exc()})
+            print(f"[ERROR] Pipeline failed: {str(e)} (job: {job_id_for_logging})")
+            print(f"[ERROR] Traceback: {traceback.format_exc()}")
         raise e
 
 def save_output_log(job_id: str, results: Dict):
@@ -352,12 +320,7 @@ def save_output_log(job_id: str, results: Dict):
     print(f"[LOG] Saved detailed output log to: {file_path}")
 
 
-def send_heartbeat(supabase_client):
-    try:
-        supabase_client.from_("worker_health").upsert({"id": "primary", "last_heartbeat": datetime.now(timezone.utc).isoformat()}, on_conflict="id").execute()
-    except Exception as e:
-        print(f"[WARN] Heartbeat failed: {e}")
-        supabase_client.from_("worker_health").insert({"id": "primary", "last_heartbeat": datetime.now(timezone.utc).isoformat()}).execute()
+# Heartbeat functionality removed - use external monitoring instead
 
 def requeue_stale_jobs(supabase_client):
     """Enhanced stale job recovery with retry tracking"""
@@ -391,8 +354,7 @@ def requeue_stale_jobs(supabase_client):
                 # Mark as permanently failed
                 supabase_client.from_("job_queue").update({
                     "status": "failed", 
-                    "finished_at": now_iso,
-                    "error_message": "Exceeded automatic retry limit"
+                                            "completed_at": now_iso
                 }).eq("id", job_id).execute()
                 
                 # Update scan status
@@ -421,7 +383,7 @@ def requeue_stale_jobs(supabase_client):
                     
     except Exception as e:
         print(f"[WARN] Requeue stale jobs failed: {e}")
-        log_to_db(supabase_client, f"Stale job requeue failed: {str(e)}", {"error": str(e)})
+        # Duplicate log line removed
 
 def fetch_and_lock_job(supabase_client):
     try:
@@ -429,7 +391,7 @@ def fetch_and_lock_job(supabase_client):
         job = response.data[0] if response.data else None
         if job:
             try:
-                supabase_client.from_("job_queue").update({"visibility_timeout_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()}).eq("id", job["id"]).execute()
+                supabase_client.from_("job_queue").update({"visibility_timeout_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()}).eq("id", job["job_id"]).execute()
             except Exception as e:
                 print(f"[WARN] Failed to set visibility_timeout_at: {e}")
         return job
@@ -439,9 +401,21 @@ def fetch_and_lock_job(supabase_client):
 
 def update_job_status(supabase_client, job_id, upload_id, status, error_message=None, results=None):
     try:
-        job_update_data = {"status": status, "visibility_timeout_at": None}
-        if status in ['completed', 'failed']:
-            job_update_data['finished_at'] = datetime.now(timezone.utc).isoformat()
+        # Map processing_status to job_status for job_queue table
+        job_status_map = {
+            'queued': 'pending',
+            'processing': 'processing', 
+            'review_pending': 'completed',  # Job is done, scan is ready for review
+            'completed': 'completed',
+            'failed': 'failed',
+            'timeout': 'timeout',
+            'cancelled': 'failed'
+        }
+        
+        job_status = job_status_map.get(status, 'completed')
+        job_update_data = {"status": job_status, "visibility_timeout_at": None}
+        if job_status in ['completed', 'failed']:
+            job_update_data['completed_at'] = datetime.now(timezone.utc).isoformat()
             job_update_data['started_at'] = None
         supabase_client.from_("job_queue").update(job_update_data).eq("id", job_id).execute()
         
@@ -483,7 +457,7 @@ def main():
     
     while True:
         try:
-            send_heartbeat(supabase_client)
+            # Heartbeat removed - use external monitoring
             requeue_stale_jobs(supabase_client)
             job = fetch_and_lock_job(supabase_client)
             if not job:
@@ -491,12 +465,12 @@ def main():
                 time.sleep(10)
                 continue
 
-            job_id, upload_id = job.get('id'), job.get('scan_upload_id')
+            job_id, upload_id = job.get('job_id'), job.get('scan_upload_id')
             print(f"[PROCESS] Processing job: {job_id} for upload: {upload_id}")
             
             try:
                 pipeline_results = run_normalized_pipeline(supabase_client, job, yolo_model, clip_identifier)
-                update_job_status(supabase_client, job_id, upload_id, 'completed', results=pipeline_results)
+                update_job_status(supabase_client, job_id, upload_id, 'review_pending', results=pipeline_results)
                 print(f"[COMPLETE] Job {job_id} completed successfully.")
                 if pipeline_results:
                     print(f"   [STATS] Created {pipeline_results.get('user_cards_created', 0)} user cards from {pipeline_results.get('total_detections', 0)} detections")

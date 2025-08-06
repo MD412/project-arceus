@@ -10,6 +10,7 @@ const buttonVariants = cva(
         secondary: 'button_button_secondary_uCVc',
         ghost: 'button_button_ghost_uCVc',
         destructive: 'button_button_destructive_uCVc',
+        'ghost-destructive': 'button_button_ghost-destructive_uCVc',
         info: 'button_button_info_uCVc',
         toolbar: 'button_button_toolbar_uCVc',
         success: 'button_button_success_uCVc',
@@ -30,16 +31,19 @@ const buttonVariants = cva(
 
 type NativeButtonProps = Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'>;
 
-interface ButtonProps extends NativeButtonProps, VariantProps<typeof buttonVariants> {}
+interface ButtonProps extends NativeButtonProps, VariantProps<typeof buttonVariants> {
+  className?: string;
+}
 
 export function Button({
   variant,
   size,
+  className,
   ...props
 }: ButtonProps) {
   return (
     <button
-      className={buttonVariants({ variant, size })}
+      className={`${buttonVariants({ variant, size })} ${className || ''}`}
       {...props}
     />
   );

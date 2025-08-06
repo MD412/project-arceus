@@ -7,25 +7,82 @@
   padding: 0;
 }
 
+.processingStatus {
+  margin-top: var(--sds-size-space-600);
+  padding: var(--sds-size-space-600);
+  background: var(--circuit-light-teal);
+  color: var(--text-primary);
+  border-radius: var(--sds-size-radius-300);
+  text-align: center;
+  border: 1px solid var(--circuit-dark-teal);
+}
+
+.processingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sds-size-space-300);
+}
+
+.processingText {
+  font: var(--font-body-base);
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: var(--sds-weight-medium);
+}
+
+.spinner {
+  color: var(--circuit-dark-teal);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.errorStatus {
+  margin-top: var(--sds-size-space-600);
+  padding: var(--sds-size-space-600);
+  background: var(--surface-error-subtle);
+  color: var(--text-error);
+  border-radius: var(--sds-size-radius-300);
+  text-align: center;
+  border: 1px solid var(--border-error);
+}
+
+.errorText {
+  font: var(--font-body-base);
+  margin: 0 0 var(--sds-size-space-400) 0;
+  color: var(--text-error);
+}
+
+.retryButton {
+  margin-top: var(--sds-size-space-300);
+}
+
 .uploadingStatus {
   margin-top: var(--sds-size-space-600);
   padding: var(--sds-size-space-400);
-  background: var(--circuit-teal);
-  color: white;
+  background: var(--circuit-light-teal);
+  color: var(--text-primary);
   border-radius: var(--sds-size-radius-300);
   text-align: center;
 }
 
 .uploadingStatus p {
-  font-size: var(--sds-size-font-400);
-  font-weight: var(--sds-weight-medium);
+  font: var(--font-body-base);
   margin: 0;
 }
 
 .uploadResults {
   margin-top: var(--sds-size-space-600);
   padding: var(--sds-size-space-600);
-  background: var(--background-subtle);
+  background: var(--surface-background-subtle);
   border-radius: var(--sds-size-radius-400);
   border: 1px solid var(--border-subtle);
   text-align: center;
@@ -33,34 +90,15 @@
 }
 
 .uploadResults h3 {
-  font-size: var(--sds-size-font-500);
-  font-weight: var(--sds-weight-semibold);
+  font: var(--font-heading);
   color: var(--text-primary);
   margin-bottom: var(--sds-size-space-200);
 }
 
 .uploadResults p {
-  font-size: var(--sds-size-font-300);
+  font: var(--font-body-base);
   color: var(--text-secondary);
   margin-bottom: var(--sds-size-space-400);
 }
 
-.processButton {
-  background: var(--circuit-teal);
-  color: white;
-  border: none;
-  padding: var(--sds-size-space-300) var(--sds-size-space-500);
-  border-radius: var(--sds-size-radius-300);
-  font-size: var(--sds-size-font-400);
-  font-weight: var(--sds-weight-medium);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.processButton:hover {
-  background: var(--circuit-dark-teal);
-}
-
-.processButton:active {
-  transform: translateY(1px);
-} 
+ 

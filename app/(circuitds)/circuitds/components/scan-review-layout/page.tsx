@@ -117,13 +117,13 @@ export default function ScanReviewLayoutPage() {
             </tr>
             <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               <td style={{ padding: 'var(--sds-size-space-200)' }}>onDetectionClick</td>
-              <td style={{ padding: 'var(--sds-size-space-200)' }}>(detection: Detection) => void</td>
+              <td style={{ padding: 'var(--sds-size-space-200)' }}>{`(detection: Detection) => void`}</td>
               <td style={{ padding: 'var(--sds-size-space-200)' }}>No</td>
               <td style={{ padding: 'var(--sds-size-space-200)' }}>Callback when a detection is clicked</td>
             </tr>
             <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               <td style={{ padding: 'var(--sds-size-space-200)' }}>onDetectionHover</td>
-              <td style={{ padding: 'var(--sds-size-space-200)' }}>(detection: Detection) => void</td>
+              <td style={{ padding: 'var(--sds-size-space-200)' }}>{`(detection: Detection) => void`}</td>
               <td style={{ padding: 'var(--sds-size-space-200)' }}>No</td>
               <td style={{ padding: 'var(--sds-size-space-200)' }}>Callback when a detection is hovered</td>
             </tr>

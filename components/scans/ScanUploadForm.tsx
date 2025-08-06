@@ -95,7 +95,7 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
       close?.();
       
       // Optional: redirect to the main scans page after bulk upload
-      router.push(`/scans`);
+      router.push(`/scans/review`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to process scans: ${error.message}`);

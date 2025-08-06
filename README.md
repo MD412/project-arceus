@@ -137,7 +137,7 @@ SIMILARITY_THRESHOLD = 0.75         # CLIP confidence threshold
 1. Navigate to `/upload` page
 2. Upload Pokemon card images (JPEG, PNG, HEIC)
 3. System automatically detects and identifies cards
-4. Review results at `/scans/[id]`
+4. Review results at `/scans/review`
 5. Add confirmed cards to collection
 
 ### **Monitor System Health**

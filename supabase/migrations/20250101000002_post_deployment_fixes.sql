@@ -17,11 +17,11 @@ alter table if exists user_cards
   foreign key (detection_id) references card_detections(id) on delete set null;
 
 -- ✏️ Add service role policies for scans and user_cards if workers need unrestricted access
-create policy if not exists "service can manage scans"
+create policy "service can manage scans"
   on scans for all
   using (auth.jwt() ->> 'role' = 'service_role');
 
-create policy if not exists "service can manage user_cards"
+create policy "service can manage user_cards"
   on user_cards for all
   using (auth.jwt() ->> 'role' = 'service_role');
 

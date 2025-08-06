@@ -29,7 +29,9 @@
       "Bash(curl:*)",
       "Bash(mv:*)",
       "Bash(psql:*)",
-      "Bash(npx supabase migration:*)"
+      "Bash(npx supabase migration:*)",
+      "mcp__ide__executeCode",
+      "Bash(node:*)"
     ],
     "deny": []
   }

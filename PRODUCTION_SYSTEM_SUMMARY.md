@@ -128,7 +128,7 @@ SELECT * FROM auto_recover_stuck_jobs();
 
 1. **Upload:** User submits Pokemon card images via `/upload`
 2. **Processing:** Automatic YOLO detection + AI identification
-3. **Review:** Results available at `/scans/[id]` with spatial/grid views
+3. **Review:** Results available at `/scans/review` with batch-edit grid interface
 4. **Collection:** Confirmed cards added to user inventory
 5. **Training:** 4-category feedback system for continuous improvement
 

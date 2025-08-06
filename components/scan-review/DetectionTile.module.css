@@ -1,0 +1,96 @@
+.tile {
+  background: var(--glass-subtle);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.tile:hover {
+  background: var(--glass);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.tile:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.imageContainer {
+  position: relative;
+  aspect-ratio: 63 / 88;
+  background: var(--glass-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.cropImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tileSource {
+  position: absolute;
+  top: var(--spacing-xs);
+  right: var(--spacing-xs);
+  background: var(--black-90);
+  color: white;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-xs);
+  font-weight: 600;
+}
+
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.cardName {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.setInfo {
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.confidence {
+  font-size: var(--font-xs);
+  color: var(--success);
+  font-weight: 500;
+}
+
+.confidence.lowConfidence {
+  color: var(--warning);
+}
+
+.unknownCard {
+  text-align: center;
+  padding: var(--spacing-sm) 0;
+}
+
+.unknownCard p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+
+.clickToIdentify {
+  font-size: var(--font-xs);
+  color: var(--primary);
+  margin-top: var(--spacing-xs);
+}

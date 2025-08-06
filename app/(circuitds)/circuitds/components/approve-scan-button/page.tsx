@@ -116,7 +116,7 @@ export default function ApproveScanButtonPage() {
           This component integrates with several parts of the system:
         </p>
         <ul>
-          <li><strong>API Endpoint:</strong> Calls <code>/api/scans/[id]/approve</code></li>
+          <li><strong>API Endpoint:</strong> Calls <code>/api/scans/bulk</code> for bulk operations</li>
           <li><strong>Database:</strong> Creates entries in <code>user_cards</code> table</li>
           <li><strong>Scan Status:</strong> Updates scan processing status to 'approved'</li>
           <li><strong>Collection Pipeline:</strong> Completes the scan → review → collection workflow</li>

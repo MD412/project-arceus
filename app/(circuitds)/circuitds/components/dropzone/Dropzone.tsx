@@ -2,7 +2,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload } from '@phosphor-icons/react';
+import { Upload, Trash } from '@phosphor-icons/react';
+import IconButton from '@/components/ui/IconButton';
 import styles from './dropzone.module.css';
 
 interface DropzoneProps {
@@ -39,6 +40,12 @@ export function Dropzone({
     onDrop?.(acceptedFiles);
   }, [onDrop, onError]);
 
+  const removeFile = (indexToRemove: number) => {
+    const newFiles = files.filter((_, index) => index !== indexToRemove);
+    setFiles(newFiles);
+    onDrop?.(newFiles); // Update parent component with new file list
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept,
     maxFiles,
@@ -53,6 +60,8 @@ export function Dropzone({
       <div
         {...getRootProps()}
         className={`${styles.dropzone} ${isDragActive ? styles.dragActive : ''} ${className || ''}`}
+        role="button"
+        tabIndex={0}
       >
         <input {...getInputProps()} />
         
@@ -70,7 +79,7 @@ export function Dropzone({
           </p>
           
           <div className={styles.dropArea}>
-            <p className={styles.dropText}>Drop Files here</p>
+            <p className={styles.dropText}>Click to browse files</p>
           </div>
         </div>
       </div>
@@ -81,7 +90,16 @@ export function Dropzone({
           <ul>
             {files.map((file, index) => (
               <li key={index} className={styles.fileItem}>
-                {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                <span className={styles.fileName}>{file.name}</span>
+                <IconButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeFile(index)}
+                  aria-label={`Remove ${file.name}`}
+                  className={styles.removeButton}
+                >
+                  <Trash size={16} weight="light" />
+                </IconButton>
               </li>
             ))}
           </ul>

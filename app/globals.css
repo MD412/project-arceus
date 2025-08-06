@@ -10,6 +10,7 @@
 
 /* UI Components */
 @import './styles/button.css';
+@import './styles/icon-button.css';
 @import './styles/form.css';
 @import './styles/dropdown.css';
 @import './styles/accordion.css';

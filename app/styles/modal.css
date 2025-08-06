@@ -23,11 +23,12 @@
   position: relative;
   width: 100%;
   max-width: 1200px; /* Large default size */
-  max-height: 90vh;
+  max-height: 90vh; /* Allow modal to be taller */
   background: var(--circuit-dark-teal); /* 1 shade darker than mid-teal */
   border: 1px solid var(--border-default);
   border-radius: var(--sds-size-radius-300);
-  overflow: hidden;
+  overflow-y: auto; /* Make content scrollable */
+  overflow-x: hidden;
   pointer-events: auto;
   animation: slideIn 0.3s ease-out;
 }
@@ -68,26 +69,31 @@
 
 /* Card Info Modal Specific Styles */
 .modal-card-info .card-info-layout {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  height: 85vh;
+  display: flex; /* Change from grid to flex for better content hugging */
+  gap: var(--sds-size-space-600);
+  /* Remove fixed height - let content determine height */
+  min-height: fit-content;
+  max-height: 90vh; /* Prevent overflow */
 }
 
 .card-info-image {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sds-size-space-600);
+  padding: var(--sds-size-space-600) 0 var(--sds-size-space-600) 0; /* Remove left and right padding */
   background: var(--surface-subtle);
-  border-right: 1px solid var(--border-default);
+  /* Removed border-right separator */
+  flex-shrink: 0; /* Prevent shrinking - hug content */
 }
 
 .card-image-full {
-  width: 100%;
+  width: auto;
   height: auto;
-  max-width: 400px;
+  max-width: 672px; /* Match native large image width */
+  max-height: 80vh; /* Prevent overflow */
   border-radius: var(--sds-size-radius-200);
   box-shadow: var(--shadow-lg);
+  object-fit: contain; /* Maintain aspect ratio */
 }
 
 /* Placeholder for missing card images in modal */
@@ -107,8 +113,10 @@
 .card-info-details {
   display: flex;
   flex-direction: column;
-  padding: var(--sds-size-space-600);
-  overflow-y: auto;
+  padding: var(--sds-size-space-600) var(--sds-size-space-600) var(--sds-size-space-600) 0; /* Remove left padding */
+  /* Remove overflow-y: auto - let content flow naturally */
+  flex: 1; /* Take up remaining space */
+  min-width: 0; /* Allow shrinking if needed */
 }
 
 .card-info-header {
@@ -160,38 +168,91 @@
   flex-wrap: wrap;
 }
 
-/* Button styles for modal */
-.modal-content .btn {
-  padding: var(--sds-size-space-200) var(--sds-size-space-400);
+/* Button styles for modal - using CircuitDS button classes */
+.modal-content .button_button_primary_uCVc {
+  /* Primary button styles are handled by CircuitDS */
+}
+
+.modal-content .button_button_secondary_uCVc {
+  /* Secondary button styles are handled by CircuitDS */
+}
+
+.modal-content .button_button_destructive_uCVc {
+  /* Destructive button styles are handled by CircuitDS */
+}
+
+.modal-content .button_button_ghost_uCVc {
+  /* Ghost button styles are handled by CircuitDS */
+}
+
+/* Instances list styles */
+.instances-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-200);
+  margin-bottom: var(--sds-size-space-400);
+}
+
+.instance-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sds-size-space-300);
+  background: var(--surface-subtle);
   border-radius: var(--sds-size-radius-100);
-  font-size: var(--font-size-100);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-default);
 }
 
-.modal-content .btn--primary {
-  background: var(--interactive-primary);
-  color: var(--text-on-primary);
-  border-color: var(--interactive-primary);
-}
-
-.modal-content .btn--secondary {
-  background: var(--surface-background);
+.instance-condition {
+  font-weight: 600;
   color: var(--text-primary);
-  border-color: var(--border-default);
 }
 
-.modal-content .btn--danger {
-  background: var(--status-error);
-  color: white;
-  border-color: var(--status-error);
+.instance-date {
+  font-size: var(--font-size-100);
+  color: var(--text-secondary);
 }
 
-.modal-content .btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+/* Collection details styles */
+.collection-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-200);
+  margin-bottom: var(--sds-size-space-400);
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sds-size-space-200);
+  background: var(--surface-subtle);
+  border-radius: var(--sds-size-radius-100);
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.detail-value {
+  color: var(--text-secondary);
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-200);
+  justify-content: center;
+  margin-top: var(--sds-size-space-400);
+}
+
+.quantity-display {
+  font-size: var(--font-size-200);
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 2rem;
+  text-align: center;
 }
 
 /* Animations */
@@ -230,9 +291,10 @@
   }
   
   .modal-card-info .card-info-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    height: 100vh;
+    flex-direction: column; /* Stack vertically on mobile */
+    /* Remove fixed height - let content determine height */
+    min-height: fit-content;
+    max-height: 100vh; /* Prevent overflow */
   }
   
   .card-info-image {
@@ -242,7 +304,8 @@
   }
   
   .card-image-full {
-    max-width: 300px;
+    max-width: 100%;
+    max-height: 50vh;
   }
   
   .card-info-details {
@@ -253,7 +316,16 @@
     flex-direction: column;
   }
   
-  .modal-content .btn {
+  .modal-content .action-buttons .button_button_primary_uCVc,
+  .modal-content .action-buttons .button_button_secondary_uCVc,
+  .modal-content .action-buttons .button_button_destructive_uCVc {
     width: 100%;
+  }
+
+  /* Mobile responsiveness for instances */
+  .instance-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sds-size-space-200);
   }
 } 

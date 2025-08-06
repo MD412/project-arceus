@@ -50,7 +50,7 @@ async function fetchCardSearch(query: string): Promise<CardSearchResponse> {
 }
 
 export function useCardSearch(query: string) {
-  const debouncedQuery = useDebounce(query, 300); // 300ms debounce
+  const debouncedQuery = useDebounce(query, 50); // Super fast 50ms debounce for instant feel
 
   return useQuery({
     queryKey: ['cardSearch', debouncedQuery],

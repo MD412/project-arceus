@@ -155,6 +155,20 @@ export default function ButtonsPage() {
         />
 
         <ExampleShowcase
+          title="Ghost Destructive button"
+          headingLevel={3}
+          description="Use ghost destructive buttons for subtle remove/delete actions within content areas. Perfect for file lists, item removal, or secondary destructive actions."
+          preview={
+            <div className="flex flex-col gap-4">
+              <Button variant="ghost-destructive">Ghost Destructive button</Button>
+              <Button variant="ghost-destructive" disabled>Ghost Destructive disabled</Button>
+            </div>
+          }
+          code={`<Button variant="ghost-destructive">Ghost Destructive button</Button>
+<Button variant="ghost-destructive" disabled>Ghost Destructive disabled</Button>`}
+        />
+
+        <ExampleShowcase
           title="Info button"
           headingLevel={3}
           description="Use info buttons for informational actions or to provide additional context. Perfect for help actions, documentation links, or neutral informational dialogs."
@@ -215,6 +229,15 @@ export default function ButtonsPage() {
             textHex="#1a4a47"
             borderVar="--status-error"
             borderHex="#e74c3c"
+          />
+
+          <ButtonColorInfo
+            variantName="Ghost Destructive Button"
+            description="Subtle destructive buttons for remove/delete actions. Transparent background with red text for low-emphasis destructive actions."
+            backgroundVar="transparent"
+            backgroundHex="transparent"
+            textVar="--status-error"
+            textHex="#dc2626"
           />
 
           <ButtonColorInfo

@@ -56,6 +56,7 @@ export function TradingCard({
       onClick={handleClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
+      data-testid="trading-card"
       onKeyDown={onClick ? (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();

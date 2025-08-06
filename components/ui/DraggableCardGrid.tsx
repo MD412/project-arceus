@@ -13,7 +13,7 @@ import {
   useDraggable,
 } from '@dnd-kit/core';
 import { TradingCard } from './TradingCard';
-import { CardInfoModal } from './Modal';
+import { Modal } from './Modal';
 
 // Match the data structure from your database
 export interface CardEntry {
@@ -86,7 +86,7 @@ export function DraggableCardGrid({
   if (!enableDrag) {
     return (
       <>
-        <div className="card-grid">
+        <div className="card-grid" data-testid="card-grid">
           {cards.map((card) => (
             <TradingCard
               key={card.id}
@@ -102,16 +102,24 @@ export function DraggableCardGrid({
         </div>
         
         {selectedCard && (
-          <CardInfoModal
+          <Modal
             isOpen={!!selectedCard}
             onClose={() => setSelectedCard(null)}
             card={{
+              id: selectedCard.id,
               name: selectedCard.name,
-              imageUrl: selectedCard.image_url,
+              imageUrl: selectedCard.image_url || '', // Ensure imageUrl is passed correctly
               number: selectedCard.number,
               setCode: selectedCard.set_code,
               setName: selectedCard.set_name,
-              // Add more fields as your modal supports them
+              quantity: selectedCard.quantity,
+              condition: selectedCard.condition,
+            }}
+            onDeleteCard={async (cardId: string) => {
+              if (onDelete && selectedCard) {
+                onDelete(cardId, selectedCard.name);
+                setSelectedCard(null); // Close modal after deletion
+              }
             }}
           />
         )}
@@ -163,20 +171,28 @@ export function DraggableCardGrid({
         </DragOverlay>
       </DndContext>
 
-      {selectedCard && (
-        <CardInfoModal
-          isOpen={!!selectedCard}
-          onClose={() => setSelectedCard(null)}
-          card={{
-            name: selectedCard.name,
-            imageUrl: selectedCard.image_url,
-            number: selectedCard.number,
-            setCode: selectedCard.set_code,
-            setName: selectedCard.set_name,
-            // Add more fields as your modal supports them
-          }}
-        />
-      )}
+              {selectedCard && (
+          <Modal
+            isOpen={!!selectedCard}
+            onClose={() => setSelectedCard(null)}
+            card={{
+              id: selectedCard.id,
+              name: selectedCard.name,
+              imageUrl: selectedCard.image_url || '', // Ensure imageUrl is passed correctly
+              number: selectedCard.number,
+              setCode: selectedCard.set_code,
+              setName: selectedCard.set_name,
+              quantity: selectedCard.quantity,
+              condition: selectedCard.condition,
+            }}
+            onDeleteCard={async (cardId: string) => {
+              if (onDelete && selectedCard) {
+                onDelete(cardId, selectedCard.name);
+                setSelectedCard(null); // Close modal after deletion
+              }
+            }}
+          />
+        )}
     </>
   );
 }

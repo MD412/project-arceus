@@ -95,8 +95,8 @@ export default function HomePage() {
       <section className="stats-section">
           <div className="stats-grid">
             <MetricCard title="Collected" value={localCards?.length ?? 0} />
-            <MetricCard title="Total Quantity" value={localCards?.reduce((sum: number, card: any) => sum + (card.quantity || 1), 0) ?? 0} />
-            <MetricCard title="Sets" value={localCards ? new Set(localCards.map((card: any) => card.set_code)).size : 0} />
+            <MetricCard title="Total Quantity" value={localCards?.reduce((sum: number, card: CardEntry) => sum + (card.quantity || 1), 0) ?? 0} />
+            <MetricCard title="Sets" value={localCards ? new Set(localCards.map((card: CardEntry) => card.set_code)).size : 0} />
           </div>
       </section>
 

@@ -30,16 +30,26 @@ npm run test:watch         # Jest in watch mode
 npm run test:coverage      # Jest with coverage report
 npm run test:e2e           # Run Playwright E2E tests
 npm run test:ui            # Playwright with UI
+npm run test:headed        # Playwright with browser UI visible
 npm run test:debug         # Playwright debug mode
+npm run test:report        # View Playwright test report
 ```
 
 ### Worker System
 ```bash
+py start_production_system.py           # Complete system startup (recommended)
 py worker/worker.py                      # Main processing worker
 py worker/auto_recovery_system.py        # Auto-recovery monitor
-py start_production_system.py            # Complete system startup
-npm run worker                          # Run worker via npm script
+npm run worker                          # Run worker via npm script (bash)
+npm run worker-windows                   # Run worker via npm script (Windows)
 npm run dev-up                          # Start both dev server and worker
+```
+
+### Database & Supabase
+```bash
+npm run supabase           # Start local Supabase stack
+supabase status            # Check Supabase services status
+supabase migration up      # Apply database migrations
 ```
 
 ### Linting & Code Quality
@@ -60,8 +70,8 @@ This project runs on Windows. Key considerations:
 ### AI Vision Pipeline
 1. **YOLO Detection**: Locates cards in uploaded images (`worker/worker.py`)
 2. **CLIP Similarity**: Fast embedding-based matching using 19k+ embeddings (`worker/clip_lookup.py`)
-3. **GPT-4o Fallback**: Premium AI vision for difficult cases (`worker/gpt4_vision_identifier.py`)
-4. **Cost Controls**: Daily budget limits, confidence thresholds
+3. **Cost-Free Processing**: No API costs - CLIP similarity search only
+4. **High Performance**: ViT-B-32-quickgelu model optimized for speed
 
 ### Optimistic CRUD Pipeline
 Follow the Factorio-style CQRS pattern documented in `app/(handbook)/handbook/optimistic-crud-pipeline/page.tsx`:
@@ -81,8 +91,9 @@ Production-ready autonomous job monitoring:
 ### Frontend Application
 ```
 app/(app)/                    # Main application pages
-├── scans/[id]/              # Scan detail and review pages
-├── upload/                  # Card upload interface
+├── arclite-prototype/       # Prototype features and UI explorations
+├── scans/review/            # Scan review and history pages
+├── scan-upload/             # Card upload interface
 └── page.tsx                 # Homepage
 
 app/(circuitds)/circuitds/   # Design system documentation
@@ -102,6 +113,7 @@ app/api/
 │   ├── [id]/route.ts       # Individual scan operations
 │   └── bulk/route.ts       # Bulk operations
 ├── cards/search/route.ts    # Card search functionality
+├── user-cards/route.ts      # User card collection management
 └── training/               # ML training feedback
 ```
 
@@ -110,10 +122,26 @@ app/api/
 components/ui/               # Reusable UI components
 ├── TradingCard.tsx         # Main card display component
 ├── ScanHistoryTable.tsx    # Scan management table
-└── Button.tsx              # Design system button
+├── StreamlinedScanReview.tsx # Modern scan review interface
+├── IconButton.tsx          # Icon-based button component
+├── Button.tsx              # Design system button
+└── Modal.tsx               # Modal dialog component
 
-services/cards.ts           # Card data service layer
-hooks/useCardSearch.ts      # Card search hook
+components/scan-review/      # Scan review specific components
+├── ScanReview.tsx          # Main review interface
+└── related components      # Review flow components
+
+services/
+├── cards.ts                # Card data service layer
+└── jobs.ts                 # Job queue service layer
+
+hooks/
+├── useCardSearch.ts        # Card search functionality
+├── useScan.ts              # Scan data management
+├── useDetections.ts        # Detection results handling
+├── useReviewInbox.ts       # Review queue management
+├── useCards.ts             # Card collection management
+└── useJobs.ts              # Job queue monitoring
 ```
 
 ### Worker System
@@ -159,33 +187,31 @@ CircuitDS is the project's design system. When working with UI components:
 ## Environment Variables
 
 ```bash
-# Supabase
+# Required: Supabase
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_key
 
-# OpenAI (for GPT-4o Mini)
-OPENAI_API_KEY=your_openai_key
-
-# Optional: Hugging Face
+# Optional: Hugging Face (for model downloads)
 HUGGING_FACE_TOKEN=your_hf_token
 
-# Worker Configuration
-ENABLE_GPT_FALLBACK=true    # Enable/disable GPT-4o fallback
+# Node.js Requirements
+# Node: >=18.17.0, npm: >=9.0.0 (see package.json engines)
 ```
 
 ## Cost Management
 
-- **CLIP-first approach**: 80%+ confidence → immediate identification
-- **GPT fallback**: Only for low-confidence cases (<80%)
-- **Daily budgets**: Built-in cost controls in worker
-- **Performance metrics**: $0.0004/card average cost
+- **CLIP-only approach**: Free processing with no API costs
+- **High confidence thresholds**: 75%+ confidence for automatic identification
+- **No per-card costs**: Unlimited processing with local CLIP model
+- **Performance metrics**: Zero-cost card identification
 
 ## Common Development Tasks
 
 ### Adding New Card Detection Features
 1. Extend `worker/clip_lookup.py` for embedding improvements
-2. Update `worker/gpt4_vision_identifier.py` for GPT integration
+2. Update CLIP similarity thresholds and model configuration
 3. Modify scan result handling in `app/api/scans/[id]/route.ts`
+4. Update embeddings database with new card data
 
 ### UI Component Development
 1. Create component in `components/ui/`

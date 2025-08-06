@@ -1,37 +1,62 @@
 'use client';
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { Button } from './Button';
+import { updateCardQuantity } from '@/services/cards';
+
+interface Card {
+  id?: string; // user_cards id for updates
+  name: string;
+  imageUrl?: string;
+  number: string;
+  setCode: string;
+  setName: string;
+  quantity?: number;
+  condition?: string;
+}
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
+  card?: Card;
   className?: string;
+  onDeleteCard?: (cardId: string) => Promise<void>;
+  children?: React.ReactNode;
 }
 
-export function Modal({ isOpen, onClose, children, className = '' }: ModalProps) {
-  // Handle escape key
+export function Modal({ isOpen, onClose, card, className = '', onDeleteCard, children }: ModalProps) {
+  const [localQuantity, setLocalQuantity] = React.useState(card?.quantity || 1);
+  const [isUpdating, setIsUpdating] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
+  // Update local quantity when card changes
   React.useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
+    setLocalQuantity(card?.quantity || 1);
+  }, [card?.quantity]);
+
+  const handleQuantityChange = async (newQuantity: number) => {
+    if (!card?.id || isUpdating) return;
     
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
+    setIsUpdating(true);
+    try {
+      await updateCardQuantity(card.id, newQuantity);
+      setLocalQuantity(newQuantity);
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+      // Revert local state on error
+      setLocalQuantity(card.quantity || 1);
+    } finally {
+      setIsUpdating(false);
     }
-    
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, onClose]);
+  };
 
   if (!isOpen) return null;
 
-  return (
+  // Use portal to render modal outside the normal DOM hierarchy
+  // This prevents stacking context issues with parent elements
+  return createPortal(
     <>
       {/* Backdrop */}
       <div 
@@ -42,7 +67,7 @@ export function Modal({ isOpen, onClose, children, className = '' }: ModalProps)
       
       {/* Modal */}
       <div className="modal-container">
-        <div className={`modal-content ${className}`}>
+        <div className={`modal-content ${card ? 'modal-card-info' : ''} ${className}`}>
           {/* Close button */}
           <button
             onClick={onClose}
@@ -52,89 +77,123 @@ export function Modal({ isOpen, onClose, children, className = '' }: ModalProps)
             <X size={24} />
           </button>
           
-          {children}
-        </div>
-      </div>
-    </>
-  );
-}
-
-// Specialized component for card info
-interface CardInfoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  card: {
-    name: string;
-    imageUrl: string;
-    number?: string;
-    setCode?: string;
-    setName?: string;
-    description?: string;
-    // Add more fields as needed
-  };
-}
-
-export function CardInfoModal({ isOpen, onClose, card }: CardInfoModalProps) {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} className="modal-card-info">
-      <div className="card-info-layout">
-        {/* Left side - Large card image */}
-        <div className="card-info-image">
-          {card.imageUrl && card.imageUrl.trim() !== '' ? (
-            <img 
-              src={card.imageUrl} 
-              alt={card.name}
-              className="card-image-full"
-            />
-          ) : (
-            <div className="card-image-full card-image-placeholder">
-              <span>No Image Available</span>
-            </div>
-          )}
-        </div>
-        
-        {/* Right side - Card details */}
-        <div className="card-info-details">
-          <header className="card-info-header">
-            <h2 className="card-info-title">{card.name}</h2>
-            <p className="card-info-meta">
-              {card.number && <span>#{card.number}</span>}
-              {card.setCode && <span> • {card.setCode}</span>}
-            </p>
-          </header>
-          
-          <div className="card-info-content">
-            {card.setName && (
-              <div className="info-section">
-                <h3>Set</h3>
-                <p>{card.setName}</p>
-              </div>
-            )}
-            
-            {card.description && (
-              <div className="info-section">
-                <h3>Description</h3>
-                <p>{card.description}</p>
-              </div>
-            )}
-            
-            {/* Add more sections as needed */}
-            <div className="info-section">
-              <h3>Market Value</h3>
-              <p className="text-2xl font-bold">$24.99</p>
+          {card ? (
+            <div className="card-info-layout">
+            {/* Left side - Large card image */}
+            <div className="card-info-image">
+              {(() => {
+                // Construct image URL from card data if not provided
+                const imageUrl = card?.imageUrl && card.imageUrl.trim() !== '' 
+                  ? card.imageUrl 
+                  : `https://images.pokemontcg.io/${card?.setCode}/${card?.number}.png`;
+                
+                return (
+                  <img 
+                    src={imageUrl}
+                    alt={card?.name || 'Card'}
+                    className="card-image-full"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.nextElementSibling?.classList.remove('card-image-placeholder');
+                    }}
+                  />
+                );
+              })()}
             </div>
             
-            <div className="info-section">
-              <h3>Actions</h3>
-              <div className="action-buttons">
-                <button className="btn btn--primary">Edit Details</button>
-                <button className="btn btn--secondary">View Prices</button>
-                <button className="btn btn--danger">Remove from Collection</button>
+            {/* Right side - Card details */}
+            <div className="card-info-details">
+              <div className="card-info-header">
+                <h2 className="card-info-title">{card?.name}</h2>
+                <p className="card-info-meta">#{card?.number} • {card?.setCode}</p>
+              </div>
+              
+              <div className="card-info-content">
+                {/* Market Value Section */}
+                <div className="info-section">
+                  <h3>Market Value</h3>
+                  <p>$24.99</p>
+                </div>
+                
+                {/* Collection Details Section */}
+                <div className="info-section">
+                  <h3>Collection Details</h3>
+                  <div className="collection-details">
+                    <div className="detail-item">
+                      <span className="detail-label">Quantity:</span>
+                      <span className="detail-value">{localQuantity}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Condition:</span>
+                      <span className="detail-value">{card?.condition || 'Near Mint'}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="quantity-controls">
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      disabled={isUpdating}
+                      onClick={() => {
+                        const newQuantity = Math.max(1, localQuantity - 1);
+                        handleQuantityChange(newQuantity);
+                      }}
+                    >
+                      -
+                    </Button>
+                    <span className="quantity-display">{localQuantity}</span>
+                    <Button 
+                      variant="secondary" 
+                      size="sm"
+                      disabled={isUpdating}
+                      onClick={() => {
+                        const newQuantity = localQuantity + 1;
+                        handleQuantityChange(newQuantity);
+                      }}
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Actions Section */}
+                <div className="info-section">
+                  <h3>Actions</h3>
+                  <div className="action-buttons">
+                    <Button variant="secondary" size="sm">View Prices</Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      disabled={isDeleting || !card?.id}
+                      onClick={async () => {
+                        if (!card?.id || !onDeleteCard) return;
+                        
+                        setIsDeleting(true);
+                        try {
+                          await onDeleteCard(card.id);
+                          onClose(); // Close modal after successful deletion
+                        } catch (error) {
+                          console.error('Failed to delete card:', error);
+                          // Error handling is done by the parent component
+                        } finally {
+                          setIsDeleting(false);
+                        }
+                      }}
+                    >
+                      {isDeleting ? 'Removing...' : 'Remove from Collection'}
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        ) : (
+          children
+        )}
         </div>
       </div>
-    </Modal>
+    </>,
+    document.body
   );
 } 

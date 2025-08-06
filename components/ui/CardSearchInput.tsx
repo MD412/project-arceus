@@ -79,6 +79,7 @@ export function CardSearchInput({ onSelect, placeholder, className }: CardSearch
   };
 
   const handleCardSelect = (card: Card) => {
+    console.log('handleCardSelect called with:', card);
     onSelect(card);
     setIsOpen(false);
     setQuery('');
@@ -130,7 +131,10 @@ export function CardSearchInput({ onSelect, placeholder, className }: CardSearch
                   role="option"
                   aria-selected={index === selectedIndex}
                   className={`${styles.option} ${index === selectedIndex ? styles.selected : ''}`}
-                  onClick={() => handleCardSelect(card)}
+                  onClick={() => {
+                    console.log('Card clicked:', card);
+                    handleCardSelect(card);
+                  }}
                 >
                   <div className={styles.cardImage}>
                     {card.image_url ? (

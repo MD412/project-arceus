@@ -55,7 +55,7 @@
 - Measure latency & accuracy; log to `worker_logs`.
 
 ### 3. Review UI
-- Extend `/scans/[id]/review` to fetch `pipeline_review_items`.
+- Extend `/scans/review` to fetch `pipeline_review_items`.
 - New tag pills: `CLIP-ONLY`, `BLIP-GUESS`, `MANUAL`.
 - Mutation endpoint to confirm card & set training flags.
 

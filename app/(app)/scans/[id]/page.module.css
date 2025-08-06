@@ -1,0 +1,114 @@
+/* Page Header with Back Navigation */
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  font: var(--font-body-base);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.page-title {
+  font: var(--font-heading);
+  color: var(--text-primary);
+}
+
+
+
+.modal-content {
+  padding: var(--spacing-6);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-8);
+  max-width: 1000px;
+  width: 100%;
+  min-height: 500px;
+}
+
+.modal-title {
+  grid-column: 1 / -1;
+  margin-bottom: var(--spacing-6);
+  font: var(--font-heading-1);
+  color: var(--text-primary);
+}
+
+.modal-section {
+  margin-bottom: var(--spacing-6);
+}
+
+.modal-section h4 {
+  margin-bottom: var(--spacing-3);
+  font: var(--font-heading-4);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-section p {
+  margin-bottom: var(--spacing-4);
+  color: var(--text-secondary);
+  font: var(--font-text-lg);
+  line-height: 1.5;
+}
+
+.original-crop-section {
+  margin-top: var(--spacing-4);
+}
+
+.original-crop-section h4 {
+  margin-bottom: var(--spacing-3);
+  font: var(--font-heading-4);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.modal-crop-image {
+  border-radius: var(--border-radius-300);
+  object-fit: contain;
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Left column - Current identification */
+.modal-left-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  padding-right: var(--spacing-4);
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* Right column - Search functionality */
+.modal-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-6);
+  min-height: 400px;
+  padding-left: var(--spacing-4);
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .modal-content {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-4);
+  }
+  
+  .modal-right-column {
+    min-height: 300px;
+  }
+} 

@@ -95,28 +95,24 @@ class TestScansAPI:
         assert response.json()["accepted"] == True
 
 
-class TestCardCorrections:
-    """Test card correction functionality"""
+class TestBulkScanOperations:
+    """Test bulk scan operations"""
     
     BASE_URL = "http://localhost:3000/api"
     
     @pytest.mark.skip(reason="Requires authentication")
-    def test_correct_card_identification(self):
-        """Test PATCH /api/scans/[id]/cards for corrections"""
+    def test_bulk_approve_scan(self):
+        """Test POST /api/scans/bulk for bulk approve"""
         scan_id = "test-scan-id"
         
-        correction_data = {
-            "cardIndex": 0,
-            "correctedData": {
-                "card_name": "Charizard ex",
-                "enrichment_success": True,
-                "identification_confidence": 100
-            }
+        bulk_data = {
+            "action": "approve",
+            "scanId": scan_id
         }
         
-        response = requests.patch(
-            f"{self.BASE_URL}/scans/{scan_id}/cards",
-            json=correction_data,
+        response = requests.post(
+            f"{self.BASE_URL}/scans/bulk",
+            json=bulk_data,
             headers={"Content-Type": "application/json"}
         )
         

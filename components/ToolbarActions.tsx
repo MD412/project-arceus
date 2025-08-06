@@ -3,10 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import UploadCardForm from '@/components/UploadCardForm';
-import { Modal } from '@/components/ui/Modal';
 import { Button } from './ui/Button';
 import { Home, ScanLine, Layers, PlusCircle, Settings, HelpCircle, User, PanelLeftClose, PanelLeft } from 'lucide-react';
-import ScanUploadForm from './scans/ScanUploadForm';
 
 interface ToolbarActionsProps {
   isMinimized?: boolean;
@@ -21,7 +19,6 @@ interface ToolbarActionsProps {
 export default function ToolbarActions({ isMinimized = false, onToggleMinimize }: ToolbarActionsProps = {}) {
   const router = useRouter();
   const [showAddCard, setShowAddCard] = useState(false);
-  const [showScanModal, setShowScanModal] = useState(false);
 
   return (
     <div className="action-toolbar">
@@ -57,8 +54,8 @@ export default function ToolbarActions({ isMinimized = false, onToggleMinimize }
           variant="toolbar"
           aria-label="Process Scan"
           onClick={() => {
-            console.log('Process Scan button clicked, setting state to true.');
-            setShowScanModal(true);
+            console.log('Process Scan button clicked, navigating to scan-upload page.');
+            router.push('/scan-upload');
           }}>
           + Process Scan
         </Button>
@@ -76,11 +73,7 @@ export default function ToolbarActions({ isMinimized = false, onToggleMinimize }
         />
       )}
 
-      {showScanModal && (
-        <Modal isOpen={true} onClose={() => setShowScanModal(false)}>
-          <ScanUploadForm close={() => setShowScanModal(false)} />
-        </Modal>
-      )}
+
     </div>
   );
 } 

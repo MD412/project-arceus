@@ -6,6 +6,7 @@
 }
 
 .app-layout {
+  --sidebar-width: var(--sds-size-width-sidebar); /* Default: expanded width */
   display: grid;
   grid-template-columns: auto 1fr; /* Figma auto-layout: sidebar hugs its content */
   height: 100vh; /* Changed from min-height to constrain grid */
@@ -16,6 +17,7 @@
 
 /* When sidebar is minimized */
 .app-layout:has(.sidebar--minimized) {
+  --sidebar-width: var(--sidebar-width-minimized); /* Update custom property for fixed elements */
   grid-template-columns: var(--sidebar-width-minimized) 1fr; /* Keep fixed width when minimized */
 }
 
@@ -164,9 +166,9 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  height: 100vh; /* Explicit height for percentage children */
   overflow-y: auto;
-  position: relative; /* Establish stacking context */
-  z-index: 1;
+  /* Removed position: relative and z-index to prevent stacking context isolation */
 }
 
 .app-content {
@@ -177,6 +179,11 @@
   z-index: 1; /* Below top-toolbar */
 }
 
+/* Page-specific overrides */
+.app-content--no-padding {
+  padding: 0;
+}
+
 .top-toolbar {
   height: 48px;
   flex-shrink: 0;
@@ -185,9 +192,9 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  position: sticky; /* Stick to top of scroll area */
+  position: sticky; /* Restored original positioning */
   top: 0;
-  z-index: 10; /* Above app-content (z-index: 1) */
+  z-index: 100; /* Below modal backdrop (z-index: 9998) so it gets shadowed out */
 }
 
 /* Action toolbar integration - Figma auto-layout */

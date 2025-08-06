@@ -5,7 +5,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
 import ExampleShowcase from '@/components/layout/ExampleShowcase';
 import CodeBlock from '../components/CodeBlock';
-import { Modal, CardInfoModal } from '@/components/ui/Modal';
+import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 
 export default function ModalPage() {
@@ -96,14 +96,14 @@ function Example() {
             View Card Details
           </Button>
           
-          <CardInfoModal
+          <Modal
             isOpen={cardModalOpen}
             onClose={() => setCardModalOpen(false)}
             card={exampleCard}
           />
         </ExampleShowcase>
 
-        <CodeBlock language="tsx" code={`import { CardInfoModal } from '@/components/ui/Modal';
+        <CodeBlock language="tsx" code={`import { Modal } from '@/components/ui/Modal';
 
 function CardGrid() {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -119,7 +119,7 @@ function CardGrid() {
       ))}
       
       {selectedCard && (
-        <CardInfoModal
+        <Modal
           isOpen={!!selectedCard}
           onClose={() => setSelectedCard(null)}
           card={selectedCard}

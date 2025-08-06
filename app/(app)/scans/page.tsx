@@ -22,7 +22,7 @@ interface ScanUpload {
 }
 
 export default function ScansPage() {
-  const { data: uploads, isLoading, isError, error, renameJob, deleteJob, deleteJobStatus } = useJobs();
+  const { data: uploads, isLoading, isError, error, renameJob, deleteJob } = useJobs();
   const [renamingUpload, setRenamingUpload] = useState<ScanUpload | null>(null);
 
   const handleRename = (newTitle: string) => {
@@ -151,7 +151,7 @@ export default function ScansPage() {
         <div className="scans-page__empty-state">
           <div className="scans-page__empty-content">
             <h2>No scans found</h2>
-            <p>You haven't uploaded any card scans for processing yet.</p>
+            <p>You haven&apos;t uploaded any card scans for processing yet.</p>
             <Link href="/upload">
               <Button variant="primary">
               Upload Your First Scan

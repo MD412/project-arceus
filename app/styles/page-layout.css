@@ -2,6 +2,9 @@
 
 .page-layout {
   width: 100%;
+  min-height: 100vh; /* Ensure full viewport height */
+  display: flex;
+  flex-direction: column;
   /* Optional: Add padding if pages using this layout don't have their own outer padding */
   /* padding: var(--sds-size-space-600); */ 
 }
@@ -37,6 +40,9 @@
 .page-layout-content {
   /* Content area for children, may not need specific styles now */
   /* Example: margin-top: var(--sds-size-space-400); if header didn't have margin-bottom */
+  flex: 1; /* Take remaining space in flexbox container */
+  height: 100%; /* Allow percentage heights to work in children */
+  min-height: 0; /* Allow flexbox shrinking */
 }
 
 /* Responsive adjustments for header spacing if needed */

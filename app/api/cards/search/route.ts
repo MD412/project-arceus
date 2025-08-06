@@ -1,4 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+
+// Cache for card data
+let cardCache: any[] = [];
+let cacheLoaded = false;
+
+async function loadCardData() {
+  if (cacheLoaded) return cardCache;
+  
+  const cardsDir = path.join(process.cwd(), 'pokemon-tcg-data', 'cards', 'en');
+  const files = fs.readdirSync(cardsDir).filter(f => f.endsWith('.json'));
+  
+  const allCards: any[] = [];
+  
+  // Load all files to ensure we have complete coverage
+  for (const file of files) {
+    const filePath = path.join(cardsDir, file);
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    allCards.push(...data);
+  }
+  
+  cardCache = allCards;
+  cacheLoaded = true;
+  console.log(`📚 Loaded ${allCards.length} cards from local data`);
+  return allCards;
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -12,54 +39,31 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ results: [] });
   }
 
-  // Pokemon TCG API key is optional
-  const apiKey = process.env.POKEMON_TCG_API_KEY;
-  const headers: Record<string, string> = {
-    'Accept': 'application/json',
-    'User-Agent': 'project-arceus/1.0'
-  };
-  
-  if (apiKey) {
-    headers['X-Api-Key'] = apiKey;
-  }
-
   try {
-    console.log('🔗 Calling Pokemon TCG API with query:', query.trim());
+    console.log('🔗 Searching local card data with query:', query.trim());
     
-    // Build the query URL - Pokemon TCG API expects "name:term" format for name search
-    const searchQuery = `name:${query.trim()}*`; // Add wildcard for partial matches
-    const apiUrl = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(searchQuery)}&pageSize=10&orderBy=name`;
-    console.log('📍 API URL:', apiUrl);
+    const cards = await loadCardData();
+    const searchTerm = query.trim().toLowerCase();
     
-    // Call Pokemon TCG API
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers
-    });
+    // Fast local search
+    const results = cards
+      .filter((card: any) => 
+        card.name?.toLowerCase().includes(searchTerm) ||
+        card.number?.toLowerCase().includes(searchTerm)
+      )
+      .slice(0, 10) // Limit to 10 results
+      .map((card: any) => ({
+        id: card.id,
+        name: card.name,
+        set_code: card.id.split('-')[0] || 'unknown', // Extract set code from card ID
+        card_number: card.number || 'unknown',
+        image_url: card.images?.large || card.images?.small || null,
+        set_name: `Set ${card.id.split('-')[0] || 'Unknown'}`, // Use set code as set name
+        rarity: card.rarity || 'Common',
+        market_price: null // No price data in local files
+      }));
 
-    if (!response.ok) {
-      console.error('❌ Pokemon TCG API error:', response.status, response.statusText);
-      const errorText = await response.text();
-      console.error('❌ Error body:', errorText);
-      throw new Error(`API error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    const cards = data.data || [];
-
-    // Transform to our expected format
-    const results = cards.map((card: any) => ({
-      id: card.id,
-      name: card.name,
-      set_code: card.set?.id || 'unknown',
-      card_number: card.number || 'unknown',
-      image_url: card.images?.large || card.images?.small || null,
-      set_name: card.set?.name || 'Unknown Set',
-      rarity: card.rarity || 'Common',
-      market_price: card.cardmarket?.prices?.averageSellPrice || null
-    }));
-
-    console.log('✅ Search successful, found', results.length, 'results');
+    console.log('✅ Local search successful, found', results.length, 'results');
 
     return NextResponse.json({ 
       results,

@@ -1,0 +1,139 @@
+/* ===== ICON BUTTON COMPONENT ===== */
+
+.icon-button_base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--sds-size-radius-100);
+  cursor: pointer;
+  transition: all 0.12s ease-linear;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--font-family-display);
+  font-weight: 500;
+}
+
+/* Primary Icon Button - Circuit Bright Yellow */
+.icon-button_primary {
+  background-color: var(--circuit-bright-yellow);
+  color: var(--circuit-darker-teal);
+  border: 1px solid var(--circuit-bright-yellow);
+}
+
+.icon-button_primary:hover:not(:disabled) {
+  background-color: #ffdc73; /* Lighter yellow */
+  border-color: #ffdc73;
+}
+
+.icon-button_primary:active:not(:disabled) {
+  background-color: #f0c052; /* Darker yellow */
+  border-color: #f0c052;
+}
+
+/* Secondary Icon Button */
+.icon-button_secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-interactive);
+}
+
+.icon-button_secondary:hover:not(:disabled) {
+  background-color: var(--surface-background-hover);
+  border-color: var(--border-interactive-hover);
+}
+
+.icon-button_secondary:active:not(:disabled) {
+  background-color: var(--surface-background-pressed);
+  border-color: var(--border-interactive-pressed);
+}
+
+/* Destructive Icon Button */
+.icon-button_destructive {
+  background-color: transparent;
+  color: #dc2626; /* red-600 */
+  border: 1px solid transparent;
+}
+
+.icon-button_destructive:hover:not(:disabled) {
+  background-color: rgba(220, 38, 38, 0.1); /* red-600 with 10% opacity */
+}
+
+.icon-button_destructive:active:not(:disabled) {
+  background-color: rgba(220, 38, 38, 0.2); /* red-600 with 20% opacity */
+}
+
+/* Ghost Icon Button */
+.icon-button_ghost {
+  background-color: transparent !important;
+  color: var(--circuit-bright-yellow) !important;
+  border: 1px solid transparent !important;
+}
+
+.icon-button_ghost:hover:not(:disabled) {
+  background-color: transparent !important;
+  color: var(--circuit-bright-yellow) !important;
+}
+
+.icon-button_ghost:active:not(:disabled) {
+  background-color: rgba(255, 207, 96, 0.2) !important; /* Circuit bright yellow with 20% opacity */
+}
+
+/* ===== ICON BUTTON SIZES ===== */
+
+/* Small - Compact utility size */
+.icon-button_sm {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Medium - Default size */
+.icon-button_md {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 14px;
+}
+
+/* Large - Prominent size */
+.icon-button_lg {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 16px;
+}
+
+/* Disabled state for all variants */
+.icon-button_base:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Focus state */
+.icon-button_base:focus-visible {
+  outline: var(--sds-size-stroke-focus-ring) solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 768px) {
+  .icon-button_sm {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .icon-button_md {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .icon-button_lg {
+    width: 44px;
+    height: 44px;
+  }
+} 

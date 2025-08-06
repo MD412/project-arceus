@@ -8,9 +8,8 @@ const supabase = getSupabaseClient();
  */
 export const getJobs = async () => {
   const { data, error } = await supabase
-    .from('scan_uploads')
+    .from('scans')
     .select('*')
-    .is('deleted_at', null) // exclude soft-deleted rows
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -18,7 +17,21 @@ export const getJobs = async () => {
     throw new Error(`Error fetching jobs: ${JSON.stringify(error, null, 2)}`);
   }
 
-  return data;
+  // Map scans table columns to match scan_uploads expected format
+  return data?.map(scan => ({
+    id: scan.id,
+    user_id: scan.user_id,
+    scan_title: scan.title,
+    processing_status: scan.status,
+    storage_path: scan.storage_path,
+    results: {
+      summary_image_path: scan.summary_image_path,
+      total_cards_detected: 0 // Default value since we don't have this data
+    },
+    error_message: scan.error_message,
+    created_at: scan.created_at,
+    updated_at: scan.updated_at
+  })) || [];
 }
 
 /**

@@ -71,6 +71,21 @@
   background-color: var(--interactive-primary-subtle-pressed);
 }
 
+/* Ghost Destructive Button - Subtle red styling */
+.button_button_ghost-destructive_uCVc {
+  background-color: transparent;
+  color: #dc2626; /* red-600 */
+  border-color: transparent;
+}
+
+.button_button_ghost-destructive_uCVc:hover:not(:disabled) {
+  background-color: rgba(220, 38, 38, 0.1); /* red-600 with 10% opacity */
+}
+
+.button_button_ghost-destructive_uCVc:active:not(:disabled) {
+  background-color: rgba(220, 38, 38, 0.2); /* red-600 with 20% opacity */
+}
+
 /* Destructive Button - Modern styling */
 .button_button_destructive_uCVc {
   background-color: #dc2626; /* Modern red-600 */

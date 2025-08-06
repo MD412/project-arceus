@@ -54,6 +54,7 @@ const circuitDSNavItems: NavigationConfigItem[] = [
     defaultOpen: true,
     children: [
       { type: 'link', label: 'Buttons', href: '/circuitds/buttons' },
+      { type: 'link', label: 'Icon Button', href: '/circuitds/components/icon-button' },
       { type: 'link', label: 'Tag', href: '/circuitds/components/tag' },
       { type: 'link', label: 'Dropdown', href: '/circuitds/components/dropdown' },
       { type: 'link', label: 'Accordion', href: '/circuitds/components/accordion' },

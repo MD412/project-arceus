@@ -16,6 +16,7 @@
   --circuit-light-yellow: #fff2d1; 
   --circuit-magenta: #e91e63;
   --circuit-darker-teal: #0f2b29;
+  --circuit-teal: #4a9b94; /* Alias for circuit-light-teal for backward compatibility */
 
   /* Neutral Colors */
   --color-white-100: rgba(255, 255, 255, 0.05);
@@ -144,11 +145,15 @@
   --surface-background-hover: var(--circuit-light-teal);   
   --surface-background-pressed: var(--circuit-dark-teal);    
   --surface-background-subtle: var(--circuit-darker-teal);  
+  --surface-background-subtle-25: color-mix(in srgb, var(--circuit-darker-teal) 75%, black 25%); /* 25% darker than subtle */
   --surface-background-muted: var(--circuit-dark-teal);    
   --surface-background-emphasis: var(--circuit-light-yellow); 
   --surface-background-disabled: #1f3a38; 
   --surface-container-level-1: var(--circuit-dark-teal); 
   --surface-preview-background: var(--circuit-dark-teal);
+  --surface-elevated: var(--circuit-light-teal);
+  --surface-hover: var(--circuit-light-teal);
+  --surface-sidebar-background: var(--circuit-dark-teal);
 
   /* C. Text Colors */
   --text-primary: var(--circuit-light-yellow);   
@@ -172,6 +177,9 @@
   --border-interactive-primary: var(--interactive-primary-pressed); 
   --border-interactive-secondary: var(--circuit-magenta);
   --border-subtle: var(--circuit-mid-teal);
+  --border-interactive: var(--border-default);
+  --border-interactive-hover: var(--border-hover);
+  --border-interactive-pressed: var(--border-default);
 
   /* E. Interactive Element Colors */
   --interactive-primary: var(--circuit-bright-yellow);
@@ -195,6 +203,8 @@
   --status-warning-subtle: rgba(255, 185, 53, 0.15);
   --status-info: var(--circuit-light-teal); 
   --status-info-subtle: rgba(74, 155, 148, 0.15);
+  --interactive-primary-subtle: rgba(255, 207, 96, 0.15);
+  --interactive-primary-subtle-pressed: rgba(255, 207, 96, 0.25);
 
   /* F2. Supplementary Colors - Blues */
   --color-blue-100: #e8f4ff; /* Light info background */

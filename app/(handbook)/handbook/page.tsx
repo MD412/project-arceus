@@ -31,7 +31,7 @@ export default function HandbookHomePage() {
             <ul className="list-disc pl-6 body-small space-y-1 mt-2">
               <li>Navigate to <code>/upload</code> to submit new binder photos</li>
               <li>View processing results at <code>/scans</code></li>
-              <li>Review individual detected cards at <code>/scans/[id]</code></li>
+              <li>Review detected cards at <code>/scans/review</code></li>
             </ul>
           </li>
           <li>

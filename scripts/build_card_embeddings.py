@@ -155,10 +155,10 @@ def main():
     
     # --- TEMPORARY FIX ---
     # We will call the requeue function directly for a one-time fix.
-    supabase_client_for_fix = get_supabase_client()
-    force_requeue_stale_jobs(supabase_client_for_fix)
-    print("[INFO] One-time job requeue complete. You can now comment out or remove this call.")
-    return # We will exit after the fix to avoid running the full script.
+    # supabase_client_for_fix = get_supabase_client()
+    # force_requeue_stale_jobs(supabase_client_for_fix)
+    # print("[INFO] One-time job requeue complete. You can now comment out or remove this call.")
+    # return # We will exit after the fix to avoid running the full script.
     # --- END TEMP FIX ---
 
     print("--- Card Embedding Builder ---")
