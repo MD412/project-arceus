@@ -23,6 +23,7 @@ export interface CardEntry {
   set_code: string;
   set_name: string;
   image_url: string;
+  raw_crop_url?: string | null;
   user_id: string;
   created_at: string;
   quantity: number; // Required field from user_cards
@@ -116,6 +117,7 @@ export function DraggableCardGrid({
               setName: selectedCard.set_name,
               quantity: selectedCard.quantity,
               condition: selectedCard.condition,
+              rawCropUrl: selectedCard.raw_crop_url || undefined,
             }}
             onDeleteCard={async (cardId: string) => {
               if (onDelete && selectedCard) {
@@ -198,6 +200,7 @@ export function DraggableCardGrid({
               setName: selectedCard.set_name,
               quantity: selectedCard.quantity,
               condition: selectedCard.condition,
+              rawCropUrl: selectedCard.raw_crop_url || undefined,
             }}
             onDeleteCard={async (cardId: string) => {
               if (onDelete && selectedCard) {

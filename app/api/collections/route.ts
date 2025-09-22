@@ -111,6 +111,10 @@ export async function GET(request: NextRequest) {
           set_name,
           card_number,
           image_urls
+        ),
+        detection:detection_id (
+          id,
+          crop_url
         )
       `)
       .eq('user_id', userId)
@@ -119,11 +123,20 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     // Normalize for client: flatten and compute image_url from image_urls.small
-    const normalized = (userCards || []).map((uc: any) => ({
+    const normalized = (userCards || []).map((uc: any) => {
+      const relCrop = uc.detection?.crop_url || null;
+      const rawCropUrl = relCrop
+        ? (String(relCrop).startsWith('http')
+            ? relCrop
+            : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/scans/${relCrop}`)
+        : null;
+
+      return {
       id: uc.id,
       quantity: uc.quantity ?? 1,
       condition: uc.condition ?? 'unknown',
       created_at: uc.added_at || uc.updated_at || null,
+        raw_crop_url: rawCropUrl,
       card: {
         id: uc.cards?.id,
         name: uc.cards?.name,
@@ -131,8 +144,9 @@ export async function GET(request: NextRequest) {
         set_name: uc.cards?.set_name,
         card_number: uc.cards?.card_number,
         image_url: uc.cards?.image_urls?.small || null,
-      }
-    }));
+        }
+      };
+    });
 
     // Calculate collection stats
     const totalCards = normalized.length;

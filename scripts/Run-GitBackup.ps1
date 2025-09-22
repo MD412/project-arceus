@@ -55,10 +55,11 @@ if (-not $NoTag) {
 # Always push current branch to origin to ensure remote is synced
 try { git push | Out-Null } catch { Write-Warning "Push main failed: $($_.Exception.Message)" }
 
-# Create/force-update backup branch and push
+# Create/force-update backup branch with a distinct name to avoid tag collisions and push
 if (-not $NoBranch) {
-  git branch -f $Name | Out-Null
-  try { git push -u origin $Name -f | Out-Null } catch { Write-Warning "Push backup branch failed: $($_.Exception.Message)" }
+  $branchName = "$Name-branch"
+  git branch -f $branchName | Out-Null
+  try { git push -u origin $branchName -f | Out-Null } catch { Write-Warning "Push backup branch failed: $($_.Exception.Message)" }
 }
 
 # Push tag if created and not yet pushed (snapshot script already attempts it)

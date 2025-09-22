@@ -18,6 +18,8 @@ interface Card {
   setName: string;
   quantity?: number;
   condition?: string;
+  // New: optional raw crop URL for provenance
+  rawCropUrl?: string;
 }
 
 interface ModalProps {
@@ -127,6 +129,24 @@ export function Modal({ isOpen, onClose, card, className = '', onDeleteCard, chi
                 <p className="card-info-meta">#{displayCard?.number} • {displayCard?.setCode}</p>
               </div>
               
+              {/* Raw crop preview if available */}
+              {displayCard?.rawCropUrl ? (
+                <div className="info-section">
+                  <h3>Original Scan Crop</h3>
+                  <img
+                    src={displayCard.rawCropUrl}
+                    alt="Original scan crop"
+                    style={{
+                      width: '100%',
+                      maxWidth: '320px',
+                      height: 'auto',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-default)'
+                    }}
+                  />
+                </div>
+              ) : null}
+
               <div className="card-info-content">
                 {isReplaceMode ? (
                   <div className="info-section replace-panel">
