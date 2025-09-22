@@ -108,26 +108,43 @@ export async function GET(request: NextRequest) {
           id,
           name,
           set_code,
+          set_name,
           card_number,
-          image_url
+          image_urls
         )
       `)
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('added_at', { ascending: false });
 
     if (error) throw error;
 
-    // Calculate collection stats
-    const totalCards = userCards?.length || 0;
-    const totalValue = userCards?.reduce((sum, card) => {
-      // You could store estimated_value in user_cards or calculate it
-      return sum + (card.quantity * 10); // Placeholder value calculation
-    }, 0) || 0;
+    // Normalize for client: flatten and compute image_url from image_urls.small
+    const normalized = (userCards || []).map((uc: any) => ({
+      id: uc.id,
+      quantity: uc.quantity ?? 1,
+      condition: uc.condition ?? 'unknown',
+      created_at: uc.added_at || uc.updated_at || null,
+      card: {
+        id: uc.cards?.id,
+        name: uc.cards?.name,
+        set_code: uc.cards?.set_code,
+        set_name: uc.cards?.set_name,
+        card_number: uc.cards?.card_number,
+        image_url: uc.cards?.image_urls?.small || null,
+      }
+    }));
 
-    const uniqueSets = new Set(userCards?.map(card => (card.cards as any)?.set_code).filter(Boolean));
+    // Calculate collection stats
+    const totalCards = normalized.length;
+    const totalValue = normalized.reduce((sum: number, uc: any) => {
+      // You could store estimated_value in user_cards or calculate it
+      return sum + (uc.quantity * 10); // Placeholder value calculation
+    }, 0);
+
+    const uniqueSets = new Set(normalized.map((uc: any) => uc.card?.set_code).filter(Boolean));
 
     return NextResponse.json({
-      cards: userCards,
+      cards: normalized,
       stats: {
         totalCards,
         totalValue,

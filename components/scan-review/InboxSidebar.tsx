@@ -8,10 +8,17 @@ import { SpinnerGap, FileImage } from '@phosphor-icons/react';
 interface InboxSidebarProps {
   activeId: string | undefined;
   onSelect: (id: string) => void;
+  hiddenIds?: string[];
 }
 
-export default function InboxSidebar({ activeId, onSelect }: InboxSidebarProps) {
+export default function InboxSidebar({ activeId, onSelect, hiddenIds = [] }: InboxSidebarProps) {
   const { data: items, isLoading, isFetching, error } = useReviewInbox();
+
+  // Defensive: hide any zero-card scans that may leak from inconsistent views
+  const visibleItems = React.useMemo(
+    () => (items || []).filter(i => (i.total_detections ?? 0) > 0 && !hiddenIds.includes(i.id)),
+    [items, hiddenIds]
+  );
 
   return (
     <aside className={styles.sidebar}>
@@ -24,7 +31,7 @@ export default function InboxSidebar({ activeId, onSelect }: InboxSidebarProps) 
         </div>
       )}
 
-      {(!isLoading && (!items || items.length === 0)) || error ? (
+      {(!isLoading && (!visibleItems || visibleItems.length === 0)) || error ? (
         <div className={styles.empty}>
           <FileImage size={16} />
           {error ? 'Failed to load scans' : 'No scans pending'}
@@ -32,15 +39,15 @@ export default function InboxSidebar({ activeId, onSelect }: InboxSidebarProps) 
       ) : null}
 
       <ul className={styles.list}>
-        {items?.map((item) => (
+        {visibleItems?.map((item) => (
           <li
             key={item.id}
             className={`${styles.item} ${activeId === item.id ? styles.active : ''}`}
           >
-            <button onClick={() => onSelect(item.id)} className={styles.button}>
+            <button onClick={() => onSelect(item.id)} className={styles.button} data-scan-id={item.id} data-testid="inbox-scan-item">
               <div className={styles.content}>
-                <span className={styles.title}>{item.title ?? 'Untitled Scan'}</span>
-                <span className={styles.count}>{item.total_detections} cards</span>
+                <span className={styles.title}>{item.id}</span>
+                <span className={styles.count}>{item.total_detections} cards · added {new Date(item.created_at).toLocaleString()}</span>
               </div>
             </button>
           </li>

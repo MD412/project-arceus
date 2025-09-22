@@ -8,11 +8,13 @@ import { RenameScanModal } from '@/components/ui/RenameScanModal';
 import { useReviewInbox } from '@/hooks/useReviewInbox';
 import { useJobs } from '@/hooks/useJobs';
 import { Button } from '@/components/ui/Button';
+import styles from './ScanReviewShell.module.css';
 
 type ViewMode = 'review' | 'history';
 
 export default function ScanReviewShell() {
   const [activeScanId, setActiveScanId] = React.useState<string | undefined>();
+  const [hiddenIds, setHiddenIds] = React.useState<string[]>([]);
   const [viewMode, setViewMode] = React.useState<ViewMode>('review');
   const [renamingUpload, setRenamingUpload] = React.useState<any>(null);
 
@@ -72,10 +74,14 @@ export default function ScanReviewShell() {
   ) || [];
 
   return (
-    <div>
-      <InboxSidebar activeId={activeScanId} onSelect={setActiveScanId} />
+    <div className={styles.container}>
+      {/* Left column: inbox */}
+      <aside className={styles.leftColumn}>
+        <InboxSidebar activeId={activeScanId} onSelect={setActiveScanId} hiddenIds={hiddenIds} />
+      </aside>
 
-      <main style={{ marginLeft: 'calc(var(--sidebar-width, 200px) + 280px)', padding: 'var(--sds-size-space-400)', overflowY: 'auto' }}>
+      {/* Right column: toolbar + modular panels */}
+      <main className={styles.rightColumn}>
         {/* View Mode Toggle */}
         <div style={{ 
           display: 'flex', 
@@ -97,80 +103,80 @@ export default function ScanReviewShell() {
             Scan History ({historyUploads.length})
           </Button>
         </div>
-
-        {/* Processing Indicator */}
-        {processingUploads.length > 0 && (
-          <div style={{
-            marginBottom: 'var(--sds-size-space-400)',
-            padding: 'var(--sds-size-space-300)',
-            backgroundColor: 'var(--surface-secondary)',
-            border: '1px solid var(--border-default)',
-            borderRadius: 'var(--sds-size-radius-200)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--sds-size-space-200)'
-          }}>
-            <div style={{
-              width: '12px',
-              height: '12px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--status-warning)',
-              animation: 'pulse 2s infinite'
-            }} />
-            <span style={{ 
-              fontSize: 'var(--font-size-100)',
-              color: 'var(--text-primary)',
-              fontWeight: '500'
-            }}>
-              {processingUploads.length} scan{processingUploads.length === 1 ? '' : 's'} processing...
-            </span>
-          </div>
-        )}
-
-        {viewMode === 'review' ? (
-          activeScanId ? (
-            <DetectionGrid scanId={activeScanId} onReviewed={() => setActiveScanId(undefined)} />
-          ) : (
-            <p>Select a scan from the inbox to begin reviewing.</p>
-          )
-        ) : (
-          <div>
-            <div style={{ marginBottom: 'var(--sds-size-space-400)' }}>
-              <h2 style={{ 
-                margin: '0 0 var(--sds-size-space-200) 0',
-                fontSize: 'var(--font-size-400)',
-                fontWeight: '600',
-                color: 'var(--text-primary)'
-              }}>
-                Scan History
-              </h2>
-              <p style={{ 
-                margin: 0,
-                color: 'var(--text-secondary)',
-                fontSize: 'var(--font-size-75)'
-              }}>
-                Completed scans and their results
-              </p>
-            </div>
-            
-            {historyUploads.length > 0 ? (
-              <ScanHistoryTable
-                uploads={historyUploads}
-                onRename={setRenamingUpload}
-                onDelete={handleDelete}
-                onFlagForTraining={handleFlagForTraining}
-              />
+        <section className={styles.panels}>
+          <div className={styles.panelPrimary}>
+            {viewMode === 'review' ? (
+              activeScanId ? (
+                <DetectionGrid
+                  scanId={activeScanId}
+                  onReviewed={(approvedId) => {
+                    setHiddenIds((prev) => Array.from(new Set([...prev, approvedId])));
+                    // If the approved scan is the active one, move focus to the next available item
+                    if (approvedId === activeScanId) {
+                      const remaining = (inboxItems || [])
+                        .filter((i) => i.id !== approvedId && !hiddenIds.includes(i.id));
+                      setActiveScanId(remaining.length > 0 ? remaining[0].id : undefined);
+                    }
+                  }}
+                />
+              ) : (
+                <p>Select a scan from the inbox to begin reviewing.</p>
+              )
             ) : (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: 'var(--sds-size-space-600)',
-                color: 'var(--text-secondary)'
-              }}>
-                <p>No completed scans found.</p>
+              <div>
+                <div style={{ marginBottom: 'var(--sds-size-space-400)' }}>
+                  <h2 style={{ 
+                    margin: '0 0 var(--sds-size-space-200) 0',
+                    fontSize: 'var(--font-size-400)',
+                    fontWeight: '600',
+                    color: 'var(--text-primary)'
+                  }}>
+                    Scan History
+                  </h2>
+                  <p style={{ 
+                    margin: 0,
+                    color: 'var(--text-secondary)',
+                    fontSize: 'var(--font-size-75)'
+                  }}>
+                    Completed scans and their results
+                  </p>
+                </div>
+                {historyUploads.length > 0 ? (
+                  <ScanHistoryTable
+                    uploads={historyUploads}
+                    onRename={setRenamingUpload}
+                    onDelete={handleDelete}
+                    onFlagForTraining={handleFlagForTraining}
+                  />
+                ) : (
+                  <div style={{ textAlign: 'center', padding: 'var(--sds-size-space-600)', color: 'var(--text-secondary)' }}>
+                    <p>No completed scans found.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
+          <aside className={styles.panelSecondary}>
+            {/* Reserved for future modular panel (e.g., metadata / training aide) */}
+            {processingUploads.length > 0 && (
+              <div style={{
+                marginBottom: 'var(--sds-size-space-400)',
+                padding: 'var(--sds-size-space-300)',
+                backgroundColor: 'var(--surface-secondary)',
+                border: '1px solid var(--border-default)',
+                borderRadius: 'var(--sds-size-radius-200)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--sds-size-space-200)'
+              }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'var(--status-warning)', animation: 'pulse 2s infinite' }} />
+                <span style={{ fontSize: 'var(--font-size-100)', color: 'var(--text-primary)', fontWeight: '500' }}>
+                  {processingUploads.length} scan{processingUploads.length === 1 ? '' : 's'} processing...
+                </span>
+              </div>
+            )}
+          </aside>
+        </section>
       </main>
 
       {/* Rename Modal */}
@@ -181,14 +187,6 @@ export default function ScanReviewShell() {
           onClose={() => setRenamingUpload(null)}
         />
       )}
-
-      <style jsx>{`
-        @keyframes pulse {
-          0% { opacity: 1; }
-          50% { opacity: 0.5; }
-          100% { opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }

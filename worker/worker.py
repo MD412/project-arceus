@@ -11,6 +11,8 @@ import io
 import time
 import json
 from pathlib import Path
+import uuid
+import hashlib
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta, timezone
 import traceback
@@ -77,6 +79,57 @@ def get_tile_source(tile_index: int) -> str:
     row = chr(ord('A') + (tile_index // 3))
     col = str((tile_index % 3) + 1)
     return f"{row}{col}"
+
+def resolve_card_uuid(supabase_client, source: str, external_card_id: str) -> Optional[str]:
+    """Resolve an external text card ID (e.g., sv8pt5-160) to internal cards.id (UUID).
+    Does NOT create new cards; it uses mapping table card_keys and existing cards rows.
+    If found in cards, upserts mapping for future fast resolution.
+    """
+    # 1) Direct mapping via card_keys
+    try:
+        key_res = (
+            supabase_client
+            .from_("card_keys")
+            .select("card_id")
+            .eq("source", source)
+            .eq("external_id", external_card_id)
+            .single()
+            .execute()
+        )
+        if key_res.data and key_res.data.get("card_id"):
+            return key_res.data["card_id"]
+    except Exception:
+        pass
+
+    # 2) Try to find existing card by vendor id column
+    try:
+        card_res = (
+            supabase_client
+            .from_("cards")
+            .select("id")
+            .eq("pokemon_tcg_api_id", external_card_id)
+            .single()
+            .execute()
+        )
+        if card_res.data and card_res.data.get("id"):
+            card_uuid = card_res.data["id"]
+            # 3) Upsert mapping for next time
+            try:
+                supabase_client.from_("card_keys").upsert(
+                    {"source": source, "external_id": external_card_id, "card_id": card_uuid},
+                    on_conflict="source,external_id"
+                ).execute()
+            except Exception:
+                pass
+            return card_uuid
+    except Exception:
+        pass
+
+    return None
+
+def compute_bbox_hash(scan_id: str, bbox: List[int]) -> str:
+    base = f"{scan_id}:{bbox[0]}:{bbox[1]}:{bbox[2]}:{bbox[3]}"
+    return hashlib.md5(base.encode("utf-8")).hexdigest()
 
 def download_image_with_retry(supabase_client, storage_path: str, max_retries: int = 3) -> bytes:
     for attempt in range(max_retries):
@@ -241,20 +294,41 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                     "identification_confidence": confidence
                 }
                 
-                # Add card_id if we found a match
+                # External guess metadata
                 if card_id:
-                    detection_data["guess_card_id"] = card_id
+                    detection_data["guess_external_id"] = card_id
+                    detection_data["guess_source"] = "sv_text"
+
+                # Resolve external card_id to internal UUID when available via mapping
+                resolved_uuid: Optional[str] = None
+                if card_id:
+                    resolved_uuid = resolve_card_uuid(supabase_client, "sv_text", card_id)
+                    if resolved_uuid:
+                        detection_data["guess_card_id"] = resolved_uuid
+
+                # Idempotency key
+                detection_data["bbox_hash"] = compute_bbox_hash(scan_id, det['bbox'])
                 
-                # Try insert with AI columns first, fallback to basic columns if schema not updated
+                # Try upsert with AI columns first, fallback to basic columns or without guess_card_id if schema mismatch
                 try:
-                    detection_response = supabase_client.from_("card_detections").insert(detection_data).execute()
+                    detection_response = supabase_client.from_("card_detections").upsert(
+                        detection_data, on_conflict="scan_id,bbox_hash"
+                    ).execute()
                 except Exception as e:
-                    if "identification_confidence" in str(e) or "identification_method" in str(e):
+                    err_msg = str(e)
+                    if "identification_confidence" in err_msg or "identification_method" in err_msg:
                         print("[WARN] AI tracking columns not available, using basic schema")
-                        # Remove AI tracking columns and retry
-                        basic_data = {k: v for k, v in detection_data.items() 
-                                     if k not in ['identification_method', 'identification_cost', 'identification_confidence']}
-                        detection_response = supabase_client.from_("card_detections").insert(basic_data).execute()
+                        basic_data = {k: v for k, v in detection_data.items()
+                                      if k not in ['identification_method', 'identification_cost', 'identification_confidence']}
+                        detection_response = supabase_client.from_("card_detections").upsert(
+                            basic_data, on_conflict="scan_id,bbox_hash"
+                        ).execute()
+                    elif "invalid input syntax for type uuid" in err_msg or "guess_card_id" in err_msg:
+                        print("[WARN] DB expects UUID for guess_card_id. Retrying insert without guess_card_id.")
+                        fallback_data = {k: v for k, v in detection_data.items() if k != 'guess_card_id'}
+                        detection_response = supabase_client.from_("card_detections").upsert(
+                            fallback_data, on_conflict="scan_id,bbox_hash"
+                        ).execute()
                     else:
                         raise e
                 
@@ -263,10 +337,21 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 detection_id = detection_response.data[0]["id"]
                 detection_records.append(detection_id)
                 
-                if card_id:
+                # Only create user_cards when the card_id is a valid UUID matching current schema
+                def _is_valid_uuid(value: str) -> bool:
+                    try:
+                        uuid.UUID(str(value))
+                        return True
+                    except Exception:
+                        return False
+
+                if card_id and _is_valid_uuid(card_id):
                     user_card_data = {
-                        "user_id": user_id, "detection_id": detection_id, "card_id": card_id,
-                        "condition": "unknown", "estimated_value": enrichment.get("estimated_value")
+                        "user_id": user_id,
+                        "detection_id": detection_id,
+                        "card_id": card_id,
+                        "condition": "unknown",
+                        "estimated_value": enrichment.get("estimated_value")
                     }
                     try:
                         supabase_client.from_("user_cards").upsert(user_card_data, on_conflict="user_id,card_id").execute()
@@ -419,22 +504,22 @@ def update_job_status(supabase_client, job_id, upload_id, status, error_message=
             job_update_data['started_at'] = None
         supabase_client.from_("job_queue").update(job_update_data).eq("id", job_id).execute()
         
-        upload_update_data = {"processing_status": status}
-        if error_message: 
+        # Avoid setting a status that may propagate to scans.status illegally
+        upload_processing_status = status
+        if status == 'review_pending':
+            # scan is effectively ready for review; map to 'ready' for base table compatibility
+            upload_processing_status = 'ready'
+
+        upload_update_data = {"processing_status": upload_processing_status}
+        if error_message:
             upload_update_data["error_message"] = error_message
-        if results: 
-            # Ensure the scan_id is available for the review page
-            enhanced_results = {
-                **results,
-                "scan_id": results.get("scan_id"),  # Critical for review page linkage
-                "processing_completed_at": datetime.now(timezone.utc).isoformat()
-            }
-            upload_update_data["results"] = enhanced_results
-        
+        # Avoid writing to non-updatable view column `results`
+        # Carry over summary image if available
+        if results and results.get("summary_image_path"):
+            upload_update_data["summary_image_path"] = results["summary_image_path"]
+
         supabase_client.from_("scan_uploads").update(upload_update_data).eq("id", upload_id).execute()
         print(f"[UPDATE] Status for job {job_id} updated to {status}.")
-        if results and results.get("scan_id"):
-            print(f"[UPDATE] Linked scan_uploads.results.scan_id = {results['scan_id']}")
     except Exception as e:
         print(f"[ERROR] Failed to update job/upload status for job {job_id}: {e}")
 

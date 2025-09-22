@@ -22,9 +22,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Fetch card detections with card details
-    // Use the scan_id from results if available, otherwise fall back to the scan_uploads id
-    const scanIdForDetections = scan.results?.scan_id || id;
+    // Prefer the scans.id captured in results; otherwise map via storage_path → scans.id
+    let scanIdForDetections = scan.results?.scan_id as string | undefined;
+    if (!scanIdForDetections && scan.storage_path) {
+      const { data: scanRow } = await supabase
+        .from('scans')
+        .select('id')
+        .eq('storage_path', scan.storage_path)
+        .maybeSingle();
+      if (scanRow?.id) {
+        scanIdForDetections = scanRow.id;
+      }
+    }
+    // Final fallback to provided id if nothing else found
+    scanIdForDetections = scanIdForDetections || id;
     
+    // Join to canonical cards via UUID guess_card_id
     const { data: detections, error: detectionsError } = await supabase
       .from('card_detections')
       .select(`
@@ -36,7 +49,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           set_name,
           card_number,
           rarity,
-          image_url,
+          image_urls,
           market_price
         )
       `)
@@ -50,7 +63,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Transform the data to match the expected format (simplified approach)
     const enrichedCards = (detections ?? []).map((detection, index) => {
-      const cardName = detection.card?.name || 'Unknown Card';
+      const c = (detection as any).card || {};
+      const imageUrl = c.image_url || c.image_urls?.small || null;
+      const cardName = c.name || 'Unknown Card';
 
       return {
         card_index: index,
@@ -58,16 +73,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         cropped_image_path: detection.crop_url,
         enrichment_success: !!detection.guess_card_id,
         card_name: cardName,
-        set_name: detection.card?.set_name || '',
-        set_code: detection.card?.set_code || '',
-        card_number: detection.card?.card_number || '',
-        rarity: detection.card?.rarity || '',
-        market_price: detection.card?.market_price || null,
+        set_name: c.set_name || '',
+        set_code: c.set_code || '',
+        card_number: c.card_number || '',
+        rarity: c.rarity || '',
+        market_price: c.market_price ?? null,
         identification_confidence: (detection.confidence || 0) * 100,
         error_message: detection.guess_card_id ? null : 'Card not identified',
         detection_id: detection.id,
         card_id: detection.guess_card_id,
-        image_url: detection.card?.image_url
+        image_url: imageUrl
       };
     });
 

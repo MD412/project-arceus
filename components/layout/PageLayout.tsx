@@ -5,11 +5,13 @@ interface PageLayoutProps {
   title: React.ReactNode;
   description?: string;
   hideHeader?: boolean;
+  noPadding?: boolean; // remove inner padding from app-content container
 }
 
-export default function PageLayout({ title, description, children, hideHeader = false }: PageLayoutProps) {
+export default function PageLayout({ title, description, children, hideHeader = false, noPadding = false }: PageLayoutProps) {
+  const articleClass = `page-layout app-content${noPadding ? ' app-content--no-padding' : ''}`;
   return (
-    <article className="page-layout">
+    <article className={articleClass}>
       {!hideHeader && (
         <header className="page-layout-header">
           <h1 className="page-title">{title}</h1>

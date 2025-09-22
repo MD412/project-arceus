@@ -10,6 +10,7 @@ import { DraggableCardGrid, type CardEntry } from '@/components/ui/DraggableCard
 import { EmptyState } from '@/components/ui/EmptyState';
 import { MetricCard } from '@/components/ui/MetricCard';
 import { User } from '@supabase/supabase-js';
+import { CollectionFilters, type CollectionFiltersState } from '@/components/ui/CollectionFilters';
 
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -22,6 +23,7 @@ export default function HomePage() {
   
   // Local state for optimistic reordering
   const [localCards, setLocalCards] = useState<CardEntry[] | undefined>(undefined);
+  const [filters, setFilters] = useState<CollectionFiltersState>({ query: '', setCode: '', rarity: '' });
 
   useEffect(() => {
     // Initialize local state when dbCards are fetched
@@ -91,8 +93,14 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Stats Section */}
+      {/* Filters + Stats Section */}
       <section className="stats-section">
+          <CollectionFilters 
+            value={filters}
+            onChange={setFilters}
+            setOptions={[...new Set((localCards || []).map((c) => c.set_code).filter(Boolean))] as string[]}
+            rarityOptions={[...new Set((localCards || []).map((c: any) => c.rarity).filter(Boolean))] as string[]}
+          />
           <div className="stats-grid">
             <MetricCard title="Collected" value={localCards?.length ?? 0} />
             <MetricCard title="Total Quantity" value={localCards?.reduce((sum: number, card: CardEntry) => sum + (card.quantity || 1), 0) ?? 0} />
@@ -113,10 +121,23 @@ export default function HomePage() {
             />
           ) : (
             <DraggableCardGrid 
-              cards={localCards || []} 
+              cards={(localCards || []).filter((c) => {
+                const q = filters.query.trim().toLowerCase();
+                const matchesQuery = !q || c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q);
+                const matchesSet = !filters.setCode || c.set_code === filters.setCode;
+                const matchesRarity = !filters.rarity || (c as any).rarity === filters.rarity;
+                return matchesQuery && matchesSet && matchesRarity;
+              })}
               onReorder={handleReorder}
               onDelete={handleDeleteCard}
               enableDrag={enableDrag}
+              onCardReplaced={(userCardId, update) => {
+                setLocalCards((prev) =>
+                  (prev || []).map((c) =>
+                    c.id === userCardId ? { ...c, ...update } : c
+                  )
+                );
+              }}
             />
           )}
       </section>

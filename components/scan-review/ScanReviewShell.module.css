@@ -1,0 +1,58 @@
+.container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--sds-size-space-400);
+  height: calc(100vh - 48px);
+  padding: none;
+  box-sizing: border-box;
+}
+
+.leftColumn {
+  min-width: 280px;
+  max-width: 320px;
+  height: 100%;
+  min-height: 0; /* allow child scroll areas */
+  overflow: hidden; /* internal component controls its own scroll */
+}
+
+.rightColumn {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr; /* toolbar row + panels grid */
+  gap: var(--sds-size-space-300);
+  min-width: 0; /* allow content to shrink */
+  min-height: 0; /* allow panels to become scroll containers */
+}
+
+.panels {
+  display: grid;
+  grid-template-areas:
+    "primary"; /* remove secondary column */
+  grid-template-columns: 1fr; /* single column layout */
+  grid-template-rows: 1fr;
+  gap: var(--sds-size-space-400);
+  height: 100%;
+  min-height: 0; /* allow children to scroll */
+}
+
+.panelPrimary {
+  grid-area: primary;
+  overflow: auto; /* independent scroll */
+}
+
+.panelSecondary {
+  grid-area: secondary;
+  overflow: auto; /* independent scroll */
+  display: none; /* hide secondary panel entirely */
+}
+
+@media (max-width: 1200px) {
+  .panels {
+    grid-template-areas: "primary"; /* single column remains */
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+

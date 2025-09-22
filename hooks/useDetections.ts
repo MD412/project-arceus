@@ -28,15 +28,54 @@ export interface DetectionRecord {
 async function fetchDetections(scanId: string): Promise<DetectionRecord[]> {
   const supabase = getSupabaseClient();
 
-  // helper to run the select query
+  // Preferred: use server API for read (RLS-safe, enriched)
+  try {
+    const res = await fetch(`/api/scans/${scanId}`, { method: 'GET' });
+    if (res.ok) {
+      const payload = await res.json();
+      const enriched = payload?.results?.enriched_cards ?? [];
+      return enriched.map((e: any) => ({
+        id: e.detection_id,
+        scan_id: payload.results?.scan_id || scanId,
+        guess_card_id: e.card_id,
+        confidence: (e.identification_confidence ?? 0) / 100,
+        bbox: e.bounding_box,
+        crop_url: e.cropped_image_path,
+        // Attach card details for UI
+        // @ts-ignore
+        card: {
+          id: e.card_id,
+          name: e.card_name,
+          set_code: e.set_code,
+          card_number: e.card_number,
+          image_url: e.image_url,
+        } as CardLite,
+      })) as (DetectionRecord & { card?: CardLite | null })[];
+    }
+  } catch (_ignore) {
+    // fall back to direct query
+  }
+
+  // Fallback: direct table queries with RLS, including legacy mapping by storage_path
   const queryByScanId = async (id: string) => {
     const { data, error } = await supabase
       .from('card_detections')
-      .select(`*, cards:guess_card_id (id, name, set_code, card_number, image_url)`)
+      .select(`*, cards:guess_card_id (id, name, set_code, card_number, image_urls)`) 
       .eq('scan_id', id)
       .order('created_at', { ascending: true });
     if (error) throw error;
-    return (data || []) as DetectionRecord[];
+    const detections = (data || []) as DetectionRecord[];
+    return detections.map((d: any) => {
+      const c = d.cards || {};
+      const normalized: CardLite | null = c ? {
+        id: c.id,
+        name: c.name,
+        set_code: c.set_code,
+        card_number: c.card_number,
+        image_url: c.image_url || c.image_urls?.small || null,
+      } : null;
+      return { ...d, card: normalized } as DetectionRecord & { card?: CardLite | null };
+    });
   };
 
   // First attempt: assume provided id IS the scans.id

@@ -3,35 +3,29 @@ import { getSupabaseClient } from '@/lib/supabase/browser';
 const supabase = getSupabaseClient();
 
 export async function getCards(userId: string) {
-  const { data, error } = await supabase
-    .from('user_cards')
-    .select(`
-      id,
-      quantity,
-      condition,
-      created_at,
-      card:cards(*)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    throw new Error(error.message);
+  // Prefer server API to bypass client-side RLS/nested-select issues
+  const res = await fetch(`/api/collections?user_id=${encodeURIComponent(userId)}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({} as any));
+    throw new Error(body?.error || `Failed to fetch collections (${res.status})`);
   }
-
-  // Transform the nested data to match the expected CardEntry interface
-  return data?.map((userCard: any) => ({
-    id: userCard.id, // user_cards id for deletion
-    name: userCard.card?.name || '',
-    number: userCard.card?.card_number || '',
-    set_code: userCard.card?.set_code || '',
-    set_name: userCard.card?.set_name || '',
-    image_url: userCard.card?.image_url || '',
+  const body = await res.json();
+  const cards = (body?.cards || []) as any[];
+  return cards.map((uc: any) => ({
+    id: uc.id,
+    name: uc.card?.name || '',
+    number: uc.card?.card_number || '',
+    set_code: uc.card?.set_code || '',
+    set_name: uc.card?.set_name || '',
+    image_url: uc.card?.image_url || '',
     user_id: userId,
-    created_at: userCard.created_at,
-    quantity: userCard.quantity || 1,
-    condition: userCard.condition || 'Near Mint',
-  })).filter((card: any) => card.name) || [];
+    created_at: uc.created_at,
+    quantity: uc.quantity || 1,
+    condition: uc.condition || 'Near Mint',
+  })).filter((c) => c.name);
 }
 
 export async function deleteCard(userCardId: string) {
@@ -70,6 +64,23 @@ export async function updateCardCondition(userCardId: string, condition: string)
     throw new Error(error.message);
   }
 
+  return userCardId;
+}
+
+// Replace an owned card (user_cards row) with a different cards.id
+export async function replaceUserCard(
+  userCardId: string,
+  replacement: { id: string; set_code?: string; card_number?: string }
+) {
+  const res = await fetch(`/api/user-cards/${encodeURIComponent(userCardId)}/replace`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ replacement }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({} as any));
+    throw new Error(body?.error || `Failed to replace card (${res.status})`);
+  }
   return userCardId;
 }
 

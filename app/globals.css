@@ -177,6 +177,7 @@ body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--sds-size-space-400);
+  margin-bottom: var(--sds-size-space-600);
 }
 
 @media (max-width: 768px) {

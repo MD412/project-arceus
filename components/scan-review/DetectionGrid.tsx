@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 interface DetectionGridProps {
   scanId: string;
-  onReviewed: () => void;
+  onReviewed: (scanId: string) => void;
 }
 
 export default function DetectionGrid({ scanId, onReviewed }: DetectionGridProps) {
@@ -35,14 +35,34 @@ export default function DetectionGrid({ scanId, onReviewed }: DetectionGridProps
     if (isUpdating) return;
     setIsUpdating(true);
     try {
+      // Optimistically remove from inbox immediately, capture previous to rollback on failure
+      const previousInbox = queryClient.getQueryData(['review-inbox']);
+      queryClient.setQueryData(['review-inbox'], (old: any) => {
+        if (!old || !Array.isArray(old)) return old;
+        return old.filter((item: any) => item.id !== scanId);
+      });
+      onReviewed(scanId);
+
+      // 1) Approve detections into user_cards via API (server-side privileges)
+      const res = await fetch(`/api/scans/${scanId}/approve`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        // rollback optimistic removal on failure
+        queryClient.setQueryData(['review-inbox'], previousInbox as any);
+        throw new Error(data.error || 'Approve API failed');
+      }
+
+      // 2) Mark scan_uploads as completed for UI status (best-effort)
       const { error } = await supabase
         .from('scan_uploads')
         .update({ processing_status: 'completed' })
         .eq('id', scanId);
-      if (error) throw error;
+      if (error) {
+        console.warn('Non-blocking status update error:', error);
+      }
       toast.success('Scan approved');
+      // Trigger a refetch to reconcile with server state
       queryClient.invalidateQueries({ queryKey: ['review-inbox'] });
-      onReviewed();
     } catch (err) {
       console.error(err);
       toast.error('Failed to approve scan');

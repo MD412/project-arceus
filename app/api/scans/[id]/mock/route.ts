@@ -1,5 +1,5 @@
 // TEST ENDPOINT - Mocks a completed scan for E2E testing
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { supabaseAdmin, supabaseServer } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
@@ -11,8 +11,14 @@ export async function POST(
   }
 
   const { id } = params;
-  
+
   const supabase = supabaseAdmin();
+  const userCtx = await supabaseServer();
+  const { data: userResp } = await userCtx.auth.getUser();
+  const currentUserId = userResp?.user?.id;
+  if (!currentUserId) {
+    return NextResponse.json({ error: 'No authenticated user for mock' }, { status: 401 });
+  }
 
   // First update the job_queue entry to completed
   const { error: jobUpdateError } = await supabase
@@ -27,38 +33,24 @@ export async function POST(
     console.log('Job update error (might not exist):', jobUpdateError);
   }
 
-  // Update scan_uploads to completed with mock results
-  const { error: updateError } = await supabase
-    .from('scan_uploads')
-    .update({
-      processing_status: 'completed',
-      results: {
-        enriched_cards: [
-          {
-            card_index: 0,
-            card_name: 'Greavard',
-            set_name: 'Scarlet & Violet',
-            set_code: 'SV1',
-            card_number: '095',
-            enrichment_success: true,
-            identification_confidence: 95.5,
-            cropped_image_path: '/mock/crop_0.jpg'
-          },
-          {
-            card_index: 1,
-            card_name: 'Unknown Card',
-            enrichment_success: false,
-            identification_confidence: 12.3,
-            cropped_image_path: '/mock/crop_1.jpg'
-          }
-        ],
-        summary_image_path: '/mock/summary.jpg'
-      }
-    })
-    .eq('id', id);
+  // Upsert into scans with 'ready' status so it appears in inbox for current user
+  const { error: upsertError } = await supabase
+    .from('scans')
+    .upsert(
+      {
+        id,
+        user_id: currentUserId,
+        title: 'Mock Scan',
+        status: 'ready',
+        storage_path: `mock/${id}.jpg`,
+        summary_image_path: '/mock/summary.jpg',
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' }
+    );
 
-  if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  if (upsertError) {
+    return NextResponse.json({ error: upsertError.message }, { status: 500 });
   }
 
   // Create mock detections
@@ -69,7 +61,7 @@ export async function POST(
       bbox: [10, 10, 100, 150],
       confidence: 0.955,
       tile_source: 'A1' as const,
-      guess_card_id: null // Would normally reference cards table
+      guess_card_id: null // keep unmapped to allow correction flow
     },
     {
       scan_id: id,

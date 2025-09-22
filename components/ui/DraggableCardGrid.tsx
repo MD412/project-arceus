@@ -35,6 +35,7 @@ interface DraggableCardGridProps {
   onDelete?: (cardId: string, cardName: string) => void;
   enableDrag?: boolean;
   viewMode?: 'grid' | 'list';
+  onCardReplaced?: (userCardId: string, update: Partial<CardEntry>) => void;
 }
 
 export function DraggableCardGrid({ 
@@ -42,7 +43,8 @@ export function DraggableCardGrid({
   onReorder,
   onDelete,
   enableDrag = true,
-  viewMode = 'grid' 
+  viewMode = 'grid',
+  onCardReplaced,
 }: DraggableCardGridProps) {
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [overId, setOverId] = React.useState<string | null>(null);
@@ -120,6 +122,18 @@ export function DraggableCardGrid({
                 onDelete(cardId, selectedCard.name);
                 setSelectedCard(null); // Close modal after deletion
               }
+            }}
+            onReplaced={(u) => {
+              // Optimistically update selected card details locally
+              setSelectedCard((prev) => prev ? ({ ...prev, name: u.name, image_url: u.imageUrl, number: u.number, set_code: u.setCode, set_name: u.setName }) : prev);
+              // Notify parent to update grid state
+              onCardReplaced?.(selectedCard.id, {
+                name: u.name,
+                image_url: u.imageUrl,
+                number: u.number,
+                set_code: u.setCode,
+                set_name: u.setName,
+              } as any);
             }}
           />
         )}

@@ -28,6 +28,15 @@ interface DetectionTileProps {
 export default function DetectionTile({ detection, onClick }: DetectionTileProps) {
   const confidencePercent = detection.confidence ? Math.round(detection.confidence * 100) : 0;
   const isLowConfidence = confidencePercent < 80;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const cropSrc = React.useMemo(() => {
+    const isAbsolute = /^https?:\/\//i.test(detection.crop_url);
+    if (isAbsolute) return detection.crop_url;
+    if (supabaseUrl) {
+      return `${supabaseUrl}/storage/v1/object/public/scans/${detection.crop_url}`;
+    }
+    return detection.crop_url;
+  }, [detection.crop_url, supabaseUrl]);
   
   return (
     <div 
@@ -43,7 +52,7 @@ export default function DetectionTile({ detection, onClick }: DetectionTileProps
     >
       <div className={styles.imageContainer}>
         <img 
-          src={detection.crop_url} 
+          src={cropSrc} 
           alt={detection.card?.name || 'Unknown card'}
           className={styles.cropImage}
         />

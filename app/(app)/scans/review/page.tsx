@@ -6,7 +6,7 @@ import ScanReviewShell from '@/components/scan-review/ScanReviewShell';
 
 export default function ReviewInboxPage() {
   return (
-    <PageLayout title="Scans" description="Triage your completed scans and approve cards." hideHeader={true}>
+    <PageLayout title="Scans" description="Triage your completed scans and approve cards." hideHeader={true} noPadding>
       <ScanReviewShell />
     </PageLayout>
   );

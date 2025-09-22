@@ -1,16 +1,14 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  width: 280px;
-  position: fixed;
-  top: 48px; /* Account for ActionToolbar height */
-  bottom: 0;
-  left: var(--sidebar-width, 200px); /* Respond to main sidebar width changes */
-  background: var(--surface-background-subtle-25); /* Slightly darker than main sidebar */
-  border-right: 1px solid var(--circuit-light-teal); /* Right-side hairline border */
-  border-radius: 0; /* Sharp corners for clean navigation look */
-  overflow: hidden;
-  transition: left 0.2s ease; /* Smooth transition when sidebar resizes */
+  width: 100%; /* Fill parent grid column */
+  height: 100%;
+  min-height: 0; /* enable internal scroll */
+  position: relative; /* No fixed offset; layout grid manages placement */
+  background: var(--surface-background-subtle-25);
+  border-right: 1px solid var(--circuit-light-teal);
+  border-radius: 0;
+  overflow: hidden; /* Contain header; list below will scroll */
 }
 
 .heading {
@@ -45,6 +43,8 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0; /* allow list to shrink in flexbox */
+  overflow: auto; /* independent scroll for the list */
 }
 
 /* Table-like styling */
