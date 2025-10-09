@@ -24,6 +24,11 @@ const handbookNavItems: NavigationConfigItem[] = [
     href: '/handbook/vision-pipeline-prd',
   },
   {
+    type: 'link',
+    label: 'Database Design & Search',
+    href: '/handbook/database-design',
+  },
+  {
     type: 'group',
     heading: 'Architectural Patterns',
     collapsible: true,

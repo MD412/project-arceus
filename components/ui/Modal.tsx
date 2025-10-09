@@ -88,14 +88,21 @@ export function Modal({ isOpen, onClose, card, className = '', onDeleteCard, chi
       {/* Modal */}
       <div className="modal-container">
         <div className={`modal-content ${displayCard ? 'modal-card-info' : ''} ${className}`}>
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="modal-close"
-            aria-label="Close modal"
-          >
-            <X size={24} />
-          </button>
+          <header className="modal__header">
+            <div className="modal__title">
+              <h2 className="card-info-title" style={{ margin: 0 }}>{displayCard?.name}</h2>
+              {displayCard && (
+                <p className="card-info-meta">#{displayCard?.number} • {displayCard?.setCode}</p>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="modal-close"
+              aria-label="Close modal"
+            >
+              <X size={24} />
+            </button>
+          </header>
           
           {displayCard ? (
             <div className="card-info-layout">
@@ -124,26 +131,18 @@ export function Modal({ isOpen, onClose, card, className = '', onDeleteCard, chi
             
             {/* Right side - Card details */}
             <div className="card-info-details">
-              <div className="card-info-header">
-                <h2 className="card-info-title">{displayCard?.name}</h2>
-                <p className="card-info-meta">#{displayCard?.number} • {displayCard?.setCode}</p>
-              </div>
-              
-              {/* Raw crop preview if available */}
+
+            {/* Raw crop preview if available */}
               {displayCard?.rawCropUrl ? (
                 <div className="info-section">
                   <h3>Original Scan Crop</h3>
-                  <img
-                    src={displayCard.rawCropUrl}
-                    alt="Original scan crop"
-                    style={{
-                      width: '100%',
-                      maxWidth: '320px',
-                      height: 'auto',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-default)'
-                    }}
-                  />
+                  <div className="original-crop-wrapper">
+                    <img
+                      src={displayCard.rawCropUrl}
+                      alt="Original scan crop"
+                      className="original-crop-image"
+                    />
+                  </div>
                 </div>
               ) : null}
 
@@ -239,36 +238,7 @@ export function Modal({ isOpen, onClose, card, className = '', onDeleteCard, chi
                     </div>
                     
                     {/* Actions Section */}
-                    <div className="info-section">
-                      <h3>Actions</h3>
-                      <div className="action-buttons">
-                        <Button variant="secondary" size="sm">View Prices</Button>
-                        <Button variant="secondary" size="sm" onClick={() => setIsReplaceMode(true)}>
-                          Replace Card
-                        </Button>
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          disabled={isDeleting || !card?.id}
-                          onClick={async () => {
-                            if (!card?.id || !onDeleteCard) return;
-                            
-                            setIsDeleting(true);
-                            try {
-                              await onDeleteCard(card.id);
-                              onClose(); // Close modal after successful deletion
-                            } catch (error) {
-                              console.error('Failed to delete card:', error);
-                              // Error handling is done by the parent component
-                            } finally {
-                              setIsDeleting(false);
-                            }
-                          }}
-                        >
-                          {isDeleting ? 'Removing...' : 'Remove from Collection'}
-                        </Button>
-                      </div>
-                    </div>
+                  
                   </>
                 )}
               </div>
@@ -277,6 +247,107 @@ export function Modal({ isOpen, onClose, card, className = '', onDeleteCard, chi
         ) : (
           children
         )}
+          {displayCard && (
+            <footer className="card-controls">
+              <div className="controls__nav">
+                <span className="controls__pos" />
+              </div>
+              <div className="controls__cta">
+                {!isReplaceMode ? (
+                  <>
+                    <Button variant="secondary" size="sm">View Prices</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setIsReplaceMode(true)}>
+                      Replace Card
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      disabled={isDeleting || !card?.id}
+                      onClick={async () => {
+                        if (!card?.id || !onDeleteCard) return;
+                        setIsDeleting(true);
+                        try {
+                          await onDeleteCard(card.id);
+                          onClose();
+                        } catch (error) {
+                          console.error('Failed to delete card:', error);
+                        } finally {
+                          setIsDeleting(false);
+                        }
+                      }}
+                    >
+                      {isDeleting ? 'Removing...' : 'Remove from Collection'}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <CardSearchInput
+                      placeholder="Search by name or number…"
+                      placement="top"
+                      onCancel={() => setIsReplaceMode(false)}
+                      onSelect={async (c: SearchResultCard) => {
+                        if (!card?.id) return;
+                        setIsReplacing(true);
+                        try {
+                          await replaceUserCard(card.id!, { id: c.id, set_code: c.set_code, card_number: c.card_number });
+                          setDisplayCard({
+                            id: card.id,
+                            name: c.name,
+                            imageUrl: c.image_url || '',
+                            number: c.card_number,
+                            setCode: c.set_code,
+                            setName: c.set_name,
+                            quantity: localQuantity,
+                            condition: card?.condition,
+                          });
+                          onReplaced?.({
+                            name: c.name,
+                            imageUrl: c.image_url || '',
+                            number: c.card_number,
+                            setCode: c.set_code,
+                            setName: c.set_name,
+                          });
+                          setIsReplaceMode(false);
+                        } catch (err) {
+                          console.error('Failed to replace card:', err);
+                        } finally {
+                          setIsReplacing(false);
+                        }
+                      }}
+                    />
+                    <Button variant="ghost" size="sm" onClick={() => setIsReplaceMode(false)} disabled={isReplacing}>
+                      Cancel
+                    </Button>
+                  </>
+                )}
+              </div>
+              <div className="controls__state">
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  disabled={isUpdating}
+                  onClick={() => {
+                    const newQuantity = Math.max(1, localQuantity - 1);
+                    handleQuantityChange(newQuantity);
+                  }}
+                >
+                  -
+                </Button>
+                <span className="quantity-display">{localQuantity}</span>
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  disabled={isUpdating}
+                  onClick={() => {
+                    const newQuantity = localQuantity + 1;
+                    handleQuantityChange(newQuantity);
+                  }}
+                >
+                  +
+                </Button>
+              </div>
+            </footer>
+          )}
         </div>
       </div>
     </>,

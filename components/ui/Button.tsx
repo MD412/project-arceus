@@ -13,6 +13,7 @@ const buttonVariants = cva(
         'ghost-destructive': 'button_button_ghost-destructive_uCVc',
         info: 'button_button_info_uCVc',
         toolbar: 'button_button_toolbar_uCVc',
+        filter: 'button_button_filter_uCVc',
         success: 'button_button_success_uCVc',
         warning: 'button_button_warning_uCVc',
       },

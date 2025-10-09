@@ -7,12 +7,15 @@ interface CardSearchInputProps {
   onSelect: (card: Card) => void;
   placeholder?: string;
   className?: string;
+  placement?: 'top' | 'bottom';
+  onCancel?: () => void; // Called when user explicitly cancels (e.g., Escape with empty query)
 }
 
-export function CardSearchInput({ onSelect, placeholder, className }: CardSearchInputProps) {
+export function CardSearchInput({ onSelect, placeholder, className, placement = 'bottom', onCancel }: CardSearchInputProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [wasOpenFromFocus, setWasOpenFromFocus] = useState(false);
   const { data, isLoading, error } = useCardSearch(query);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +48,10 @@ export function CardSearchInput({ onSelect, placeholder, className }: CardSearch
   }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      setIsOpen(query.length >= 2);
+      return;
+    }
     if (!isOpen || results.length === 0) return;
 
     switch (e.key) {
@@ -65,8 +72,14 @@ export function CardSearchInput({ onSelect, placeholder, className }: CardSearch
         }
         break;
       case 'Escape':
-        setIsOpen(false);
-        inputRef.current?.blur();
+        if (query.length > 0) {
+          setQuery('');
+          setIsOpen(false);
+        } else {
+          setIsOpen(false);
+          onCancel?.();
+          inputRef.current?.blur();
+        }
         break;
     }
   };
@@ -92,7 +105,11 @@ export function CardSearchInput({ onSelect, placeholder, className }: CardSearch
         value={query}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => query.length >= 2 && setIsOpen(true)}
+        onFocus={() => {
+          setWasOpenFromFocus(true);
+          if (query.length >= 2) setIsOpen(true);
+        }}
+        onBlur={() => setWasOpenFromFocus(false)}
         placeholder={placeholder || "Search cards..."}
         role="combobox"
         aria-expanded={isOpen}
@@ -102,7 +119,7 @@ export function CardSearchInput({ onSelect, placeholder, className }: CardSearch
       />
       
       {isOpen && (
-        <div className={styles.dropdown}>
+        <div className={`${styles.dropdown} ${placement === 'top' ? styles.dropdownUp : ''}`}>
           {isLoading && (
             <div className={styles.loading}>
               <div className={styles.spinner}></div>

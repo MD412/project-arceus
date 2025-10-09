@@ -17,11 +17,17 @@
   border: 1px solid var(--border-default);
   border-radius: var(--sds-size-radius-200);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  max-height: 300px; /* Reduced to fit better in modal */
+  max-height: min(40svh, 360px);
   overflow-y: auto;
-  margin-top: var(--spacing-md); /* Increased from 4px to proper spacing */
-  min-width: 400px;
-  padding: var(--spacing-sm) 0; /* Add internal padding to dropdown */
+  margin-top: var(--sds-size-space-150);
+  min-width: 320px;
+  padding: var(--sds-size-space-150) 0;
+}
+
+.dropdownUp {
+  top: auto;
+  bottom: calc(100% + var(--sds-size-space-150));
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .loading,

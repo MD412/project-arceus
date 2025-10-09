@@ -8,9 +8,10 @@ import { useCards } from '@/hooks/useCards';
 
 import { DraggableCardGrid, type CardEntry } from '@/components/ui/DraggableCardGrid';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { MetricCard } from '@/components/ui/MetricCard';
 import { User } from '@supabase/supabase-js';
 import { CollectionFilters, type CollectionFiltersState } from '@/components/ui/CollectionFilters';
+import { CollectionTable } from '@/components/ui/CollectionTable';
+import { Modal } from '@/components/ui/Modal';
 
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,7 +24,8 @@ export default function HomePage() {
   
   // Local state for optimistic reordering
   const [localCards, setLocalCards] = useState<CardEntry[] | undefined>(undefined);
-  const [filters, setFilters] = useState<CollectionFiltersState>({ query: '', setCode: '', rarity: '' });
+  const [filters, setFilters] = useState<CollectionFiltersState>({ query: '', setCode: '', rarity: '', viewMode: 'grid' });
+  const [selectedCard, setSelectedCard] = useState<CardEntry | null>(null);
 
   useEffect(() => {
     // Initialize local state when dbCards are fetched
@@ -74,6 +76,11 @@ export default function HomePage() {
     return null;
   }
 
+  // Collection stats for header details
+  const totalCollected = localCards?.length ?? 0;
+  const totalQuantity = (localCards || []).reduce((sum: number, card: CardEntry) => sum + (card.quantity || 1), 0);
+  const uniqueSets = localCards ? new Set(localCards.map((card: CardEntry) => card.set_code)).size : 0;
+
   return (
     <div className="container">
       {/* Header Section */}
@@ -81,8 +88,20 @@ export default function HomePage() {
         <div className="header-left">
           <h1>My Collection</h1>  
           <p className="user-info">Welcome back, {user.email}!</p>
+          <p className="user-info">Collected: {totalCollected} · Total Quantity: {totalQuantity} · Sets: {uniqueSets}</p>
         </div>
         <div className="header-right">
+          {/* Payment Link Button */}
+          {process.env.NEXT_PUBLIC_PAYMENT_LINK_URL && (
+            <a
+              href={process.env.NEXT_PUBLIC_PAYMENT_LINK_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="support-button"
+            >
+              Go Pro / Support
+            </a>
+          )}
           <button 
             className={`drag-toggle ${enableDrag ? 'drag-toggle--active' : ''}`}
             onClick={() => setEnableDrag(!enableDrag)}
@@ -93,7 +112,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Filters + Stats Section */}
+      {/* Filters Section */}
       <section className="stats-section">
           <CollectionFilters 
             value={filters}
@@ -101,14 +120,9 @@ export default function HomePage() {
             setOptions={[...new Set((localCards || []).map((c) => c.set_code).filter(Boolean))] as string[]}
             rarityOptions={[...new Set((localCards || []).map((c: any) => c.rarity).filter(Boolean))] as string[]}
           />
-          <div className="stats-grid">
-            <MetricCard title="Collected" value={localCards?.length ?? 0} />
-            <MetricCard title="Total Quantity" value={localCards?.reduce((sum: number, card: CardEntry) => sum + (card.quantity || 1), 0) ?? 0} />
-            <MetricCard title="Sets" value={localCards ? new Set(localCards.map((card: CardEntry) => card.set_code)).size : 0} />
-          </div>
       </section>
 
-      {/* Cards Grid Section */}
+      {/* Cards Grid/Table Section */}
       <section className="cards-section">
           {areCardsLoading ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
@@ -118,6 +132,18 @@ export default function HomePage() {
             <EmptyState
               title='No cards yet. Upload your first scan to begin!'
               description="Start building your collection by uploading Pokemon card images."
+            />
+          ) : filters.viewMode === 'table' ? (
+            <CollectionTable
+              cards={(localCards || []).filter((c) => {
+                const q = filters.query.trim().toLowerCase();
+                const matchesQuery = !q || c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q);
+                const matchesSet = !filters.setCode || c.set_code === filters.setCode;
+                const matchesRarity = !filters.rarity || (c as any).rarity === filters.rarity;
+                return matchesQuery && matchesSet && matchesRarity;
+              })}
+              onCardClick={setSelectedCard}
+              onDelete={handleDeleteCard}
             />
           ) : (
             <DraggableCardGrid 
@@ -142,7 +168,51 @@ export default function HomePage() {
           )}
       </section>
 
+      {/* Modal for table view card details */}
+      {selectedCard && (
+        <Modal
+          isOpen={!!selectedCard}
+          onClose={() => setSelectedCard(null)}
+          card={{
+            id: selectedCard.id,
+            name: selectedCard.name,
+            imageUrl: selectedCard.image_url,
+            number: selectedCard.number,
+            setCode: selectedCard.set_code,
+            setName: selectedCard.set_name,
+            quantity: selectedCard.quantity,
+            condition: selectedCard.condition,
+            rawCropUrl: selectedCard.raw_crop_url || undefined,
+          }}
+          onDeleteCard={async (cardId: string) => {
+            handleDeleteCard(cardId, selectedCard.name);
+            setSelectedCard(null);
+          }}
+          onReplaced={(updated) => {
+            setLocalCards((prev) =>
+              (prev || []).map((c) =>
+                c.id === selectedCard.id ? { 
+                  ...c, 
+                  name: updated.name,
+                  image_url: updated.imageUrl,
+                  number: updated.number,
+                  set_code: updated.setCode,
+                  set_name: updated.setName,
+                } : c
+              )
+            );
+            setSelectedCard(null);
+          }}
+        />
+      )}
+
       <style jsx>{`
+        .container {
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          overflow: hidden;
+        }
         .header {
           display: flex;
           align-items: center;
@@ -150,6 +220,7 @@ export default function HomePage() {
           margin-bottom: var(--spacing-8);
           flex-wrap: wrap;
           gap: var(--spacing-4);
+          flex-shrink: 0;
         }
         .header-left h1 {
           margin: 0;
@@ -163,6 +234,14 @@ export default function HomePage() {
         .header-right {
           display: flex;
           gap: var(--sds-size-space-200);
+        }
+        .support-button {
+          padding: var(--sds-size-space-200) var(--sds-size-space-400);
+          border-radius: var(--sds-size-radius-100);
+          border: 1px solid var(--interactive-primary);
+          background: var(--interactive-primary);
+          color: var(--text-on-primary);
+          text-decoration: none;
         }
         .drag-toggle {
           padding: var(--sds-size-space-200) var(--sds-size-space-400);
@@ -182,6 +261,15 @@ export default function HomePage() {
           background: var(--interactive-primary);
           color: var(--text-on-primary);
           border-color: var(--interactive-primary);
+        }
+        .stats-section {
+          flex-shrink: 0;
+        }
+        .cards-section {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
         }
       `}</style>
     </div>

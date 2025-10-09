@@ -1,0 +1,164 @@
+/* ===== COLLECTION TABLE SPECIFIC STYLES ===== */
+
+.table-card-thumbnail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-card-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.table-card-number {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-75);
+  color: var(--text-secondary);
+}
+
+.table-set-badge {
+  display: inline-block;
+  padding: var(--sds-size-space-100) var(--sds-size-space-200);
+  background: var(--surface-background-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--sds-size-radius-100);
+  font-size: var(--font-size-75);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.rarity-badge {
+  display: inline-block;
+  padding: var(--sds-size-space-100) var(--sds-size-space-200);
+  border-radius: var(--sds-size-radius-100);
+  font-size: var(--font-size-75);
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--surface-background-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.rarity-badge--common {
+  background: var(--color-white-200);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.rarity-badge--uncommon {
+  background: var(--color-green-100);
+  color: var(--color-green-700);
+  border-color: var(--color-green-300);
+}
+
+.rarity-badge--rare {
+  background: var(--color-blue-100);
+  color: var(--color-blue-700);
+  border-color: var(--color-blue-300);
+}
+
+.rarity-badge--ultra-rare {
+  background: var(--color-purple-100);
+  color: var(--color-purple-700);
+  border-color: var(--color-purple-300);
+}
+
+.rarity-badge--secret-rare {
+  background: var(--color-yellow-100);
+  color: var(--color-yellow-600);
+  border-color: var(--color-yellow-300);
+}
+
+.table-quantity-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 var(--sds-size-space-200);
+  background: var(--interactive-primary);
+  color: var(--text-inverse);
+  border-radius: var(--sds-size-radius-full);
+  font-weight: 600;
+  font-size: var(--font-size-75);
+}
+
+.table-condition-badge {
+  display: inline-block;
+  padding: var(--sds-size-space-100) var(--sds-size-space-200);
+  background: var(--surface-background-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--sds-size-radius-100);
+  font-size: var(--font-size-75);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.table-date-cell {
+  font-size: var(--font-size-75);
+  color: var(--text-secondary);
+}
+
+.table-actions {
+  display: flex;
+  gap: var(--sds-size-space-100);
+  align-items: center;
+}
+
+.table-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sds-size-space-100);
+  border: none;
+  border-radius: var(--sds-size-radius-100);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease-linear;
+}
+
+.table-action-button:hover {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.table-action-button--delete:hover {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+/* Icon styling for compact UI contexts (tables, toolbars, etc.) */
+.table-action-icon {
+  display: block;
+  opacity: 0.7;
+  transition: opacity 0.12s ease-linear;
+}
+
+.table-action-button:hover .table-action-icon {
+  opacity: 1;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .table-set-badge,
+  .rarity-badge,
+  .table-condition-badge {
+    font-size: var(--font-size-50);
+    padding: var(--sds-size-space-050) var(--sds-size-space-150);
+  }
+
+  .table-quantity-badge {
+    min-width: 24px;
+    height: 24px;
+    font-size: var(--font-size-50);
+  }
+
+  .table-action-button {
+    width: 32px;
+    height: 32px;
+  }
+}
+

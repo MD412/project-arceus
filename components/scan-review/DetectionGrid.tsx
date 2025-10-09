@@ -8,13 +8,16 @@ import DetectionTile from './DetectionTile';
 import CorrectionModal from './CorrectionModal';
 import styles from './DetectionGrid.module.css';
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/Button';
+import { TextLink } from '@/components/ui/TextLink';
 
 interface DetectionGridProps {
   scanId: string;
   onReviewed: (scanId: string) => void;
+  hideBulkActions?: boolean;
 }
 
-export default function DetectionGrid({ scanId, onReviewed }: DetectionGridProps) {
+export default function DetectionGrid({ scanId, onReviewed, hideBulkActions = false }: DetectionGridProps) {
   const [isUpdating, setIsUpdating] = React.useState(false);
   const {
     data: detections,
@@ -25,10 +28,35 @@ export default function DetectionGrid({ scanId, onReviewed }: DetectionGridProps
   const queryClient = useQueryClient();
   const [editing, setEditing] = React.useState<string | null>(null);
 
-  if (isLoading) return <p>Loading detections…</p>;
-  if (!detections) return <p>No detections found.</p>;
+  const editingDetection = React.useMemo(() => {
+    return (detections?.find((d) => d.id === editing) || null) as (typeof detections extends Array<infer T> ? T : any) | null;
+  }, [detections, editing]);
 
-  const editingDetection = detections.find((d) => d.id === editing) || null;
+  // Enable left/right arrow navigation between detections while modal is open
+  React.useEffect(() => {
+    if (!editingDetection) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const isFormField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable;
+      if (isFormField) return;
+
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      if (!detections || detections.length === 0) return;
+
+      const currentIndex = detections.findIndex((d) => d.id === editingDetection.id);
+      if (currentIndex === -1) return;
+
+      const delta = event.key === 'ArrowRight' ? 1 : -1;
+      const nextIndex = (currentIndex + delta + detections.length) % detections.length;
+      const next = detections[nextIndex];
+      if (next) setEditing(next.id);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editingDetection, detections]);
 
   // ---- bulk actions ---- //
   const handleApproveAll = async () => {
@@ -91,21 +119,37 @@ export default function DetectionGrid({ scanId, onReviewed }: DetectionGridProps
     }
   };
 
+  const count = Array.isArray(detections) ? detections.length : 0;
+
   return (
     <div className={styles.wrapper}>
-      {/* Toolbar */}
-      <div className={styles.toolbar}>
-        <button className={styles.approveBtn} onClick={handleApproveAll} disabled={isUpdating}>Approve All</button>
-        <button className={styles.rejectBtn} onClick={handleDiscard} disabled={isUpdating}>Discard Scan</button>
-        <span className={styles.count}>{detections.length} cards</span>
+      {/* Toolbar (hidden when page renders breadcrumb actions) */}
+      <div className={styles.toolbar} style={{ display: hideBulkActions ? 'none' : undefined }}>
+        {!hideBulkActions && (
+          <>
+            <TextLink onClick={handleApproveAll} ariaLabel="Approve all detected cards in this scan" className="u-text-link--success">
+              Approve all
+            </TextLink>
+            <TextLink onClick={handleDiscard} ariaLabel="Discard this scan" className="u-text-link--destructive">
+              Discard scan
+            </TextLink>
+          </>
+        )}
+        <span className={styles.count}>{count} cards</span>
       </div>
 
       {/* Grid */}
-      <div className={styles.grid}>
-        {detections.map((det) => (
-          <DetectionTile key={det.id} detection={det} onClick={() => setEditing(det.id)} />
-        ))}
-      </div>
+      {isLoading ? (
+        <p>Loading detections…</p>
+      ) : !detections || detections.length === 0 ? (
+        <p>No detections found.</p>
+      ) : (
+        <div className={styles.grid}>
+          {detections.map((det) => (
+            <DetectionTile key={det.id} detection={det} onClick={() => setEditing(det.id)} />
+          ))}
+        </div>
+      )}
 
       {/* Modal */}
       <CorrectionModal

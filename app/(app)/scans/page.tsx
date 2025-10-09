@@ -130,7 +130,7 @@ export default function ScansPage() {
   ) || [];
 
   const historyUploads = (uploads as ScanUpload[])?.filter(upload =>
-    ['completed', 'review_pending', 'cancelled'].includes(upload.processing_status)
+    ['completed', 'review_pending', 'cancelled', 'ready'].includes(upload.processing_status)
   ) || [];
 
   const totalUploads = uploads?.length || 0;
@@ -140,7 +140,7 @@ export default function ScansPage() {
       {/* Header */}
       <header className="scans-page__header">
         <div className="scans-page__header-content">
-          <h1 className="scans-page__title">My Scans</h1>
+          <h1 className="scans-page__title">Processing Scans</h1>
           <p className="scans-page__description">
             Track your Pokemon card scan processing and view results
           </p>

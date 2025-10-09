@@ -2,7 +2,8 @@
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: var(--sds-size-space-400);
-  height: calc(100vh - 48px);
+  /* Let the page own scrolling to avoid nested scroll areas */
+  min-height: calc(100vh - 48px);
   padding: none;
   box-sizing: border-box;
 }
@@ -16,12 +17,11 @@
 }
 
 .rightColumn {
-  height: 100%;
   display: grid;
-  grid-template-rows: auto 1fr; /* toolbar row + panels grid */
+  /* Toolbar followed by content; content can grow and the page scrolls */
+  grid-template-rows: auto auto;
   gap: var(--sds-size-space-300);
   min-width: 0; /* allow content to shrink */
-  min-height: 0; /* allow panels to become scroll containers */
 }
 
 .panels {
@@ -29,20 +29,19 @@
   grid-template-areas:
     "primary"; /* remove secondary column */
   grid-template-columns: 1fr; /* single column layout */
-  grid-template-rows: 1fr;
+  grid-template-rows: auto;
   gap: var(--sds-size-space-400);
-  height: 100%;
-  min-height: 0; /* allow children to scroll */
 }
 
 .panelPrimary {
   grid-area: primary;
-  overflow: auto; /* independent scroll */
+  /* Allow the page to scroll instead of this panel */
+  overflow: visible;
 }
 
 .panelSecondary {
   grid-area: secondary;
-  overflow: auto; /* independent scroll */
+  overflow: visible;
   display: none; /* hide secondary panel entirely */
 }
 

@@ -281,7 +281,7 @@ class CLIPCardIdentifier:
             else:
                 image = image_path_or_pil.convert('RGB')
             
-            print(f"🔍 Identifying card using CLIP similarity search...")
+            print(f"[CLIP] Identifying card using CLIP similarity search...")
             
             # Encode the crop image
             query_embedding = self.encode_image(image)
@@ -344,7 +344,7 @@ class CLIPCardIdentifier:
         import os
         from pathlib import Path
         
-        print("🔍 Analyzing confidence distribution on training data...")
+        print("[CLIP] Analyzing confidence distribution on training data...")
         
         non_card_scores = []
         
@@ -366,7 +366,7 @@ class CLIPCardIdentifier:
             max_non_card = np.max(non_card_scores)
             std_non_card = np.std(non_card_scores)
             
-            print(f"\n📊 Non-card Statistics:")
+            print(f"\n[STATS] Non-card Statistics:")
             print(f"   Average similarity: {avg_non_card:.3f}")
             print(f"   Max similarity: {max_non_card:.3f}")
             print(f"   Std deviation: {std_non_card:.3f}")
@@ -375,7 +375,7 @@ class CLIPCardIdentifier:
             suggested_threshold = max_non_card + (2 * std_non_card)
             suggested_threshold = min(suggested_threshold, 0.85)  # Cap at reasonable max
             
-            print(f"\n💡 Suggested threshold: {suggested_threshold:.3f}")
+            print(f"\n[INFO] Suggested threshold: {suggested_threshold:.3f}")
             print(f"   (This would reject {sum(1 for s in non_card_scores if s >= suggested_threshold)}/{len(non_card_scores)} false positives)")
             
             return {

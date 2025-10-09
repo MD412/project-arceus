@@ -51,6 +51,34 @@ export function DraggableCardGrid({
   const [overId, setOverId] = React.useState<string | null>(null);
   const [selectedCard, setSelectedCard] = React.useState<CardEntry | null>(null);
   
+  // Enable left/right arrow navigation while the modal is open
+  React.useEffect(() => {
+    if (!selectedCard) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore when typing in inputs/textareas/selects or contenteditable
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const isFormField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target?.isContentEditable;
+      if (isFormField) return;
+
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+      const currentIndex = cards.findIndex((c) => c.id === selectedCard.id);
+      if (currentIndex === -1) return;
+
+      const delta = event.key === 'ArrowRight' ? 1 : -1;
+      const nextIndex = (currentIndex + delta + cards.length) % cards.length;
+      const nextCard = cards[nextIndex];
+      if (nextCard) {
+        setSelectedCard(nextCard);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedCard, cards]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -207,6 +235,18 @@ export function DraggableCardGrid({
                 onDelete(cardId, selectedCard.name);
                 setSelectedCard(null); // Close modal after deletion
               }
+            }}
+            onReplaced={(u) => {
+              // Optimistically update selected card details locally
+              setSelectedCard((prev) => prev ? ({ ...prev, name: u.name, image_url: u.imageUrl, number: u.number, set_code: u.setCode, set_name: u.setName }) : prev);
+              // Notify parent to update grid state
+              onCardReplaced?.(selectedCard.id, {
+                name: u.name,
+                image_url: u.imageUrl,
+                number: u.number,
+                set_code: u.setCode,
+                set_name: u.setName,
+              } as any);
             }}
           />
         )}

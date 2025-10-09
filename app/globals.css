@@ -16,6 +16,7 @@
 @import './styles/accordion.css';
 @import './styles/modal.css';
 @import './styles/sheet.css';
+@import './styles/table.css';
 
 /* Application Specific */
 @import './styles/player-card.css';
@@ -25,6 +26,7 @@
 @import './styles/search-bar.css';
 @import './styles/action-toolbar.css';
 @import './styles/scans-page.css';
+@import './styles/collection-table.css';
 
 /* Documentation */
 @import './styles/spacing-page.css';
@@ -32,6 +34,7 @@
 @import './styles/metric-card.css';
 @import './styles/example-showcase.css';
 @import './styles/handbook.css';
+@import './styles/utility.css';
 
 /* Component Styles */
 @import '../components/ui/AppNavigation.css';

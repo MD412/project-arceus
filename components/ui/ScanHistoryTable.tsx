@@ -280,7 +280,7 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
               className="scan-history-table__row"
               onClick={() => {
                 // Navigate to scan detail page
-                window.location.href = `/scans/review`;
+                window.location.href = `/scans/${row.original.id}`;
               }}
 
             >

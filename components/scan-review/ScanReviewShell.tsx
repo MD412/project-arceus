@@ -10,18 +10,35 @@ import { useJobs } from '@/hooks/useJobs';
 import { Button } from '@/components/ui/Button';
 import styles from './ScanReviewShell.module.css';
 
+/** View mode for the scan review interface */
 type ViewMode = 'review' | 'history';
 
+/**
+ * ScanReviewShell - Main container for the scan review interface
+ * 
+ * Provides a two-panel layout for reviewing completed scans:
+ * - Left panel: Inbox sidebar with list of scans awaiting review
+ * - Right panel: Detection grid showing identified cards for the selected scan
+ * 
+ * Features:
+ * - Auto-selects most recent scan on load
+ * - Toggle between review mode and scan history
+ * - Rename and delete scans
+ * - Flag failed scans for ML training
+ * - Hide approved scans from inbox
+ * 
+ * @returns The complete scan review interface
+ */
 export default function ScanReviewShell() {
   const [activeScanId, setActiveScanId] = React.useState<string | undefined>();
   const [hiddenIds, setHiddenIds] = React.useState<string[]>([]);
   const [viewMode, setViewMode] = React.useState<ViewMode>('review');
-  const [renamingUpload, setRenamingUpload] = React.useState<any>(null);
+  const [renamingUpload, setRenamingUpload] = React.useState<{ id: string; scan_title: string } | null>(null);
 
   const { data: inboxItems } = useReviewInbox();
   const { data: uploads, renameJob, deleteJob } = useJobs();
 
-  // auto-select most recent when list first loads
+  // Auto-select most recent scan when inbox first loads
   React.useEffect(() => {
     if (!activeScanId && inboxItems && inboxItems.length > 0) {
       setActiveScanId(inboxItems[0].id);
@@ -35,12 +52,14 @@ export default function ScanReviewShell() {
     }
   };
 
+  /** Delete a scan after user confirmation */
   const handleDelete = (uploadId: string, jobTitle: string) => {
     if (window.confirm(`Are you sure you want to delete "${jobTitle}"?`)) {
       deleteJob(uploadId);
     }
   };
 
+  /** Flag a failed scan for ML training dataset */
   const handleFlagForTraining = async (uploadId: string) => {
     try {
       const response = await fetch('/api/training/add-failure', {
@@ -110,8 +129,10 @@ export default function ScanReviewShell() {
                 <DetectionGrid
                   scanId={activeScanId}
                   onReviewed={(approvedId) => {
+                    // Hide the approved scan from inbox
                     setHiddenIds((prev) => Array.from(new Set([...prev, approvedId])));
-                    // If the approved scan is the active one, move focus to the next available item
+                    
+                    // Auto-advance to next scan if we just approved the active one
                     if (approvedId === activeScanId) {
                       const remaining = (inboxItems || [])
                         .filter((i) => i.id !== approvedId && !hiddenIds.includes(i.id));

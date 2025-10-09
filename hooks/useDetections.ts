@@ -125,26 +125,26 @@ export function useDetections(scanId: string | undefined) {
 
   // ---- Mutations ---- //
   const correctMutation = useMutation({
-    mutationFn: async ({ detectionId, cardId }: { detectionId: string; cardId: string }) => {
-      console.log('Updating detection', detectionId, 'to card', cardId);
-      const { error } = await supabase
-        .from('card_detections')
-        .update({ guess_card_id: cardId })
-        .eq('id', detectionId);
-      if (error) {
-        console.error('Database update error:', error);
-        throw error;
+    mutationFn: async ({ detectionId, replacement }: { detectionId: string; replacement: { id: string; set_code?: string; card_number?: string } }) => {
+      console.log('Updating detection', detectionId, 'to replacement', replacement);
+      const res = await fetch(`/api/detections/${encodeURIComponent(detectionId)}/correct`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ replacement }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({} as any));
+        throw new Error(body?.error || `Failed to correct detection (${res.status})`);
       }
-      console.log('Database update successful');
-      return { detectionId, cardId };
+      return { detectionId, cardId: replacement.id } as any;
     },
     // optimistic
-    onMutate: async ({ detectionId, cardId }) => {
+    onMutate: async ({ detectionId, replacement }) => {
       await queryClient.cancelQueries({ queryKey: ['detections', scanId] });
       const previous = queryClient.getQueryData<DetectionRecord[]>(['detections', scanId]);
       if (previous) {
         const optimistic = previous.map((d) =>
-          d.id === detectionId ? { ...d, guess_card_id: cardId } : d
+          d.id === detectionId ? { ...d, guess_card_id: replacement.id } : d
         );
         queryClient.setQueryData(['detections', scanId], optimistic);
       }
@@ -180,8 +180,8 @@ export function useDetections(scanId: string | undefined) {
 
   return {
     ...detectionsQuery,
-    correctDetection: (detectionId: string, cardId: string) =>
-      correctMutation.mutateAsync({ detectionId, cardId }),
+    correctDetection: (detectionId: string, cardId: string | { id: string; set_code?: string; card_number?: string }) =>
+      correctMutation.mutateAsync({ detectionId, replacement: typeof cardId === 'string' ? { id: cardId } : cardId }),
     approveAll: () => bulkMutation.mutate({ action: 'approve' }),
     rejectAll: () => bulkMutation.mutate({ action: 'reject' }),
   };

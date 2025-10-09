@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
 import { Dropzone } from '@/app/(circuitds)/circuitds/components/dropzone/Dropzone';
@@ -13,7 +12,6 @@ import styles from './scan-upload.module.css';
 type UploadState = 'idle' | 'uploading' | 'processing' | 'success' | 'error';
 
 export default function ScanUploadPage() {
-  const router = useRouter();
   const [uploadState, setUploadState] = useState<UploadState>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
@@ -45,17 +43,10 @@ export default function ScanUploadPage() {
       const result = await response.json();
       console.log('Upload result:', result);
       
-      setUploadState('processing');
-      
-      // Auto-redirect to first scan review after processing starts
+      // Mark success and stay on this page; processing happens in the background
+      setUploadState('success');
       if (result.scans && result.scans.length > 0) {
-        const firstScanId = result.scans[0].scan_id;
-        toast.success(`${result.count} files uploaded successfully! Processing your cards...`);
-        
-        // Wait a moment for processing to start, then redirect
-        setTimeout(() => {
-          router.push(`/scans/review`);
-        }, 1500);
+        toast.success(`${result.count} files uploaded successfully! Processing your cards in the background.`);
       }
 
     } catch (error: unknown) {
@@ -86,7 +77,7 @@ export default function ScanUploadPage() {
       case 'processing':
         return 'Processing your cards...';
       case 'success':
-        return 'Upload successful! Redirecting to review...';
+        return 'Upload successful! Processing in the background.';
       case 'error':
         return `Upload failed: ${errorMessage}`;
       default:

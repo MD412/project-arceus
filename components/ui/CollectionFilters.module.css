@@ -1,6 +1,6 @@
 .toolbar {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   gap: var(--sds-size-space-200);
   align-items: center;
   padding: var(--sds-size-space-200);
@@ -10,16 +10,34 @@
   margin-bottom: var(--sds-size-space-400);
 }
 
-.searchWrap { position: relative; }
+.searchWrap { position: relative; align-self: stretch; }
 
 .search {
   width: 100%;
-  padding: 6px 8px;
-  border: 1px solid var(--border-default);
+  height: 100%;
+  padding: 0 8px;
+  border: none;
   border-radius: var(--sds-size-radius-100);
-  background: var(--surface-subtle);
+  /* Explicit fallback for undefined token */
+  background: var(--surface-subtle, #2d6a65); /* base */
   color: var(--text-primary);
 }
+
+.search:hover {
+  /* lighten base by ~10% (sRGB mix with white) */
+  background: #427974;
+}
+
+.search:focus,
+.search:active {
+  outline: none;
+  border: none;
+  box-shadow: none;
+  /* darken base by ~10% toward app background */
+  background: #2A645F;
+}
+
+.search:focus::placeholder { opacity: 1; }
 
 .search::placeholder {
   color: var(--text-secondary);
@@ -32,6 +50,47 @@
   background: var(--surface-subtle);
   color: var(--text-primary);
   cursor: pointer;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--sds-size-radius-100);
+  overflow: hidden;
+  background: var(--surface-subtle, #2d6a65);
+  height: 36px; /* Match filter button height */
+}
+
+.viewButton {
+  padding: 0 var(--sds-size-space-300); /* 12px horizontal to match filter buttons */
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.12s ease-linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px; /* Ensure square touch target for icons */
+}
+
+.viewButton:hover {
+  background: #427974;
+  color: var(--text-primary);
+}
+
+.viewButton:not(:last-child) {
+  border-right: 1px solid var(--border-default);
+}
+
+.viewButtonActive {
+  background: var(--surface-background);
+  color: var(--interactive-primary);
+}
+
+.viewButtonActive:hover {
+  background: var(--surface-background);
 }
 
 @media (max-width: 768px) {
