@@ -8,6 +8,8 @@ Production-ready version addressing o3 feedback:
 - Delayed client initialization to gracefully handle env var errors
 """
 import io
+import os
+import sys
 import time
 import json
 from pathlib import Path
@@ -21,17 +23,40 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 from ultralytics import YOLO
 from config import get_supabase_client
 from clip_lookup import CLIPCardIdentifier  # CLIP-only identification
-import logging  # NEW
+import logging
 
 # ---------------- Logging Setup ----------------
-# Reduce noise from verbose third-party libraries while keeping our own messages.
+# Stage-by-stage logging with timestamps for observability
 logging.basicConfig(
-    level=logging.INFO,  # Overall default
-    format="%(message)s"  # Cleaner, one-line log output
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s %(message)s",
+    datefmt="%H:%M:%S"
 )
+# Reduce noise from verbose third-party libraries
 for noisy_logger in ("httpx", "faiss", "faiss.loader", "open_clip"):
     logging.getLogger(noisy_logger).setLevel(logging.WARNING)
+
+logging.info("[OK] Logger initialized")
 # ------------------------------------------------
+
+# ---------------- Environment Validation ----------------
+REQUIRED_ENV_VARS = ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]
+
+def startup_env_check():
+    """Validate required environment variables are present."""
+    from config import load_environment
+    load_environment()  # Load .env.local if present
+    
+    missing = [k for k in REQUIRED_ENV_VARS if not os.getenv(k)]
+    if missing:
+        logging.error(f"Missing env vars: {', '.join(missing)}")
+        logging.error("Please ensure .env.local exists with required variables")
+        sys.exit(1)
+    
+    logging.info("[OK] Environment loaded")
+    logging.info(f"   SUPABASE_URL: {os.getenv('NEXT_PUBLIC_SUPABASE_URL')[:40]}...")
+    logging.info(f"   SERVICE_KEY: {'*' * 40}... (length: {len(os.getenv('SUPABASE_SERVICE_ROLE_KEY', ''))})")
+# --------------------------------------------------------
 
 # --- Production logging: stdout only, no DB logging ---
 # Database logging removed for production best practices
@@ -43,17 +68,19 @@ MAX_REASONABLE_CARDS = 18
 STORAGE_BUCKET = "scans"
 
 def get_yolo_model(model_path=str(Path(__file__).parent / 'pokemon_cards_trained.pt')):
+    """Load YOLO model for card detection."""
+    logging.info("[..] Loading YOLO model")
     model_path = Path(model_path)
     if not model_path.exists():
-        print(f"[ERROR] Trained model not found at: {model_path}")
-        exit(1)
+        logging.error(f"Trained model not found at: {model_path}")
+        sys.exit(1)
     try:
         model = YOLO(str(model_path))
-        print("[OK] YOLO model loaded.")
+        logging.info(f"[OK] YOLO model loaded from {model_path.name}")
         return model
     except Exception as e:
-        print(f"[ERROR] Failed to load YOLO model: {e}")
-        exit(1)
+        logging.error(f"Failed to load YOLO model: {e}")
+        sys.exit(1)
 
 def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):
     w, h = image.size
@@ -82,7 +109,7 @@ def get_tile_source(tile_index: int) -> str:
 
 def resolve_card_uuid(supabase_client, source: str, external_card_id: str) -> Optional[str]:
     """Resolve an external text card ID (e.g., sv8pt5-160) to internal cards.id (UUID).
-    Does NOT create new cards; it uses mapping table card_keys and existing cards rows.
+    Creates cards on-the-fly from card_embeddings if needed.
     If found in cards, upserts mapping for future fast resolution.
     """
     # 1) Direct mapping via card_keys
@@ -123,6 +150,44 @@ def resolve_card_uuid(supabase_client, source: str, external_card_id: str) -> Op
                 pass
             return card_uuid
     except Exception:
+        pass
+
+    # 3) NEW: Create card from card_embeddings if it exists there
+    try:
+        embedding_res = (
+            supabase_client
+            .from_("card_embeddings")
+            .select("card_id, name, set_code, card_number, rarity, image_url")
+            .eq("card_id", external_card_id)
+            .single()
+            .execute()
+        )
+        if embedding_res.data:
+            emb_data = embedding_res.data
+            # Create the card in cards table
+            new_card_data = {
+                "pokemon_tcg_api_id": emb_data["card_id"],
+                "name": emb_data.get("name"),
+                "set_code": emb_data.get("set_code"),
+                "card_number": emb_data.get("card_number"),
+                "rarity": emb_data.get("rarity"),
+                "image_urls": {"large": emb_data.get("image_url"), "small": emb_data.get("image_url")} if emb_data.get("image_url") else {}
+            }
+            card_insert_res = supabase_client.from_("cards").insert(new_card_data).execute()
+            if card_insert_res.data and len(card_insert_res.data) > 0:
+                card_uuid = card_insert_res.data[0]["id"]
+                print(f"[AUTO-CREATE] Created card {emb_data.get('name')} ({external_card_id}) -> {card_uuid}")
+                # Upsert mapping for next time
+                try:
+                    supabase_client.from_("card_keys").upsert(
+                        {"source": source, "external_id": external_card_id, "card_id": card_uuid},
+                        on_conflict="source,external_id"
+                    ).execute()
+                except Exception:
+                    pass
+                return card_uuid
+    except Exception as e:
+        print(f"[WARN] Failed to auto-create card from embeddings: {e}")
         pass
 
     return None
@@ -193,28 +258,32 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
             print(f"[ERROR] Traceback: {traceback.format_exc()}")
             raise
 
-        print(f"[OK] Created scan: {scan_id}")
+        logging.info(f"[OK] Created scan: {scan_id}")
+        
+        logging.info(f"[..] Downloading image: {storage_path}")
         image_bytes = download_image_with_retry(supabase_client, storage_path)
+        logging.info(f"[OK] Image downloaded ({len(image_bytes) / 1024:.1f} KB)")
         
         try:
             original_image = Image.open(io.BytesIO(image_bytes))
         except Exception:
-            print("[WARN] Standard open failed, attempting HEIC conversion...")
+            logging.warning("Standard open failed, attempting HEIC conversion...")
             try:
                 import pillow_heif
                 heif_file = pillow_heif.read_heif(io.BytesIO(image_bytes))
                 original_image = Image.frombytes(heif_file.mode, heif_file.size, heif_file.data, "raw")
-                print("[OK] HEIC conversion successful.")
+                logging.info("[OK] HEIC conversion successful")
             except Exception as heic_error:
                 raise Exception(f"Pillow and pillow-heif failed. Error: {heic_error}")
 
         image = ImageOps.exif_transpose(original_image)
         w, h = image.size
-        print(f"[INFO] Image size: {w}x{h}")
+        logging.info(f"[OK] Image loaded: {w}x{h} pixels")
         
         supabase_client.from_("scans").update({"progress": 30.0}).eq("id", scan_id).execute()
         detection_image, scale = resize_for_detection(image)
-        print(f"[INFO] Detecting on resized {detection_image.size}...")
+        
+        logging.info(f"[..] Detecting cards (YOLO) on {detection_image.size[0]}x{detection_image.size[1]} image")
         results = model.predict(detection_image, conf=CONFIDENCE_THRESHOLD, verbose=False)
         detections = []
         for r in results:
@@ -229,7 +298,7 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 })
 
         final_detections = sorted(detections, key=lambda x: x['confidence'], reverse=True)[:MAX_REASONABLE_CARDS]
-        print(f"Found {len(final_detections)} cards.")
+        logging.info(f"[OK] Detection complete: {len(final_detections)} cards found")
         supabase_client.from_("scans").update({"progress": 50.0}).eq("id", scan_id).execute()
 
         detection_records = []
@@ -263,8 +332,9 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 crop_paths.append(crop_path)
             
             # Batch identify all cards at once
-            print(f"[CLIP] Identifying {len(card_crops)} cards in batch...")
+            logging.info(f"[..] Identifying cards (CLIP): {len(card_crops)} cards in batch")
             batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.75)
+            logging.info(f"[OK] Identifications complete")
             
             # Process results
             for i, (det, clip_result, crop_path) in enumerate(zip(final_detections, batch_results, crop_paths)):
@@ -273,7 +343,7 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                     card_name = clip_result.get('name', '')
                     card_id = clip_result.get('card_id')  # CLIP already provides this!
                     confidence = clip_result.get('confidence', 0.0)
-                    print(f"   Card {i+1}: {card_name} ({card_id}) | Similarity: {confidence:.2f}")
+                    logging.info(f"   Card {i+1}: {card_name} ({card_id}) | Similarity: {confidence:.2f}")
                     enrichment = clip_result  # Keep for backward compatibility
                 else:
                     card_name = None
@@ -297,14 +367,15 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 # External guess metadata
                 if card_id:
                     detection_data["guess_external_id"] = card_id
-                    detection_data["guess_source"] = "sv_text"
+                    detection_data["guess_source"] = "clip"  # Changed from "sv_text" to "clip"
 
                 # Resolve external card_id to internal UUID when available via mapping
                 resolved_uuid: Optional[str] = None
                 if card_id:
-                    resolved_uuid = resolve_card_uuid(supabase_client, "sv_text", card_id)
+                    resolved_uuid = resolve_card_uuid(supabase_client, "clip", card_id)
                     if resolved_uuid:
                         detection_data["guess_card_id"] = resolved_uuid
+                    # If no UUID resolved, we don't set guess_card_id at all
 
                 # Idempotency key
                 detection_data["bbox_hash"] = compute_bbox_hash(scan_id, det['bbox'])
@@ -337,34 +408,32 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 detection_id = detection_response.data[0]["id"]
                 detection_records.append(detection_id)
                 
-                # Only create user_cards when the card_id is a valid UUID matching current schema
-                def _is_valid_uuid(value: str) -> bool:
-                    try:
-                        uuid.UUID(str(value))
-                        return True
-                    except Exception:
-                        return False
-
-                if card_id and _is_valid_uuid(card_id):
+                # Only create user_cards when we have a valid UUID for the card
+                if resolved_uuid:  # Use the resolved UUID, not the external card_id
                     user_card_data = {
                         "user_id": user_id,
                         "detection_id": detection_id,
-                        "card_id": card_id,
+                        "card_id": resolved_uuid,  # Use the UUID
                         "condition": "unknown",
                         "estimated_value": enrichment.get("estimated_value")
                     }
                     try:
-                        supabase_client.from_("user_cards").upsert(user_card_data, on_conflict="user_id,card_id").execute()
+                        # Use upsert with the proper constraint that now exists
+                        supabase_client.from_("user_cards").upsert(
+                            user_card_data, 
+                            on_conflict="user_id,card_id"
+                        ).execute()
                         user_cards_created += 1
                         print(f"[OK] Created/updated user card: {card_name}")
                     except Exception as e:
-                        print(f"[WARN] Upsert failed, trying insert: {e}")
-                        supabase_client.from_("user_cards").insert(user_card_data).execute()
-                        user_cards_created += 1
+                        print(f"[WARN] Failed to create user_card for {card_name}: {e}")
+                elif card_id:
+                    print(f"[INFO] Skipping user_cards creation for {card_name} ({card_id}) - no UUID mapping found")
                 
                 progress = 50.0 + (i + 1) / len(final_detections) * 40.0
                 supabase_client.from_("scans").update({"progress": round(progress, 1)}).eq("id", scan_id).execute()
             
+            logging.info("[..] Uploading results + writing DB")
             summary_buffer = io.BytesIO()
             summary_img.save(summary_buffer, format='JPEG', quality=90)
             summary_buffer.seek(0)
@@ -377,7 +446,16 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
             supabase_client.from_("scans").update({
                 "status": "ready", "progress": 100.0, "summary_image_path": summary_path
             }).eq("id", scan_id).execute()
-            print("[OK] Summary image uploaded and scan completed.")
+            logging.info("[OK] Results uploaded")
+            
+            # Update scan_uploads status so it shows in scan history
+            try:
+                supabase_client.from_("scan_uploads").update({
+                    "processing_status": "review_pending"
+                }).eq("id", job["scan_upload_id"]).execute()
+                logging.info(f"   Updated scan_uploads status to review_pending")
+            except Exception as status_err:
+                logging.warning(f"Failed to update scan_uploads status: {status_err}")
 
         return {
             "scan_id": scan_id, "total_detections": len(final_detections),
@@ -524,20 +602,34 @@ def update_job_status(supabase_client, job_id, upload_id, status, error_message=
         print(f"[ERROR] Failed to update job/upload status for job {job_id}: {e}")
 
 def main():
-    print("[START] Normalized Worker v3 starting...")
+    """Main worker loop."""
+    logging.info("=" * 60)
+    logging.info("[START] Normalized Worker v3 starting...")
+    logging.info("=" * 60)
+    
+    # Validate environment first
+    startup_env_check()
+    
+    # Load YOLO model
     yolo_model = get_yolo_model()
     
     # Initialize Supabase client and CLIP identifier once at startup
     try:
+        logging.info("[..] Connecting to Supabase")
         supabase_client = get_supabase_client()
+        logging.info("[OK] Supabase connected")
         
         # Initialize CLIP-only identification system
-        print("[AI] Initializing CLIP identification system...")
+        logging.info("[..] Initializing CLIP identifier")
         clip_identifier = CLIPCardIdentifier(supabase_client=supabase_client)
-        print("[OK] CLIP identification system ready!")
-        print("[OK] Worker initialized successfully, starting main loop...")
+        logging.info("[OK] CLIP identifier initialized")
+        
+        logging.info("=" * 60)
+        logging.info("[OK] Worker initialized successfully, starting main loop...")
+        logging.info("=" * 60)
     except Exception as e:
-        print(f"[ERROR] Failed to initialize worker: {e}")
+        logging.error(f"Failed to initialize worker: {e}")
+        traceback.print_exc()
         return
     
     while True:
@@ -546,30 +638,38 @@ def main():
             requeue_stale_jobs(supabase_client)
             job = fetch_and_lock_job(supabase_client)
             if not job:
-                print("[WAIT] No jobs found, waiting...")
+                logging.info("[WAIT] No jobs found, waiting...")
                 time.sleep(10)
                 continue
 
             job_id, upload_id = job.get('job_id'), job.get('scan_upload_id')
-            print(f"[PROCESS] Processing job: {job_id} for upload: {upload_id}")
+            logging.info("=" * 60)
+            logging.info(f"[OK] Job dequeued: {job_id}")
+            logging.info(f"   Upload ID: {upload_id}")
             
             try:
                 pipeline_results = run_normalized_pipeline(supabase_client, job, yolo_model, clip_identifier)
+                
+                logging.info("[..] Finalizing job")
                 update_job_status(supabase_client, job_id, upload_id, 'review_pending', results=pipeline_results)
-                print(f"[COMPLETE] Job {job_id} completed successfully.")
+                logging.info("[OK] Job finalized")
+                
                 if pipeline_results:
-                    print(f"   [STATS] Created {pipeline_results.get('user_cards_created', 0)} user cards from {pipeline_results.get('total_detections', 0)} detections")
+                    logging.info(f"[STATS] Created {pipeline_results.get('user_cards_created', 0)} user cards from {pipeline_results.get('total_detections', 0)} detections")
+                
                 save_output_log(job_id, pipeline_results)
+                logging.info(f"[COMPLETE] Job {job_id} completed successfully")
+                logging.info("=" * 60)
             except Exception as e:
-                print(f"[ERROR] Job {job_id} failed: {e}")
+                logging.error(f"Job {job_id} failed: {e}")
                 traceback.print_exc()
                 update_job_status(supabase_client, job_id, upload_id, 'failed', error_message=str(e))
                 save_output_log(job_id, {"error": str(e), "traceback": traceback.format_exc()})
 
         except Exception as e:
-            print(f"[CRITICAL] A critical error occurred in the main loop: {e}")
-            print("   This might be due to missing env vars or a DB connection issue.")
-            print("   Waiting for 30 seconds before retrying...")
+            logging.critical(f"A critical error occurred in the main loop: {e}")
+            logging.critical("This might be due to missing env vars or a DB connection issue.")
+            logging.critical("Waiting for 30 seconds before retrying...")
             time.sleep(30)
 
 if __name__ == "__main__":
