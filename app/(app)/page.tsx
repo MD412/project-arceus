@@ -264,6 +264,7 @@ export default function HomePage() {
         }
         .stats-section {
           flex-shrink: 0;
+          margin-bottom: 8px;
         }
         .cards-section {
           flex: 1;

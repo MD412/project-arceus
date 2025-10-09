@@ -10,16 +10,7 @@ import { Home, ScanLine, Layers, Beaker, BookOpen } from 'lucide-react';
 const navigationConfig: NavigationConfigItem[] = [
   // This first set of links appears under the main title.
   { type: 'link', label: 'Collection', href: '/', icon: <Home size={20} /> },
-  {
-    type: 'group',
-    heading: 'My Scans',
-    children: [
-      { type: 'link', label: 'Processing Scans', href: '/scans', icon: <Layers size={20} /> },
-      { type: 'link', label: 'Scan History', href: '/scans/completed', icon: <Layers size={20} /> },
-    ],
-    defaultOpen: true,
-  },
-
+  { type: 'link', label: 'Scans', href: '/scans', icon: <Layers size={20} /> },
 
   // This creates a new group with a heading, providing visual separation.
   {

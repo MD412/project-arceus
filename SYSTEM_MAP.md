@@ -95,8 +95,7 @@ project-arceus/
 - `/scan-upload` (upload interface) – file: `app/(app)/scan-upload/page.tsx`
 - `/scans/review` (review inbox) – file: `app/(app)/scans/review/page.tsx` → 💚 **target**
 - `/scans/[id]` (individual scan detail) – file: `app/(app)/scans/[id]/page.tsx`
-- `/scans/completed` (completed scans list) – file: `app/(app)/scans/completed/page.tsx`
-- `/scans` (all scans list) – file: `app/(app)/scans/page.tsx`
+- `/scans` (all scans) – file: `app/(app)/scans/page.tsx`
 - `/circuitds` (design system docs) – file: `app/(circuitds)/circuitds/page.tsx`
 - `/handbook` (architecture patterns) – file: `app/(handbook)/handbook/page.tsx`
 
