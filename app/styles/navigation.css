@@ -167,14 +167,15 @@
   flex-direction: column;
   min-height: 100vh;
   height: 100vh; /* Explicit height for percentage children */
-  overflow-y: auto;
+  overflow: hidden; /* Changed from overflow-y: auto - let page contents handle their own scroll */
   /* Removed position: relative and z-index to prevent stacking context isolation */
 }
 
 .app-content {
   flex: 1;
+  min-height: 0; /* Critical for flex children to respect parent height */
   padding: var(--sds-size-space-400) var(--sds-size-space-600);
-  overflow-x: visible; /* Allow sidebar minimize button to extend outside */
+  overflow: hidden; /* Prevent content from creating scrollbars */
   position: relative;
   z-index: 1; /* Below top-toolbar */
 }

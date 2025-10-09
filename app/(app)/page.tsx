@@ -123,7 +123,7 @@ export default function HomePage() {
       </section>
 
       {/* Cards Grid/Table Section */}
-      <section className="cards-section">
+      <section className={`cards-section ${filters.viewMode === 'table' ? 'cards-section--table' : ''}`}>
           {areCardsLoading ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <p>Loading your collection...</p>
@@ -210,7 +210,7 @@ export default function HomePage() {
         .container {
           display: flex;
           flex-direction: column;
-          height: 100vh;
+          height: 100%;
           overflow: hidden;
         }
         .header {
@@ -271,6 +271,18 @@ export default function HomePage() {
           min-height: 0;
           overflow-y: auto;
           overflow-x: hidden;
+        }
+        /* Table view: disable scroll on parent, let table-wrapper handle it */
+        .cards-section--table {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .cards-section--table :global(.table-wrapper) {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: auto;
         }
       `}</style>
     </div>

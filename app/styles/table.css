@@ -3,7 +3,6 @@
 .table-wrapper {
   position: relative;
   width: 100%;
-  overflow-x: auto;
   border-radius: var(--sds-size-radius-150);
   border: 1px solid var(--circuit-dark-teal);
   background: var(--surface-background);

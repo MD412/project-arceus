@@ -14,7 +14,16 @@
 
 ## 🎯 Jump In Fast
 
-### For Next Coding Session
+### Quick Commands (Recommended)
+```
+/start session          ← Loads context automatically
+/end session           ← Saves everything when done
+/checkpoint [label]    ← Snapshot before risky changes
+```
+
+**See:** `docs/working-memory/COMMAND_REFERENCE.md` for details
+
+### For Next Coding Session (Manual)
 ```bash
 # 1. Read the latest context
 cat docs/working-memory/active_context.md
@@ -26,7 +35,12 @@ cat docs/working-memory/NEXT_SESSION_BRIEF.md
 ```
 
 ### For New AI Chat
-Copy this into Cursor chat:
+**Option 1 (Quick):**
+```
+/start session
+```
+
+**Option 2 (Manual):**
 ```
 Hi! Continuing Project Arceus from last session.
 
@@ -43,6 +57,7 @@ Start by checking if card_keys table is populated.
 ## 📚 Documentation Index
 
 ### Living Memory (Session-to-Session Continuity)
+- **`docs/working-memory/COMMAND_REFERENCE.md`** ← 🎮 /start, /end, /checkpoint commands
 - **`docs/working-memory/active_context.md`** ← Start here for latest context
 - **`docs/working-memory/NEXT_SESSION_BRIEF.md`** ← Today's action items
 - **`docs/working-memory/README.md`** ← How the memory system works

@@ -117,17 +117,100 @@ Please read docs/working-memory/context_handoff_YYYYMMDD_HHMM.md first.
 
 ## 🔄 Workflow Guide
 
-### For the Human
-1. **End of session:** Ask AI to create context handoff
-2. **Start of session:** Reference latest handoff in new chat
-3. **Weekly cleanup:** Archive old handoffs if folder gets cluttered
+### Command Patterns (For Humans)
 
-### For the AI
-1. **Detect session end:** When user says "wrap up" or similar
-2. **Create timestamped handoff:** `context_handoff_YYYYMMDD_HHMM.md`
-3. **Create session summary:** `session_summary_YYYYMMDD.md`
-4. **Update active_context.md:** Copy of latest handoff for quick reference
-5. **Commit all docs:** Clean git commit with descriptive message
+Use these commands to trigger automatic session management:
+
+**`/end session`** - Wrap up and create handoff docs
+```
+/end session
+
+AI will:
+1. Create context_handoff_YYYYMMDD_HHMM.md (timestamped)
+2. Create session_summary_YYYYMMDD.md (daily wrap-up)
+3. Update active_context.md (copy of latest handoff)
+4. Update NEXT_SESSION_BRIEF.md (if goals changed)
+5. Commit everything with descriptive message
+6. Show "Ready for next session" confirmation
+```
+
+**`/start session`** - Quick context load
+```
+/start session
+
+AI will:
+1. Read docs/working-memory/active_context.md
+2. Read NEXT_SESSION_BRIEF.md
+3. Summarize where we left off
+4. Highlight top priorities
+5. Ask: "Ready to continue? What's first?"
+```
+
+**`/checkpoint`** - Mid-session snapshot (optional)
+```
+/checkpoint [label]
+
+AI will:
+1. Create context_checkpoint_YYYYMMDD_HHMM_[label].md
+2. Capture current progress without ending session
+3. Useful before risky changes or long breaks
+```
+
+### For the Human (Manual Process)
+1. **End of session:** Type `/end session`
+2. **Start of session:** Type `/start session` or just reference `active_context.md`
+3. **Weekly cleanup:** Archive handoffs older than 30 days
+
+### For the AI (Automation Logic)
+
+**When user types `/end session`:**
+1. **Create timestamped handoff:** `context_handoff_YYYYMMDD_HHMM.md`
+   - Where we left off (2-3 sentences)
+   - Top priority for next session
+   - Investigation paths with file locations
+   - Database schema (if relevant)
+   - Git patterns learned
+   - Quick start message for next chat
+
+2. **Create session summary:** `session_summary_YYYYMMDD.md`
+   - What was accomplished
+   - Commits made
+   - Files changed metrics
+   - Key discoveries
+   - Next priorities
+
+3. **Update active_context.md:** Copy of latest handoff
+
+4. **Update NEXT_SESSION_BRIEF.md:** Refresh based on progress
+
+5. **Commit all docs:** 
+   ```bash
+   git --no-pager add docs/working-memory/
+   git --no-pager commit -m "docs: end session YYYYMMDD_HHMM - [brief summary]"
+   ```
+
+6. **Show confirmation:**
+   ```
+   ✅ Session ended successfully!
+   
+   Created:
+   - context_handoff_YYYYMMDD_HHMM.md
+   - session_summary_YYYYMMDD.md
+   - Updated active_context.md
+   
+   Next session: Just type /start session
+   ```
+
+**When user types `/start session`:**
+1. Read `docs/working-memory/active_context.md`
+2. Summarize: "Last session we [X]. Top priority: [Y]."
+3. Ask: "Ready to continue with [priority]?"
+
+**When user types `/checkpoint [label]`:**
+1. Create `context_checkpoint_YYYYMMDD_HHMM_[label].md`
+2. Include current state, open questions, next steps
+3. Don't end session, just snapshot
+4. Commit with message: `"docs: checkpoint - [label]"`
 
 ---
 
