@@ -91,3 +91,4 @@ border: 1px solid rgba(255, 255, 255, 0.1);
 
 **Next Session:** Continue with responsive testing or move on to other priorities per `TRIAGE_PLAN.md`
 
+

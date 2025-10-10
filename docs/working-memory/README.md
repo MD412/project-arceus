@@ -2,6 +2,8 @@
 
 **Purpose:** Preserve session context and enable seamless continuity between coding sessions.
 
+📂 **New to the system?** See [ORGANIZATION.md](./ORGANIZATION.md) for a complete guide to the folder structure and how it scales.
+
 ---
 
 ## 📁 Folder Structure
@@ -12,10 +14,30 @@ docs/working-memory/
 ├── active_context.md                      # Current state (always start here)
 ├── NEXT_SESSION_BRIEF.md                  # Forward-looking action items
 ├── COMMAND_REFERENCE.md                   # Automation commands
-├── context_handoff_YYYYMMDD_UNIFIED.md   # Full-day unified handoffs (preferred)
-├── context_handoff_YYYYMMDD_HHMM.md      # Individual session handoffs
-└── session_summary_YYYYMMDD.md           # Session wrap-ups
+│
+├── handoffs/                              # Context handoffs by date
+│   └── YYYY/
+│       └── MM-month/
+│           ├── context_handoff_YYYYMMDD_HHMM.md
+│           ├── context_handoff_YYYYMMDD_UNIFIED.md
+│           └── archived/                  # Superseded handoffs
+│
+├── summaries/                             # Session summaries
+│   └── YYYY/
+│       └── MM-month/
+│           └── session_summary_YYYYMMDD[_label].md
+│
+├── reports/                               # Bug investigations, testing reports
+│   └── YYYY/
+│       └── MM-month/
+│           ├── bug_investigation_*.md
+│           ├── *_testing_report_*.md
+│           └── triage_plan_*.md
+│
+└── archive/                               # Misc archive notes
 ```
+
+**Design Philosophy:** Organize by **type** → **year** → **month** for easy scaling to thousands of files.
 
 **Note:** For multi-session days, prefer creating a UNIFIED handoff that consolidates the full timeline rather than multiple timestamped handoffs.
 
@@ -311,22 +333,31 @@ active_context.md
 cat docs/working-memory/active_context.md
 
 # Or list all recent handoffs
-ls -lt docs/working-memory/context_handoff_*.md | head -5
+ls -lt docs/working-memory/handoffs/2025/10-october/*.md | head -5
 ```
 
 ### "What did we accomplish last week?"
 ```bash
 # View all session summaries
-ls docs/working-memory/session_summary_*.md
+ls docs/working-memory/summaries/2025/10-october/
 
 # Read specific day
-cat docs/working-memory/session_summary_20251009.md
+cat docs/working-memory/summaries/2025/10-october/session_summary_20251009.md
 ```
 
 ### "What was the context at a specific time?"
 ```bash
 # Find handoff from October 9, 2pm
-cat docs/working-memory/context_handoff_20251009_1400.md
+cat docs/working-memory/handoffs/2025/10-october/context_handoff_20251009_1400.md
+```
+
+### "Find bug investigations or reports"
+```bash
+# List all reports for current month
+ls docs/working-memory/reports/2025/10-october/
+
+# Read specific investigation
+cat docs/working-memory/reports/2025/10-october/bug_investigation_user_cards_20251010.md
 ```
 
 ---
@@ -335,12 +366,13 @@ cat docs/working-memory/context_handoff_20251009_1400.md
 
 ### Weekly Cleanup
 1. Review handoffs from past week
-2. Archive handoffs older than 30 days:
+2. Move superseded handoffs to `archived/` subfolder:
    ```bash
-   mkdir -p docs/working-memory/archive/2025-10
-   mv docs/working-memory/context_handoff_202510*.md docs/working-memory/archive/2025-10/
+   # Move old handoffs that were replaced by UNIFIED versions
+   mv docs/working-memory/handoffs/2025/10-october/context_handoff_20251009_*.md `
+      docs/working-memory/handoffs/2025/10-october/archived/
    ```
-3. Keep `active_context.md` and recent handoffs in main folder
+3. Keep `active_context.md` and core reference files in root
 
 ### Monthly Review
 1. Read all session summaries
@@ -354,23 +386,23 @@ cat docs/working-memory/context_handoff_20251009_1400.md
 
 **Starting a session:**
 ```
-@docs/working-memory/active_context.md 
-Help me continue from last session
+/start session
 ```
 
 **Ending a session:**
 ```
-Create context handoff and session summary for today's work.
-Timestamp: [current time]
-Main accomplishments: [list]
-Next priorities: [list]
+/end session
 ```
 
 **Mid-session snapshot:**
 ```
-Create a quick checkpoint of current progress.
-Where are we with [specific task]?
-What's working/not working?
+/checkpoint [label]
+```
+
+**Manual reference:**
+```
+@docs/working-memory/active_context.md 
+Help me continue from last session
 ```
 
 ---

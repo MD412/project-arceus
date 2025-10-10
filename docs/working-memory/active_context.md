@@ -20,10 +20,10 @@ Last session completed:
 
 ## 📖 Quick Links
 
-- **📋 [Latest Handoff (Oct 10)](./context_handoff_20251010_0050.md)** ← **START HERE**
-- **🗺️ [Unified Oct 9 Timeline](./context_handoff_20251009_UNIFIED.md)** - Full day context
-- **🐛 [Bug Investigation](./bug_investigation_user_cards_20251010.md)** - user_cards analysis
-- **📱 [Responsive Testing](./responsive_testing_report_20251010.md)** - Browser tests
+- **📋 [Latest Handoff (Oct 10)](./handoffs/2025/10-october/context_handoff_20251010_0050.md)** ← **START HERE**
+- **🗺️ [Unified Oct 9 Timeline](./handoffs/2025/10-october/context_handoff_20251009_UNIFIED.md)** - Full day context
+- **🐛 [Bug Investigation](./reports/2025/10-october/bug_investigation_user_cards_20251010.md)** - user_cards analysis
+- **📱 [Responsive Testing](./reports/2025/10-october/responsive_testing_report_20251010.md)** - Browser tests
 - **⌨️ [Commands](./COMMAND_REFERENCE.md)** - /start, /end, /checkpoint
 
 ---
@@ -110,5 +110,5 @@ This directory contains:
 
 ---
 
-**Last handoff:** [October 10, 12:50 AM](./context_handoff_20251010_0050.md)  
+**Last handoff:** [October 10, 12:50 AM](./handoffs/2025/10-october/context_handoff_20251010_0050.md)  
 **Next steps:** Merge branch to main
