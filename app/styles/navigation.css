@@ -441,9 +441,12 @@
   }
   
   /* Mobile content adjustments */
-  .app-content {
+  .app-content:not(.app-content--no-padding) {
     padding: calc(env(safe-area-inset-top, 0px) + 48px) var(--sds-size-space-400) var(--sds-size-space-400);
     /* Add top padding for toolbar-integrated toggle button */
+  }
+  
+  .app-content {
     height: calc(100vh - 48px); /* Account for toolbar height */
     overflow-y: auto; /* Allow content scrolling */
   }
@@ -496,7 +499,7 @@
     left: calc(min(260px, 90vw) + 0px); /* Align with sidebar edge */
   }
   
-  .app-content {
+  .app-content:not(.app-content--no-padding) {
     padding: calc(env(safe-area-inset-top, 0px) + 48px) var(--sds-size-space-300) var(--sds-size-space-300);
     /* Adjust padding for toolbar-integrated button */
   }
@@ -643,7 +646,7 @@
 
 /* Fix main content padding on mobile to prevent push down */
 @media (max-width: 767px) {
-  .app-content {
+  .app-content:not(.app-content--no-padding) {
     padding: var(--sds-size-space-400) !important; /* Normal padding all around */
   }
   
