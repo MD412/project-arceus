@@ -54,7 +54,7 @@ export function CollectionFilters({ value, onChange, setOptions, rarityOptions, 
           aria-label="Grid view"
           title="Grid view"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5"/>
             <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5"/>
             <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.5"/>
@@ -67,7 +67,7 @@ export function CollectionFilters({ value, onChange, setOptions, rarityOptions, 
           aria-label="Table view"
           title="Table view"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="1" y="2" width="14" height="2" rx="0.5" fill="currentColor"/>
             <rect x="1" y="6" width="14" height="2" rx="0.5" fill="currentColor"/>
             <rect x="1" y="10" width="14" height="2" rx="0.5" fill="currentColor"/>

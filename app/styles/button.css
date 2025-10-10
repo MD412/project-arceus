@@ -123,21 +123,22 @@
 
 /* Filter Button - matches 'All Sets' / 'All Rarities' styling in docs */
 .button_button_filter_uCVc {
-  background-color: var(--surface-subtle);
+  background-color: rgba(0, 0, 0, 0.2);
   color: var(--text-primary);
-  border-color: var(--border-default);
-  min-height: 36px; /* Normalize height with view toggle */
+  border-color: rgba(255, 255, 255, 0.15);
+  height: 100%; /* Fill toolbar height */
   padding: var(--sds-size-space-150) var(--sds-size-space-300); /* 6px vertical, 12px horizontal */
+  transition: all 0.15s ease;
 }
 
 .button_button_filter_uCVc:hover:not(:disabled) {
-  background-color: var(--surface-background-hover);
-  border-color: var(--border-hover);
+  background-color: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .button_button_filter_uCVc:active:not(:disabled) {
-  background-color: var(--surface-background-pressed);
-  border-color: var(--border-pressed);
+  background-color: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Toolbar Button - A special variant for the main app header - More compact and modern */

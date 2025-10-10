@@ -3,12 +3,14 @@
 .dropdown {
   position: relative;
   display: inline-block;
+  height: 100%; /* Fill toolbar height */
 }
 
 .dropdown-trigger {
   cursor: pointer;
   user-select: none;
   outline: none;
+  height: 100%; /* Fill dropdown height */
 }
 
 .dropdown-trigger:focus-visible {

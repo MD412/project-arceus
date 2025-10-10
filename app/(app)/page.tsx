@@ -82,48 +82,48 @@ export default function HomePage() {
   const uniqueSets = localCards ? new Set(localCards.map((card: CardEntry) => card.set_code)).size : 0;
 
   return (
-    <div className="container">
-      {/* Header Section */}
-      <header className="header">
-        <div className="header-left">
-          <h1>My Collection</h1>  
-          <p className="user-info">Welcome back, {user.email}!</p>
-          <p className="user-info">Collected: {totalCollected} · Total Quantity: {totalQuantity} · Sets: {uniqueSets}</p>
-        </div>
-        <div className="header-right">
-          {/* Payment Link Button */}
-          {process.env.NEXT_PUBLIC_PAYMENT_LINK_URL && (
-            <a
-              href={process.env.NEXT_PUBLIC_PAYMENT_LINK_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="support-button"
-            >
-              Go Pro / Support
-            </a>
-          )}
-          <button 
-            className={`drag-toggle ${enableDrag ? 'drag-toggle--active' : ''}`}
-            onClick={() => setEnableDrag(!enableDrag)}
-            aria-label={enableDrag ? 'Disable drag mode' : 'Enable drag mode'}
-          >
-            {enableDrag ? '🔓 Drag Enabled' : '🔒 Drag Disabled'}
-          </button>
-        </div>
-      </header>
+    <div className="collection-page">
+      {/* Scrollable content area - includes header so content scrolls behind it */}
+      <div className="scroll-wrapper">
+        {/* Sticky header + filters group */}
+        <div className="sticky-header-group">
+          {/* Header Section */}
+          <header className="header">
+            <div className="header-left">
+              <div className="header-title-group">
+                <h1>My Collection</h1>  
+                <p className="user-info">Welcome back, {user.email}!</p>
+              </div>
+              <p className="user-stats">Collected: {totalCollected} · Total Quantity: {totalQuantity} · Sets: {uniqueSets}</p>
+            </div>
+            <div className="header-right">
+              {/* Payment Link Button */}
+              {process.env.NEXT_PUBLIC_PAYMENT_LINK_URL && (
+                <a
+                  href={process.env.NEXT_PUBLIC_PAYMENT_LINK_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="support-button"
+                >
+                  Go Pro / Support
+                </a>
+              )}
+              {/* Drag toggle temporarily removed */}
+            </div>
+          </header>
 
-      {/* Filters Section */}
-      <section className="stats-section">
+          {/* Floating Filters */}
           <CollectionFilters 
+            className="floating-filters"
             value={filters}
             onChange={setFilters}
             setOptions={[...new Set((localCards || []).map((c) => c.set_code).filter(Boolean))] as string[]}
             rarityOptions={[...new Set((localCards || []).map((c: any) => c.rarity).filter(Boolean))] as string[]}
           />
-      </section>
+        </div>
 
-      {/* Cards Grid/Table Section */}
-      <section className={`cards-section ${filters.viewMode === 'table' ? 'cards-section--table' : ''}`}>
+        {/* Cards Grid/Table Section */}
+        <section className={`cards-section ${filters.viewMode === 'table' ? 'cards-section--table' : ''}`}>
           {areCardsLoading ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
               <p>Loading your collection...</p>
@@ -166,7 +166,9 @@ export default function HomePage() {
               }}
             />
           )}
-      </section>
+        </section>
+      </div>
+      {/* End scroll-wrapper */}
 
       {/* Modal for table view card details */}
       {selectedCard && (
@@ -207,49 +209,72 @@ export default function HomePage() {
       )}
 
       <style jsx>{`
-        .container {
-          display: flex;
-          flex-direction: column;
+        .collection-page {
           height: 100%;
           overflow: hidden;
         }
+        
+        /* Header: Edge-to-edge with glass effect */
         .header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: var(--spacing-8);
+          padding: 12px;
+          margin-bottom: 0;
+          background: rgba(27, 62, 66, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           flex-wrap: wrap;
-          gap: var(--spacing-4);
-          flex-shrink: 0;
+          gap: 12px;
         }
-        .header-left h1 {
+        .header-left {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex: 1;
+          gap: 16px;
+        }
+        .header-title-group h1 {
           margin: 0;
-          margin-bottom: var(--spacing-1);
+          font-size: var(--font-size-500);
+          line-height: 1.2;
         }
         .user-info {
           color: var(--text-secondary);
           font-size: 0.875rem;
           margin: 0;
+          line-height: 1.4;
+        }
+        .user-stats {
+          color: var(--text-secondary);
+          font-size: 0.875rem;
+          margin: 0;
+          line-height: 1.4;
+          white-space: nowrap;
         }
         .header-right {
           display: flex;
-          gap: var(--sds-size-space-200);
+          gap: 8px;
+          align-items: center;
         }
         .support-button {
-          padding: var(--sds-size-space-200) var(--sds-size-space-400);
+          padding: 8px 16px;
           border-radius: var(--sds-size-radius-100);
           border: 1px solid var(--interactive-primary);
           background: var(--interactive-primary);
           color: var(--text-on-primary);
           text-decoration: none;
+          font-size: 0.875rem;
         }
         .drag-toggle {
-          padding: var(--sds-size-space-200) var(--sds-size-space-400);
+          padding: 8px 16px;
           border-radius: var(--sds-size-radius-100);
           border: 1px solid var(--border-default);
           background: var(--surface-background);
           color: var(--text-primary);
-          font-size: var(--font-size-100);
+          font-size: 0.875rem;
           cursor: pointer;
           transition: all 0.2s ease;
         }
@@ -262,27 +287,59 @@ export default function HomePage() {
           color: var(--text-on-primary);
           border-color: var(--interactive-primary);
         }
-        .stats-section {
-          flex-shrink: 0;
-          margin-bottom: 8px;
-        }
-        .cards-section {
-          flex: 1;
-          min-height: 0;
+        
+        /* Scroll wrapper: Main scrolling container */
+        .scroll-wrapper {
+          height: 100%;
           overflow-y: auto;
           overflow-x: hidden;
         }
-        /* Table view: disable scroll on parent, let table-wrapper handle it */
+        
+        /* Sticky header + filters group */
+        .sticky-header-group {
+          position: sticky;
+          top: 0;
+          z-index: 20;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-bottom: -16px;
+        }
+        
+        /* Filters: Floating with glass effect */
+        :global(.floating-filters) {
+          margin: 0 24px 16px 24px;
+          padding: 12px;
+          background: rgba(27, 62, 66, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          pointer-events: auto;
+        }
+        
+        /* Cards: Full width with horizontal padding only */
+        .cards-section {
+          padding: 0 24px 24px 24px;
+          position: relative;
+          z-index: 1;
+        }
+        
+        /* Table view: needs own scroll container */
         .cards-section--table {
           display: flex;
           flex-direction: column;
-          overflow: hidden;
+          min-height: 0;
+          padding: 0; /* Remove all padding for edge-to-edge table */
         }
         .cards-section--table :global(.table-wrapper) {
           flex: 1;
           min-height: 0;
           overflow-y: auto;
           overflow-x: auto;
+          border-radius: 0; /* Remove border radius for flush edges */
+          border-left: none; /* Remove side borders */
+          border-right: none;
         }
       `}</style>
     </div>
