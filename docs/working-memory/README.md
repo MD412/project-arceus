@@ -8,11 +8,16 @@
 
 ```
 docs/working-memory/
-├── README.md                           # This file (how to use the system)
-├── context_handoff_YYYYMMDD_HHMM.md  # Session handoffs (timestamped)
-├── session_summary_YYYYMMDD.md       # Session wrap-ups
-└── active_context.md                  # Symlink/copy of latest handoff
+├── README.md                              # This file (how to use the system)
+├── active_context.md                      # Current state (always start here)
+├── NEXT_SESSION_BRIEF.md                  # Forward-looking action items
+├── COMMAND_REFERENCE.md                   # Automation commands
+├── context_handoff_YYYYMMDD_UNIFIED.md   # Full-day unified handoffs (preferred)
+├── context_handoff_YYYYMMDD_HHMM.md      # Individual session handoffs
+└── session_summary_YYYYMMDD.md           # Session wrap-ups
 ```
+
+**Note:** For multi-session days, prefer creating a UNIFIED handoff that consolidates the full timeline rather than multiple timestamped handoffs.
 
 ---
 
@@ -57,6 +62,41 @@ Goals today:
 
 Please read docs/working-memory/context_handoff_YYYYMMDD_HHMM.md first.
 ```
+
+---
+
+## 🔄 Unified vs. Timestamped Handoffs
+
+### When to Use UNIFIED Handoffs
+If you have **multiple sessions in one day**, create a single UNIFIED handoff that merges the full timeline:
+
+**Benefits:**
+- ✅ Single coherent narrative
+- ✅ No duplicate information
+- ✅ Easier to pick up context
+- ✅ Shows progression throughout the day
+
+**Structure:**
+```markdown
+# Context Handoff - October 9, 2025 (UNIFIED)
+
+## Session Timeline
+### Session 1: System MRI (12:00 PM - 6:00 PM)
+[accomplishments]
+
+### Session 2: UI Polish (4:00 PM - 5:30 PM)
+[accomplishments]
+
+## Combined Priorities
+[unified view of all work]
+```
+
+### When to Use Timestamped Handoffs
+For **single sessions** or when you want to preserve individual session context:
+
+**Format:** `context_handoff_YYYYMMDD_HHMM.md` (e.g., `context_handoff_20251009_1430.md`)
+
+**Use case:** One session per day, or when sessions are days apart
 
 ---
 
