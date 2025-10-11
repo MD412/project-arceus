@@ -1,0 +1,45 @@
+# Python files and worker (not needed for Next.js deployment)
+worker/
+__pycache__/
+*.py
+*.pyc
+requirements.txt
+runtime.txt
+
+# Training and test data
+training_data/
+test-raw_scan_images/
+test-results/
+
+# Pokemon TCG data (large JSON files)
+pokemon-tcg-data/
+
+# Test files
+__tests__/
+tests/
+*.test.ts
+*.test.tsx
+*.spec.ts
+
+# Development scripts
+scripts/
+
+# Logs
+logs/
+*.log
+
+# Model files
+*.pt
+
+# Documentation (optional - keep if you want docs in production)
+docs/
+
+# Git and cursor
+.git/
+.cursor/
+
+# Environment files (will be set in Vercel dashboard)
+.env
+.env.local
+.env*.local
+
