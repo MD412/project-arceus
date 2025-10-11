@@ -1,0 +1,68 @@
+# Render Blueprint for Project Arceus
+# Pokemon Card Collection Manager - Worker Service
+
+services:
+  # Background Worker - Processes card scans
+  - type: worker
+    name: arceus-worker
+    runtime: docker
+    
+    # Build configuration
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    
+    # Resource allocation
+    plan: starter  # $7/month - Can upgrade to standard ($25) for better performance
+    
+    # Region
+    region: oregon  # Change to your preferred region
+    
+    # Health check configuration
+    healthCheckPath: /  # Workers don't have HTTP endpoints, but Render needs this
+    
+    # Auto-deploy configuration
+    autoDeploy: true  # Auto-deploy on git push to main
+    
+    # Environment variables (set these in Render Dashboard)
+    envVars:
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false  # Set manually in dashboard
+      
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false  # Set manually in dashboard (keep secret!)
+      
+      - key: PYTHON_VERSION
+        value: "3.11"
+      
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      
+      - key: LOG_LEVEL
+        value: INFO
+
+# Notes for deployment:
+# 
+# 1. Push this file to your repository
+# 
+# 2. Connect your repo to Render:
+#    - Go to https://dashboard.render.com
+#    - Click "New +" -> "Blueprint"
+#    - Connect your GitHub repo
+#    - Render will detect this render.yaml
+# 
+# 3. Set environment variables in Render Dashboard:
+#    - NEXT_PUBLIC_SUPABASE_URL (from your Supabase project)
+#    - SUPABASE_SERVICE_ROLE_KEY (from Supabase -> Settings -> API)
+# 
+# 4. The worker will auto-deploy on push to main
+# 
+# 5. Monitor logs in Render Dashboard -> arceus-worker -> Logs
+# 
+# 6. Estimated costs:
+#    - Starter plan: $7/month (512 MB RAM, 0.5 CPU)
+#    - Standard plan: $25/month (2 GB RAM, 1 CPU) - recommended for ML workloads
+#    - Pro plan: $85/month (4 GB RAM, 2 CPU) - for high volume
+# 
+# 7. First deployment will take 5-10 minutes (downloading PyTorch, etc.)
+#    Subsequent deployments will be faster due to Docker layer caching
+
