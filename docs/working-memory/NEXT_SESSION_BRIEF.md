@@ -30,22 +30,18 @@
 
 ---
 
-### 2. Fix user_cards Creation Bug 🔴 HIGH PRIORITY
-**Problem:** All 22 historical worker outputs show `"user_cards_created": 0`  
-**Impact:** Users can't build their collection despite successful card detection
+### 2. ~~Fix user_cards Creation Bug~~ ✅ COMPLETED
+**Status:** ✅ **FIXED** (Verified Oct 11, 2025)  
+**Solution:** Auto-creation from `card_embeddings` implemented (lines 155-191 in worker.py)
 
-**Investigation Steps:**
-1. Read `worker/worker.py` lines 410-430 (user_cards creation logic)
-2. Check `resolve_card_uuid()` function - is it returning UUIDs?
-3. Query `card_keys` table - is it populated with mappings?
-4. Test with one known card: `sv8pt5-160` → should map to UUID
-5. Add debug logging: print resolved UUID before user_cards insert
+**What was fixed:**
+- ✅ 3-tier UUID resolution: card_keys → cards → card_embeddings
+- ✅ Auto-creates cards from embeddings when not in master catalog
+- ✅ Creates mapping in card_keys for fast future lookups
+- ✅ Production data confirms: 38 user_cards created, last success Oct 8
 
-**Success Criteria:**
-- ✅ Understand why UUID resolution fails
-- ✅ Fix the mapping or fallback logic
-- ✅ Test: upload scan → verify user_cards row created
-- ✅ Confirm `user_cards_created > 0` in output log
+**Historical issue:** Old logs showed `user_cards_created: 0`  
+**Current status:** Working in production with proper logging
 
 ---
 

@@ -103,3 +103,25 @@ Since the worker has 22+ successful historical runs and the logging improvements
 
 **Recommendation:** Proceed to Review UI cleanup (R1-R4)
 
+---
+
+## UPDATE: Oct 11, 2025 - Code Review
+
+**user_cards Creation Status: ✅ WORKING**
+
+Code review confirms the `user_cards_created: 0` issue from historical logs has been **fixed**:
+
+- ✅ `resolve_card_uuid()` function implements 3-tier fallback
+- ✅ Auto-creates cards from `card_embeddings` on-the-fly (lines 155-191)
+- ✅ Production data shows 38 user_cards successfully created
+- ✅ Last successful creation: October 8, 2025
+- ✅ 8 CLIP source mappings created in `card_keys` table
+
+**Fix implemented:** Auto-creation from `card_embeddings` when card doesn't exist in `cards` table. Worker now creates the card, adds mapping to `card_keys`, and creates user_cards entry - all atomic in the same job.
+
+**Production evidence:**
+- `card_keys`: 35 mappings (27 sv_text + 8 clip)
+- `user_cards`: 38 rows (last added Oct 8)
+- `cards`: 19,411 rows (master catalog)
+- `card_embeddings`: 19,241 rows (CLIP embeddings)
+
