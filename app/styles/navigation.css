@@ -178,6 +178,8 @@
   overflow: hidden; /* Prevent content from creating scrollbars */
   position: relative;
   z-index: 1; /* Below top-toolbar */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Page-specific overrides */

@@ -29,7 +29,7 @@ export default function AppLayout({
     };
 
     // Check if current page should have no padding
-    const shouldHaveNoPadding = pathname === '/scans/review' || pathname === '/';
+    const shouldHaveNoPadding = pathname === '/scans/review' || pathname === '/' || pathname.startsWith('/scans/');
 
     return (
         <div className="app-layout">
