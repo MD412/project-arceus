@@ -5,6 +5,7 @@ import PageLayout from '@/components/layout/PageLayout';
 import DetectionGrid from '@/components/scan-review/DetectionGrid';
 import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import { useParams } from 'next/navigation';
+import styles from './page.module.css';
 
 export default function ScanDetailPage() {
   const params = useParams<{ id: string }>();
@@ -12,24 +13,11 @@ export default function ScanDetailPage() {
 
   return (
     <PageLayout title="Scan Detail" description="Review detected cards for this scan" hideHeader={true} noPadding>
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        height: '100%',
-        position: 'relative'
-      }}>
+      <div className={styles.scanDetailContainer}>
         {/* Fixed header with breadcrumbs and actions */}
-        <div style={{ 
-          padding: 'var(--sds-size-space-400)',
-          background: 'var(--background-default)',
-          borderBottom: '1px solid var(--border-default)',
-          flexShrink: 0,
-          position: 'sticky',
-          top: 0,
-          zIndex: 10
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sds-size-space-300)' }}>
-            <div style={{ flex: 1 }}>
+        <header className={styles.scanDetailHeader}>
+          <div className={styles.scanDetailHeaderContent}>
+            <div className={styles.scanDetailBreadcrumbs}>
               <Breadcrumbs
                 items={[
                   { label: 'Collection', href: '/' },
@@ -38,8 +26,7 @@ export default function ScanDetailPage() {
                 ]}
               />
             </div>
-            {/* Right-aligned subtle text links matching breadcrumb color */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sds-size-space-300)' }}>
+            <div className={styles.scanDetailActions}>
               <button className="u-text-link u-text-link--muted" onClick={() => { /* no-op placeholder */ }} title="Approve all">
                 Approve all
               </button>
@@ -48,14 +35,10 @@ export default function ScanDetailPage() {
               </button>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Scrollable card grid */}
-        <div style={{ 
-          flex: 1,
-          overflow: 'auto',
-          padding: 'var(--sds-size-space-400)'
-        }}>
+        <div className={styles.scanDetailGridContainer}>
           {scanId && (
             <DetectionGrid scanId={scanId} onReviewed={() => {}} hideBulkActions />
           )}
