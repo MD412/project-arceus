@@ -49,7 +49,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
           align-items: center;
           gap: var(--sds-size-space-150);
           padding: 0;
-          margin: 0 0 var(--sds-size-space-300) 0;
+          margin: 0;
         }
         .breadcrumbs__item {
           display: inline-flex;
