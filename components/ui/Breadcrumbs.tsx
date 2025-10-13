@@ -68,6 +68,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
         .breadcrumbs__link:hover {
           color: var(--interactive-primary);
           text-decoration: underline;
+          font-weight: 600;
         }
         .breadcrumbs__current {
           color: var(--text-primary);
