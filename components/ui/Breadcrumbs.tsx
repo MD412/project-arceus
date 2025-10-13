@@ -23,7 +23,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
           return (
             <li key={`${item.label}-${index}`} className="breadcrumbs__item" aria-current={isLast ? 'page' : undefined}>
               {item.href && !isLast ? (
-                <Link href={item.href} className="breadcrumbs__link">
+                <Link href={item.href} className="u-text-link u-text-link--muted breadcrumbs__link">
                   {item.label}
                 </Link>
               ) : (
@@ -58,21 +58,24 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
           color: var(--text-secondary);
           font-size: var(--font-size-75);
         }
+        .breadcrumbs__separator {
+          display: inline-flex;
+          align-items: center;
+        }
         .breadcrumbs__separator :global(svg) {
           color: var(--text-tertiary);
+          display: block; /* Remove inline baseline alignment */
         }
         .breadcrumbs__link {
-          color: var(--text-secondary);
-          text-decoration: none;
-        }
-        .breadcrumbs__link:hover {
-          color: var(--interactive-primary);
-          text-decoration: underline;
-          font-weight: 600;
+          /* Link styling now handled by u-text-link utility classes */
+          cursor: pointer !important;
         }
         .breadcrumbs__current {
           color: var(--text-primary);
           font-weight: 600;
+          font: var(--font-body-base);
+          line-height: 1;
+          cursor: default;
         }
       `}</style>
     </nav>

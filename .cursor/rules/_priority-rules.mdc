@@ -32,4 +32,38 @@ When user says "/start session" or begins a new conversation:
 4. If conflicting information exists:
    - `active_context.md` > latest handoff > older docs
    - Newest timestamp wins
-   - Ask user to clarify if truly ambiguous 
+   - Ask user to clarify if truly ambiguous
+
+---
+
+Rule 3: Git Commit Best Practices
+
+STOP committing after every tiny change! This creates noisy git history.
+
+1. BATCH related changes together:
+   - Group multiple CSS tweaks into one commit
+   - Group multiple related bug fixes
+   - Group refactoring of related components
+   
+2. Only commit immediately when:
+   - User explicitly asks to commit
+   - Completing a major feature/fix
+   - Before switching to unrelated work
+   - At natural stopping points
+   
+3. Good commit practice:
+   - Make 5-10 related changes, THEN commit
+   - Use descriptive messages covering all changes
+   - Example: "refactor: improve scan detail page layout and styling"
+   - NOT: "fix: change padding from 16px to 8px"
+   
+4. While working:
+   - Keep making changes without committing
+   - Let changes accumulate in working directory
+   - Commit when you have a meaningful unit of work
+
+5. **PREFERRED WORKFLOW:**
+   - Work on changes throughout the session
+   - Let everything accumulate in working directory
+   - Commit everything when user types `/end session`
+   - This creates clean, session-based commits with meaningful scope 

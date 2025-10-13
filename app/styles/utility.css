@@ -11,11 +11,14 @@
   cursor: pointer;
   font: var(--font-body-base);
   line-height: 1;
-  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  font-weight: 400;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease, font-weight 0.1s ease;
 }
 
 .u-text-link:hover {
   text-decoration-color: currentColor;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .u-text-link--muted { color: var(--text-secondary); }

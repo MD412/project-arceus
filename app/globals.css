@@ -66,6 +66,15 @@ p, span, div, h1, h2, h3, h4, h5, h6, input, textarea {
   user-select: text;
 }
 
+/* Links should not be selectable and should show pointer cursor */
+a, button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: pointer;
+}
+
 /* Scrollbar Customization */
 ::-webkit-scrollbar {
   width: 10px;

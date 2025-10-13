@@ -22,10 +22,17 @@ interface Card {
   rawCropUrl?: string;
 }
 
+interface DisplayCard {
+  name: string;
+  number?: string;
+  setCode?: string;
+}
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   card?: Card;
+  displayCard?: DisplayCard;
   className?: string;
   onDeleteCard?: (cardId: string) => Promise<void>;
   children?: React.ReactNode;
@@ -38,7 +45,7 @@ interface ModalProps {
   }) => void;
 }
 
-export function Modal({ isOpen, onClose, card, className = '', onDeleteCard, children, onReplaced }: ModalProps) {
+export function Modal({ isOpen, onClose, card, displayCard: headerCard, className = '', onDeleteCard, children, onReplaced }: ModalProps) {
   const [localQuantity, setLocalQuantity] = React.useState(card?.quantity || 1);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -87,12 +94,14 @@ export function Modal({ isOpen, onClose, card, className = '', onDeleteCard, chi
       
       {/* Modal */}
       <div className="modal-container">
-        <div className={`modal-content ${displayCard ? 'modal-card-info' : ''} ${className}`}>
-          <header className="modal__header">
-            <div className="modal__title">
-              <h2 className="card-info-title" style={{ margin: 0 }}>{displayCard?.name}</h2>
-              {displayCard && (
-                <p className="card-info-meta">#{displayCard?.number} • {displayCard?.setCode}</p>
+        <div className={`modal-content ${headerCard ? 'modal-card-info' : ''} ${className}`}>
+          <header className="modal-header">
+            <div className="modal-title">
+              <h2 className="card-info-title" style={{ margin: 0 }}>{headerCard?.name || displayCard?.name}</h2>
+              {(headerCard || displayCard) && (
+                <p className="card-info-meta">
+                  {headerCard ? `${headerCard.number ? `#${headerCard.number}` : ''}${headerCard.number && headerCard.setCode ? ' • ' : ''}${headerCard.setCode || ''}` : `#${displayCard?.number} • ${displayCard?.setCode}`}
+                </p>
               )}
             </div>
             <button

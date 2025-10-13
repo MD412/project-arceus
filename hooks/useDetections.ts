@@ -16,6 +16,7 @@ export interface DetectionRecord {
   confidence: number | null;
   bbox: number[]; // [x,y,w,h]
   crop_url: string | null;
+  created_at?: string; // ISO timestamp from database
   cards?: CardLite | null; // nested join result
 }
 

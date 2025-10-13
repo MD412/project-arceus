@@ -7,7 +7,7 @@
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: 8px; /* Space between image and card info */
 }
 
 .tile:hover {

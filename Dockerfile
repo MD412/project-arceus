@@ -61,3 +61,4 @@ RUN python -c "import ultralytics; import torch; import open_clip; print('Depend
 CMD ["python", "worker.py"]
 
 
+
