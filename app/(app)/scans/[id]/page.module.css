@@ -18,19 +18,19 @@
 .scanDetailHeaderContent {
   display: flex;
   align-items: center;
-  gap: var(--sds-size-space-300);
+  justify-content: space-between; /* Push breadcrumbs and actions apart */
+  width: 100%;
 }
 
 .scanDetailBreadcrumbs {
-  flex: 1;
-  display: flex;
-  align-items: center;
+  /* Remove flex properties - just let it be a normal block */
 }
 
 .scanDetailActions {
   display: flex;
   align-items: center;
   gap: var(--sds-size-space-300);
+  flex-shrink: 0; /* Prevent actions from shrinking */
 }
 
 .scanDetailGridContainer {
