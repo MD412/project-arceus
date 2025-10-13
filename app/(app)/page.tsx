@@ -94,7 +94,13 @@ export default function HomePage() {
                 <h1>My Collection</h1>  
                 <p className="user-info">Welcome back, {user.email}!</p>
               </div>
-              <p className="user-stats">Collected: {totalCollected} · Total Quantity: {totalQuantity} · Sets: {uniqueSets}</p>
+              <div className="user-stats">
+                <span className="stat-item">Collected: {totalCollected}</span>
+                <span className="stat-separator"> · </span>
+                <span className="stat-item">Total Quantity: {totalQuantity}</span>
+                <span className="stat-separator"> · </span>
+                <span className="stat-item">Sets: {uniqueSets}</span>
+              </div>
             </div>
             <div className="header-right">
               {/* Payment Link Button */}
@@ -253,6 +259,15 @@ export default function HomePage() {
           margin: 0;
           line-height: 1.4;
           white-space: nowrap;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .stat-item {
+          display: inline;
+        }
+        .stat-separator {
+          display: inline;
         }
         .header-right {
           display: flex;
@@ -340,6 +355,34 @@ export default function HomePage() {
           border-radius: 0; /* Remove border radius for flush edges */
           border-left: none; /* Remove side borders */
           border-right: none;
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+          .header-title-group h1 {
+            font-size: calc(var(--font-size-500) - 8px);
+          }
+          
+          .user-info {
+            font-size: 12px;
+          }
+          
+          .user-stats {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            white-space: normal;
+            font-size: 10px;
+          }
+          
+          .stat-separator {
+            display: none;
+          }
+          
+          :global(.floating-filters) {
+            margin: 0 12px 12px 12px;
+            padding: 8px;
+          }
         }
       `}</style>
     </div>

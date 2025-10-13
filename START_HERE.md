@@ -58,10 +58,10 @@ Start by checking if card_keys table is populated.
 
 ### Living Memory (Session-to-Session Continuity)
 - **`docs/working-memory/COMMAND_REFERENCE.md`** ← 🎮 /start, /end, /checkpoint commands
-- **`docs/working-memory/active_context.md`** ← Start here for latest context
-- **`docs/working-memory/NEXT_SESSION_BRIEF.md`** ← Today's action items
+- **`docs/working-memory/active_context.md`** ← Start here (current state + priorities)
 - **`docs/working-memory/README.md`** ← How the memory system works
-- **`docs/working-memory/SESSION_SUMMARY_20251009.md`** ← What we accomplished
+- **`docs/working-memory/ORGANIZATION.md`** ← Folder structure guide
+- **`docs/working-memory/handoffs/`** ← Session records (with "What's Next" sections)
 
 ### Architecture & Planning
 - **`SYSTEM_MAP.md`** ← Complete system architecture (463 lines)
@@ -192,8 +192,7 @@ ORDER BY created_at DESC LIMIT 10;
 
 **Architecture questions:** Read `SYSTEM_MAP.md` section 11  
 **Database questions:** Read `docs/database-schema.md`  
-**Session context:** Read `docs/working-memory/active_context.md`  
-**Next steps:** Read `docs/working-memory/NEXT_SESSION_BRIEF.md`
+**Session context:** Read `docs/working-memory/active_context.md` (single source of truth)
 
 ---
 

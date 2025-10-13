@@ -11,11 +11,11 @@
 ```
 docs/working-memory/
 ├── README.md                              # This file (how to use the system)
-├── active_context.md                      # Current state (always start here)
-├── NEXT_SESSION_BRIEF.md                  # Forward-looking action items
+├── active_context.md                      # Current state + priorities (always start here)
 ├── COMMAND_REFERENCE.md                   # Automation commands
+├── ORGANIZATION.md                        # Folder structure guide
 │
-├── handoffs/                              # Context handoffs by date
+├── handoffs/                              # Context handoffs by date (with "What's Next" sections)
 │   └── YYYY/
 │       └── MM-month/
 │           ├── context_handoff_YYYYMMDD_HHMM.md

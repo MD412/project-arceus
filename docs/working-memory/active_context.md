@@ -28,6 +28,8 @@ Last session completed:
 - **📱 [Responsive Testing](./reports/2025/10-october/responsive_testing_report_20251010.md)** - Browser tests
 - **⌨️ [Commands](./COMMAND_REFERENCE.md)** - /start, /end, /checkpoint
 
+> **Note:** Forward-looking priorities are in each handoff's "What's Next" section.
+
 ---
 
 ## ✅ Ready to Merge
@@ -115,10 +117,10 @@ Everything is ready. Next step is to merge to main.
 ## 🧠 Living Memory System
 
 This directory contains:
-- **active_context.md** (this file) - Current state
-- **context_handoff_YYYYMMDD_HHMM.md** - Session summaries
-- **NEXT_SESSION_BRIEF.md** - Forward-looking action items
+- **active_context.md** (this file) - Current state + priorities
+- **handoffs/** - Session summaries with forward-looking sections
 - **COMMAND_REFERENCE.md** - Automation commands
+- **ORGANIZATION.md** - How files are organized
 
 ### Commands Available
 ```bash

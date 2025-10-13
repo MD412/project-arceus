@@ -8,4 +8,28 @@ Rule 1: Remember that you are operating on Windows. Do not let tool calls get st
 Tool Calls - Always Windows Powershell
 Supabase CLI 
 
-q^D^C leads to error "the term 'q' is not recognized 
+q^D^C leads to error "the term 'q' is not recognized
+
+---
+
+Rule 2: Session Context Priority
+
+When user says "/start session" or begins a new conversation:
+
+1. ALWAYS read `docs/working-memory/active_context.md` FIRST
+   - This is the single source of truth for current status
+   - It contains links to the most recent handoff and priorities
+   
+2. Follow the navigation from `active_context.md`:
+   - Read the "Latest Handoff" link it provides
+   - Check "Quick Links" section for other relevant docs
+   - Trust the status and priorities stated there
+   
+3. For detailed next steps:
+   - Read the latest handoff's "What's Next" section
+   - Forward-looking action items are always in handoff files
+   
+4. If conflicting information exists:
+   - `active_context.md` > latest handoff > older docs
+   - Newest timestamp wins
+   - Ask user to clarify if truly ambiguous 
