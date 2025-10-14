@@ -7,7 +7,8 @@
   - Updated envs via Render MCP and redeployed
   - Switched worker service plan to higher RAM; deployment live
 - Verified logs: YOLO/CLIP load, Supabase OK, worker healthy
+- Late session: diagnosed missing jobs, suspected RPC signature drift; advised direct retry endpoint + MCP reload
 
 Next:
-- Run end-to-end validation with a test scan job
-- Consider config/env validation and memory hardening guards
+- Reload MCP servers; query `job_queue`, `scan_uploads`, and `enqueue_scan_job` definition
+- Enqueue a test job (retry endpoint) and observe Render logs

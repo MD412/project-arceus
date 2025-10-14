@@ -1,34 +1,21 @@
 {
-    "mcpServers": {
-      "supabase": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "npx",
-          "-y",
-          "@supabase/mcp-server-supabase@latest",
-          "--project-ref=dipwodpxxjwkwflimgsf"
-        ],
-        "env": {
-          "SUPABASE_ACCESS_TOKEN": "sbp_196901af60a8f5457afd1fb770dd8cf18b091016"
-        }
-      },
-      "figma": {
-        "command": "cmd",
-        "args": [
-          "/c",
-          "npx",
-          "-y",
-          "figma-developer-mcp",
-          "--figma-api-key=YOUR_ACTUAL_FIGMA_TOKEN_HERE",
-          "--stdio"
-        ]
-      },
-      "render": {
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--project-ref=dipwodpxxjwkwflimgsf"
+      ],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "sbp_07e13d033833f1051fc933bf69d838fe6c9a2ebc"
+      }
+    },
+    "render": {
       "url": "https://mcp.render.com/mcp",
       "headers": {
         "Authorization": "Bearer rnd_AhBxdcEpTIBvSzDLB7eg0uUYnbOq"
-        }
       }
     }
+  }
 }
