@@ -17,9 +17,6 @@ services:
     # Region
     region: oregon  # Change to your preferred region
     
-    # Health check configuration
-    healthCheckPath: /  # Workers don't have HTTP endpoints, but Render needs this
-    
     # Auto-deploy configuration
     autoDeploy: true  # Auto-deploy on git push to main
     
