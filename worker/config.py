@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from pathlib import Path
+from urllib.parse import urlparse
 
 def load_environment():
     """
@@ -31,14 +32,31 @@ def load_environment():
     print("[WARN] .env.local not found. Relying on container environment variables.")
 
 
+def _clean_env_value(raw: str | None) -> str:
+    """Sanitize environment variable strings: strip whitespace/quotes and remove newlines."""
+    if not raw:
+        return ""
+    cleaned = raw.strip().strip("\"\"").strip("'\'")
+    # Remove any stray newlines/carriage returns that may slip in from dashboard copy/paste
+    cleaned = cleaned.replace("\r", "").replace("\n", "")
+    return cleaned
+
+
+def _validate_url(url: str) -> None:
+    """Raise ValueError if URL is clearly invalid."""
+    parsed = urlparse(url)
+    if not (parsed.scheme in ("http", "https") and parsed.netloc):
+        raise ValueError(f"Invalid Supabase URL after sanitization: '{url}'")
+
+
 def get_supabase_client() -> Client:
     """
     Initialize and return a Supabase client using environment variables.
     """
     load_environment()
     
-    supabase_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-    supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    supabase_url = _clean_env_value(os.getenv("NEXT_PUBLIC_SUPABASE_URL"))
+    supabase_service_key = _clean_env_value(os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
 
     if not supabase_url or not supabase_service_key:
         print("[ERROR] Critical: Missing Supabase environment variables!")
@@ -46,8 +64,15 @@ def get_supabase_client() -> Client:
         # exit(1) # This terminates the process abruptly
         raise ValueError("Missing Supabase environment variables.")
 
-    # Debug logging
-    print(f"[DEBUG] Supabase URL: {supabase_url}")
+    # Normalize and validate URL; avoid leaking secrets in logs
+    try:
+        _validate_url(supabase_url)
+    except ValueError as url_err:
+        print(f"[ERROR] {url_err}")
+        raise
+
+    # Debug logging (do not print full secrets)
+    print(f"[DEBUG] Supabase URL (sanitized): {supabase_url}")
     print(f"[DEBUG] Service key length: {len(supabase_service_key)}, starts with: {supabase_service_key[:20]}...")
 
     print("Initializing Supabase client...")
