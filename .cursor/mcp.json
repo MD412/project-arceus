@@ -23,6 +23,12 @@
           "--figma-api-key=YOUR_ACTUAL_FIGMA_TOKEN_HERE",
           "--stdio"
         ]
+      },
+      "render": {
+      "url": "https://mcp.render.com/mcp",
+      "headers": {
+        "Authorization": "Bearer rnd_tUwYbba6gWabJylCIqVbMn1Melkl"
       }
     }
   }
+}
