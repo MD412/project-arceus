@@ -68,18 +68,52 @@ MAX_REASONABLE_CARDS = 18
 STORAGE_BUCKET = "scans"
 
 def get_yolo_model(model_path=str(Path(__file__).parent / 'pokemon_cards_trained.pt')):
-    """Load YOLO model for card detection."""
+    """Load YOLO model for card detection.
+
+    Resolution order:
+      1) Local custom model (pokemon_cards_trained.pt) if present
+      2) Hugging Face Hub: zanzoy/pokemon-card-yolo: pokemon_cards_trained.pt
+      3) Fallback to base YOLOv8s weights (downloads automatically via Ultralytics)
+    """
     logging.info("[..] Loading YOLO model")
-    model_path = Path(model_path)
-    if not model_path.exists():
-        logging.error(f"Trained model not found at: {model_path}")
-        sys.exit(1)
+    local_path = Path(model_path)
     try:
-        model = YOLO(str(model_path))
-        logging.info(f"[OK] YOLO model loaded from {model_path.name}")
+        if local_path.exists():
+            model = YOLO(str(local_path))
+            logging.info(f"[OK] YOLO model loaded from local file: {local_path.name}")
+            return model
+    except Exception as e:
+        logging.warning(f"Local model load failed: {e}")
+
+    # Try Hugging Face Hub
+    try:
+        from huggingface_hub import hf_hub_download  # type: ignore
+        repo_id = os.getenv("HF_MODEL_REPO", "zanzoy/pokemon-card-yolo")
+        filename = os.getenv("HF_MODEL_FILENAME", "pokemon_cards_trained.pt")
+        token = os.getenv("HF_TOKEN")  # optional for private repos
+        logging.info(f"[..] Downloading model from Hugging Face: {repo_id}/{filename}")
+        hf_path = hf_hub_download(
+            repo_id=repo_id,
+            filename=filename,
+            token=token,
+            cache_dir=str(Path(__file__).parent / "hf_cache"),
+            local_dir=str(Path(__file__).parent),
+            local_dir_use_symlinks=False,
+        )
+        model = YOLO(str(hf_path))
+        logging.info(f"[OK] YOLO model loaded from Hugging Face: {Path(hf_path).name}")
         return model
     except Exception as e:
-        logging.error(f"Failed to load YOLO model: {e}")
+        logging.warning(f"Hugging Face model load failed: {e}")
+
+    # Final fallback: base yolov8s
+    try:
+        logging.info("[..] Falling back to base 'yolov8s.pt'")
+        model = YOLO('yolov8s.pt')  # Ultralytics will download if missing
+        logging.info("[OK] YOLO base model loaded")
+        return model
+    except Exception as e:
+        logging.error(f"Failed to load any YOLO model: {e}")
         sys.exit(1)
 
 def resize_for_detection(image, max_size=MAX_IMAGE_SIZE):

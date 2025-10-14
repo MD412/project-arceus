@@ -44,8 +44,7 @@ WORKDIR /app
 COPY worker/worker.py worker/clip_lookup.py worker/config.py ./
 COPY worker/__init__.py ./
 
-# Copy YOLO model file (required for detection)
-COPY worker/pokemon_cards_trained.pt ./pokemon_cards_trained.pt
+# Remove local model COPY; we download from Hugging Face at runtime via worker.py
 
 # Create output directory for logs
 RUN mkdir -p /app/output
