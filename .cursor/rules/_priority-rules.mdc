@@ -67,3 +67,6 @@ STOP committing after every tiny change! This creates noisy git history.
    - Let everything accumulate in working directory
    - Commit everything when user types `/end session`
    - This creates clean, session-based commits with meaningful scope 
+
+6. Plans
+   - Make plans hyper-concise. Sacrifice grammer for the sake of concision.
