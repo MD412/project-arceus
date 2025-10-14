@@ -1,0 +1,25 @@
+{
+  "detection_records": [
+    "43eecfa3-b4a5-4d98-bccb-87c0fc906ca0",
+    "9f7045f8-0ad0-43e9-89c2-fb57d6fe31c8",
+    "84e07c54-5521-4b5c-b4ad-255684420a70",
+    "4fbd0f16-f0d4-4eae-906a-a54f7cc228a5",
+    "b63cdebc-7e98-4a23-bcd0-4d857e35b1c3",
+    "95cb327d-930c-4510-b292-4e9c1ca05ceb",
+    "7c54eb72-48b4-406b-8dac-c0e3e78bc470",
+    "48d0234d-334f-45fd-87ba-ffbe25b63a23",
+    "dfad0ec6-4cb1-4e9c-a72a-0490794521a8",
+    "f99a6a3c-3d49-494b-91de-3687a391fc60",
+    "f1565573-19f4-4bcf-8453-b12a5291d328",
+    "b768de5f-cadd-496b-bf51-5441a11295a6",
+    "4c0386d5-48e5-4bc6-8a35-bcbe8db4e819",
+    "6c9ae490-a348-43d2-8181-93ca0388b729",
+    "4bd85acb-2128-4ac1-a31d-0e9810f89772",
+    "f50d8cc6-994b-440d-b489-cafed032c332"
+  ],
+  "scan_id": "162cbf38-0281-403a-8682-1c1a06b7d26f",
+  "status": "ready",
+  "summary_image_path": "162cbf38-0281-403a-8682-1c1a06b7d26f/summary.jpeg",
+  "total_detections": 16,
+  "user_cards_created": 16
+}

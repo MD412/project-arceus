@@ -66,6 +66,7 @@ CONFIDENCE_THRESHOLD = 0.25
 MAX_IMAGE_SIZE = 2048
 MAX_REASONABLE_CARDS = 18
 STORAGE_BUCKET = "scans"
+VISIBILITY_TIMEOUT_COLUMNS = ("visibility_timeout_at", "visibility_timeout")
 
 def get_yolo_model(model_path=str(Path(__file__).parent / 'pokemon_cards_trained.pt')):
     """Load YOLO model for card detection.
@@ -198,6 +199,8 @@ def resolve_card_uuid(supabase_client, source: str, external_card_id: str) -> Op
         )
         if embedding_res.data:
             emb_data = embedding_res.data
+            image_url = emb_data.get("image_url")
+            image_urls_payload = {"large": image_url, "small": image_url} if image_url else None
             # Create the card in cards table
             new_card_data = {
                 "pokemon_tcg_api_id": emb_data["card_id"],
@@ -205,12 +208,37 @@ def resolve_card_uuid(supabase_client, source: str, external_card_id: str) -> Op
                 "set_code": emb_data.get("set_code"),
                 "card_number": emb_data.get("card_number"),
                 "rarity": emb_data.get("rarity"),
-                "image_urls": {"large": emb_data.get("image_url"), "small": emb_data.get("image_url")} if emb_data.get("image_url") else {}
             }
-            card_insert_res = supabase_client.from_("cards").insert(new_card_data).execute()
-            if card_insert_res.data and len(card_insert_res.data) > 0:
-                card_uuid = card_insert_res.data[0]["id"]
-                print(f"[AUTO-CREATE] Created card {emb_data.get('name')} ({external_card_id}) -> {card_uuid}")
+            if image_url:
+                new_card_data["image_url"] = image_url
+                new_card_data["image_urls"] = image_urls_payload
+            card_uuid = None
+            insert_error = None
+            try:
+                card_insert_res = supabase_client.from_("cards").insert(new_card_data).execute()
+                if card_insert_res.data and len(card_insert_res.data) > 0:
+                    card_uuid = card_insert_res.data[0].get("id")
+            except Exception as insert_exc:
+                insert_error = insert_exc
+            if not card_uuid:
+                try:
+                    lookup_res = (
+                        supabase_client
+                        .from_("cards")
+                        .select("id")
+                        .eq("pokemon_tcg_api_id", external_card_id)
+                        .single()
+                        .execute()
+                    )
+                    if lookup_res.data:
+                        card_uuid = lookup_res.data.get("id")
+                except Exception as lookup_error:
+                    print(f"[WARN] Unable to confirm UUID for auto-created card {external_card_id}: {lookup_error}")
+            if card_uuid:
+                if insert_error:
+                    print(f"[AUTO-CREATE] Resolved existing card {emb_data.get('name')} ({external_card_id}) after insert error: {insert_error}")
+                else:
+                    print(f"[AUTO-CREATE] Created or resolved card {emb_data.get('name')} ({external_card_id}) -> {card_uuid}")
                 # Upsert mapping for next time
                 try:
                     supabase_client.from_("card_keys").upsert(
@@ -229,6 +257,75 @@ def resolve_card_uuid(supabase_client, source: str, external_card_id: str) -> Op
 def compute_bbox_hash(scan_id: str, bbox: List[int]) -> str:
     base = f"{scan_id}:{bbox[0]}:{bbox[1]}:{bbox[2]}:{bbox[3]}"
     return hashlib.md5(base.encode("utf-8")).hexdigest()
+
+
+def _clean_visibility_update_payload(base_update: Optional[Dict]) -> Dict:
+    """Return a copy of the update payload without visibility-specific keys."""
+    cleaned = dict(base_update or {})
+    cleaned.pop("visibility_timeout_at", None)
+    cleaned.pop("visibility_timeout", None)
+    return cleaned
+
+
+def update_job_visibility_timeout(
+    supabase_client,
+    job_id: str,
+    visibility_value: Optional[str],
+    base_update: Optional[Dict] = None,
+) -> bool:
+    """
+    Update job_queue visibility timeout while supporting legacy/new column names.
+    Returns True when the update succeeds and False otherwise.
+    """
+    cleaned_update = _clean_visibility_update_payload(base_update)
+    primary_column, fallback_column = VISIBILITY_TIMEOUT_COLUMNS
+    try:
+        payload = dict(cleaned_update)
+        payload[primary_column] = visibility_value
+        supabase_client.from_("job_queue").update(payload).eq("id", job_id).execute()
+        return True
+    except Exception as primary_error:
+        try:
+            payload = dict(cleaned_update)
+            payload[fallback_column] = visibility_value
+            supabase_client.from_("job_queue").update(payload).eq("id", job_id).execute()
+            print(f"[INFO] Retried visibility timeout update on job {job_id} using '{fallback_column}' column after error: {primary_error}")
+            return True
+        except Exception as fallback_error:
+            print(f"[WARN] Failed to update visibility timeout for job {job_id}: {fallback_error}")
+            return False
+
+
+def fetch_jobs_with_expired_visibility(supabase_client, statuses: List[str], cutoff_iso: str) -> List[Dict]:
+    """
+    Fetch jobs whose visibility timeout has expired, handling both column variants.
+    """
+    primary_column, fallback_column = VISIBILITY_TIMEOUT_COLUMNS
+    try:
+        response = (
+            supabase_client
+            .from_("job_queue")
+            .select("id, retry_count, scan_upload_id")
+            .in_("status", statuses)
+            .lte(primary_column, cutoff_iso)
+            .execute()
+        )
+        return response.data or []
+    except Exception as primary_error:
+        try:
+            print(f"[INFO] Retrying visibility timeout query with '{fallback_column}' after error: {primary_error}")
+            response = (
+                supabase_client
+                .from_("job_queue")
+                .select("id, retry_count, scan_upload_id")
+                .in_("status", statuses)
+                .lte(fallback_column, cutoff_iso)
+                .execute()
+            )
+            return response.data or []
+        except Exception as fallback_error:
+            print(f"[WARN] Failed to query visibility timeout columns: {fallback_error}")
+            return []
 
 def download_image_with_retry(supabase_client, storage_path: str, max_retries: int = 3) -> bytes:
     for attempt in range(max_retries):
@@ -367,7 +464,7 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
             
             # Batch identify all cards at once
             logging.info(f"[..] Identifying cards (CLIP): {len(card_crops)} cards in batch")
-            batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.75)
+            batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.85)
             logging.info(f"[OK] Identifications complete")
             
             # Process results
@@ -525,7 +622,7 @@ def requeue_stale_jobs(supabase_client):
         now_iso = datetime.now(timezone.utc).isoformat()
         
         # Find jobs stuck by timeout
-        stale_by_timeout = supabase_client.from_("job_queue").select("id, retry_count, scan_upload_id").in_("status", ["processing"]).lte("visibility_timeout_at", now_iso).execute().data or []
+        stale_by_timeout = fetch_jobs_with_expired_visibility(supabase_client, ["processing"], now_iso)
         
         # Find jobs stuck by time (15+ minutes)
         fifteen_mins_ago = (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat()
@@ -549,10 +646,13 @@ def requeue_stale_jobs(supabase_client):
             if retry_count >= 3:
                 print(f"  [FAIL] Job {job_id} exceeded retry limit, marking as failed")
                 # Mark as permanently failed
-                supabase_client.from_("job_queue").update({
-                    "status": "failed", 
-                                            "completed_at": now_iso
-                }).eq("id", job_id).execute()
+                failed_update = {
+                    "status": "failed",
+                    "completed_at": now_iso,
+                    "started_at": None
+                }
+                if not update_job_visibility_timeout(supabase_client, job_id, None, failed_update):
+                    supabase_client.from_("job_queue").update(failed_update).eq("id", job_id).execute()
                 
                 # Update scan status
                 if scan_upload_id:
@@ -563,13 +663,14 @@ def requeue_stale_jobs(supabase_client):
             else:
                 # Increment retry and requeue
                 print(f"  [RETRY] Re-queuing job {job_id} (retry {retry_count + 1})")
-                supabase_client.from_("job_queue").update({
-                    "status": "pending", 
-                    "started_at": None, 
-                    "visibility_timeout_at": None, 
+                retry_update = {
+                    "status": "pending",
+                    "started_at": None,
                     "picked_at": None,
                     "retry_count": retry_count + 1
-                }).eq("id", job_id).execute()
+                }
+                if not update_job_visibility_timeout(supabase_client, job_id, None, retry_update):
+                    supabase_client.from_("job_queue").update(retry_update).eq("id", job_id).execute()
                 
                 # Reset scan status
                 if scan_upload_id:
@@ -587,10 +688,9 @@ def fetch_and_lock_job(supabase_client):
         response = supabase_client.rpc("dequeue_and_start_job").execute()
         job = response.data[0] if response.data else None
         if job:
-            try:
-                supabase_client.from_("job_queue").update({"visibility_timeout_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()}).eq("id", job["job_id"]).execute()
-            except Exception as e:
-                print(f"[WARN] Failed to set visibility_timeout_at: {e}")
+            timeout_iso = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+            if not update_job_visibility_timeout(supabase_client, job["job_id"], timeout_iso):
+                print(f"[WARN] Could not set visibility timeout for job {job['job_id']}")
         return job
     except Exception as e:
         print(f"[ERROR] Error fetching job: {e}")
@@ -610,11 +710,12 @@ def update_job_status(supabase_client, job_id, upload_id, status, error_message=
         }
         
         job_status = job_status_map.get(status, 'completed')
-        job_update_data = {"status": job_status, "visibility_timeout_at": None}
+        job_update_data = {"status": job_status}
         if job_status in ['completed', 'failed']:
             job_update_data['completed_at'] = datetime.now(timezone.utc).isoformat()
             job_update_data['started_at'] = None
-        supabase_client.from_("job_queue").update(job_update_data).eq("id", job_id).execute()
+        if not update_job_visibility_timeout(supabase_client, job_id, None, job_update_data):
+            supabase_client.from_("job_queue").update(job_update_data).eq("id", job_id).execute()
         
         # Avoid setting a status that may propagate to scans.status illegally
         upload_processing_status = status

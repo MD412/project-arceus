@@ -6,7 +6,7 @@ Replaces OCR-based approach with more robust image matching
 import io
 import numpy as np
 from PIL import Image
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 import open_clip
 import torch
 from config import get_supabase_client
@@ -150,7 +150,7 @@ class CLIPCardIdentifier:
             # Fall back to individual encoding
             return [self.encode_image(img) for img in images]
 
-    def identify_cards_batch(self, images: List[Image.Image], similarity_threshold: float = 0.75) -> List[Dict]:
+    def identify_cards_batch(self, images: List[Image.Image], similarity_threshold: float = 0.85) -> List[Dict]:
         """Identify multiple cards in a batch for better performance"""
         print(f"[CLIP] Processing batch of {len(images)} cards...")
         
@@ -201,7 +201,7 @@ class CLIPCardIdentifier:
         return results
 
     def find_similar_cards(self, query_embedding: np.ndarray, 
-                          similarity_threshold: float = 0.75,  # Updated based on training data analysis - non-cards score up to 0.815
+                          similarity_threshold: float = 0.85,
                           max_results: int = 5) -> List[Dict]:
         """Find cards with similar embeddings using pgvector cosine similarity"""
         try:
@@ -209,11 +209,14 @@ class CLIPCardIdentifier:
             embedding_list = query_embedding.tolist()
             
             # Use the RPC function for similarity search with JOIN to cards table
-            response = self.supabase_client.rpc('search_similar_cards', {
-                'query_embedding': embedding_list,
-                'similarity_threshold': 1.0 - similarity_threshold,  # Convert to cosine distance
-                'max_results': max_results
-            }).execute()
+            response = self.supabase_client.rpc(
+                'search_similar_cards',
+                {
+                    'query_embedding': embedding_list,
+                    'similarity_threshold': similarity_threshold,
+                    'max_results': max_results
+                }
+            ).execute()
             
             if not response.data:
                 print(f"[WARN] No similar cards found above threshold {similarity_threshold}")
@@ -254,7 +257,7 @@ class CLIPCardIdentifier:
             # Log just the best match for minimal debugging
             if results:
                 best = results[0]
-                print(f"[CLIP] Best match: {best['name']} ({best['similarity']:.3f})")
+                print(f"[CLIP] Best match: {best['name']} (similarity={best['similarity']:.3f}, threshold={similarity_threshold:.2f})")
             
             return results
             
@@ -262,8 +265,8 @@ class CLIPCardIdentifier:
             print(f"[ERROR] Error searching similar cards: {e}")
             return []
 
-    def identify_card_from_crop(self, image_path_or_pil: str | Image.Image, 
-                               similarity_threshold: float = 0.60) -> Dict:
+    def identify_card_from_crop(self, image_path_or_pil: Union[str, Image.Image], 
+                               similarity_threshold: float = 0.85) -> Dict:
         """
         Main card identification function - replaces OCR-based approach
         
@@ -400,7 +403,7 @@ def get_clip_identifier(supabase_client=None) -> CLIPCardIdentifier:
         _clip_identifier = CLIPCardIdentifier(supabase_client=supabase_client)
     return _clip_identifier
 
-def identify_card_from_crop(image_path_or_pil: str | Image.Image, 
+def identify_card_from_crop(image_path_or_pil: Union[str, Image.Image], 
                            use_clip: bool = True, 
                            similarity_threshold: float = 0.85,
                            supabase_client=None) -> Dict:

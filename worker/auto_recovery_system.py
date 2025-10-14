@@ -18,6 +18,40 @@ from config import get_supabase_client
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+VISIBILITY_TIMEOUT_COLUMNS = ("visibility_timeout_at", "visibility_timeout")
+
+
+def _clean_visibility_update_payload(base_update: Optional[Dict]) -> Dict:
+    cleaned = dict(base_update or {})
+    cleaned.pop("visibility_timeout_at", None)
+    cleaned.pop("visibility_timeout", None)
+    return cleaned
+
+
+def update_job_visibility_timeout(supabase_client, job_id: str, visibility_value: Optional[str], base_update: Optional[Dict] = None) -> bool:
+    cleaned_update = _clean_visibility_update_payload(base_update)
+    primary_column, fallback_column = VISIBILITY_TIMEOUT_COLUMNS
+    try:
+        payload = dict(cleaned_update)
+        payload[primary_column] = visibility_value
+        supabase_client.from_("job_queue").update(payload).eq("id", job_id).execute()
+        return True
+    except Exception as primary_error:
+        try:
+            payload = dict(cleaned_update)
+            payload[fallback_column] = visibility_value
+            supabase_client.from_("job_queue").update(payload).eq("id", job_id).execute()
+            logger.info(
+                "Retried visibility timeout update on job %s using '%s' column after error: %s",
+                job_id,
+                fallback_column,
+                primary_error,
+            )
+            return True
+        except Exception as fallback_error:
+            logger.warning("Failed to update visibility timeout for job %s: %s", job_id, fallback_error)
+            return False
+
 @dataclass
 class StuckJobMetrics:
     job_id: str
@@ -82,14 +116,21 @@ class AutoRecoverySystem:
             update_data = {
                 "status": "pending",
                 "started_at": None,
-                "visibility_timeout_at": None,
+                "picked_at": None,
                 "retry_count": job_metrics.retry_count + 1,
                 "updated_at": datetime.now(timezone.utc).isoformat()
             }
             
-            response = self.supabase_client.from_("job_queue").update(update_data).eq("id", job_metrics.job_id).execute()
-            
-            if response.data:
+            updated = update_job_visibility_timeout(self.supabase_client, job_metrics.job_id, None, update_data)
+            if not updated:
+                try:
+                    self.supabase_client.from_("job_queue").update(update_data).eq("id", job_metrics.job_id).execute()
+                    updated = True
+                except Exception as fallback_error:
+                    logger.error(f"Failed to recover job {job_metrics.job_id}: {fallback_error}")
+                    updated = False
+
+            if updated:
                 # Also reset scan upload status
                 self.supabase_client.from_("scan_uploads").update({
                     "processing_status": "queued",
@@ -110,11 +151,14 @@ class AutoRecoverySystem:
         """Mark a job as permanently failed"""
         try:
             # Update job status
-            self.supabase_client.from_("job_queue").update({
+            failed_update = {
                 "status": "failed",
                 "finished_at": datetime.now(timezone.utc).isoformat(),
-                "error_message": reason
-            }).eq("id", job_metrics.job_id).execute()
+                "error_message": reason,
+                "started_at": None
+            }
+            if not update_job_visibility_timeout(self.supabase_client, job_metrics.job_id, None, failed_update):
+                self.supabase_client.from_("job_queue").update(failed_update).eq("id", job_metrics.job_id).execute()
             
             # Update scan upload status
             self.supabase_client.from_("scan_uploads").update({
@@ -254,7 +298,7 @@ def create_stuck_jobs_rpc_function():
         scan_upload_id UUID,
         created_at TIMESTAMPTZ,
         started_at TIMESTAMPTZ,
-        visibility_timeout_at TIMESTAMPTZ,
+        visibility_timeout TIMESTAMPTZ,
         retry_count INTEGER,
         minutes_stuck NUMERIC,
         minutes_past_timeout NUMERIC
@@ -269,18 +313,18 @@ def create_stuck_jobs_rpc_function():
             jq.scan_upload_id,
             jq.created_at,
             jq.started_at,
-            jq.visibility_timeout_at,
+            COALESCE(jq.visibility_timeout, jq.visibility_timeout_at) as visibility_timeout,
             COALESCE(jq.retry_count, 0) as retry_count,
             EXTRACT(EPOCH FROM (NOW() - jq.started_at))/60 as minutes_stuck,
             CASE 
-                WHEN jq.visibility_timeout_at IS NOT NULL 
-                THEN EXTRACT(EPOCH FROM (NOW() - jq.visibility_timeout_at))/60
+                WHEN COALESCE(jq.visibility_timeout, jq.visibility_timeout_at) IS NOT NULL 
+                THEN EXTRACT(EPOCH FROM (NOW() - COALESCE(jq.visibility_timeout, jq.visibility_timeout_at)))/60
                 ELSE 0
             END as minutes_past_timeout
         FROM job_queue jq
         WHERE jq.status = 'processing'
           AND (
-            jq.visibility_timeout_at < NOW() - INTERVAL '1 minute' * timeout_grace_minutes
+            COALESCE(jq.visibility_timeout, jq.visibility_timeout_at) < NOW() - INTERVAL '1 minute' * timeout_grace_minutes
             OR jq.started_at < NOW() - INTERVAL '1 minute' * stuck_minutes
           )
         ORDER BY jq.started_at;

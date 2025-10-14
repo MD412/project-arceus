@@ -1,30 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { supabaseServer } from '@/lib/supabase/server';
 
-// Cache for card data
-let cardCache: any[] = [];
-let cacheLoaded = false;
-
-async function loadCardData() {
-  if (cacheLoaded) return cardCache;
+async function searchCardsInDB(query: string) {
+  const supabase = await supabaseServer();
   
-  const cardsDir = path.join(process.cwd(), 'pokemon-tcg-data', 'cards', 'en');
-  const files = fs.readdirSync(cardsDir).filter(f => f.endsWith('.json'));
+  // Use the database RPC function for card search
+  const { data, error } = await supabase
+    .rpc('search_cards', { search_term: query })
+    .limit(30);
   
-  const allCards: any[] = [];
-  
-  // Load all files to ensure we have complete coverage
-  for (const file of files) {
-    const filePath = path.join(cardsDir, file);
-    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-    allCards.push(...data);
+  if (error) {
+    console.error('❌ Database search error:', error);
+    throw error;
   }
   
-  cardCache = allCards;
-  cacheLoaded = true;
-  console.log(`📚 Loaded ${allCards.length} cards from local data`);
-  return allCards;
+  return data || [];
 }
 
 export async function GET(request: NextRequest) {
@@ -40,80 +30,23 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('🔗 Searching local card data with query:', query.trim());
+    console.log('🔗 Searching database with query:', query.trim());
 
-    const cards = await loadCardData();
-    const normalize = (s: string) => (s || '').toLowerCase().normalize('NFKD').replace(/[^a-z0-9\s.-]/g, '');
-    const searchTerm = normalize(query.trim());
+    const dbResults = await searchCardsInDB(query.trim());
+    
+    // Transform database results to match expected frontend format
+    const results = dbResults.map((card: any) => ({
+      id: card.id,
+      name: card.name,
+      set_code: card.set_code || 'unknown',
+      card_number: card.card_number || 'unknown',
+      image_url: card.image_url || null,
+      set_name: card.set_name || `Set ${card.set_code || 'Unknown'}`,
+      rarity: card.rarity || 'Common',
+      market_price: card.market_price || null,
+    }));
 
-    // Tokenize and support rarity aliases like SIR → Special Illustration Rare
-    const tokens = searchTerm.split(/\s+/).filter(Boolean);
-    const rarityAliasMap: Record<string, string[]> = {
-      sir: ['special illustration rare', 'illustration rare'],
-      ir: ['illustration rare'],
-      sar: ['special art rare', 'illustration rare'],
-      hr: ['hyper rare'],
-      ur: ['ultra rare'],
-      sr: ['secret rare'],
-      ar: ['art rare'],
-      csr: ['character super rare'],
-      chr: ['character rare'],
-    };
-    const aliasTokens = tokens.filter((t) => t in rarityAliasMap);
-    const plainTokens = tokens.filter((t) => !(t in rarityAliasMap));
-
-    function scoreCard(card: any): number {
-      const name = normalize(card.name || '');
-      const number = normalize(card.number || '');
-      const rarity = normalize(card.rarity || '');
-      const setCode = (card.id?.split('-')[0] || '').toLowerCase();
-
-      // quick reject: if any plain token not found anywhere in name/number/set, skip
-      for (const t of plainTokens) {
-        if (!(name.includes(t) || number.includes(t) || setCode.includes(t))) return -Infinity;
-      }
-
-      // alias match bonus
-      let aliasBonus = 0;
-      if (aliasTokens.length > 0) {
-        aliasBonus = aliasTokens.some((a) => rarityAliasMap[a].some((syn) => rarity.includes(syn))) ? 1 : -2; // penalize if alias requested but not present
-      }
-
-      let score = 0;
-      for (const t of plainTokens) {
-        if (!t) continue;
-        // name anchoring
-        if (name.startsWith(t)) score += 8; // Toed* → Toedscruel/Toedscool rank high
-        else if (name.split(/\s+/).some((w) => w.startsWith(t))) score += 6;
-        else if (name.includes(t)) score += 3;
-
-        // number and set code relevance
-        if (number === t) score += 6;
-        else if (number.startsWith(t)) score += 4;
-        if (setCode === t) score += 3;
-      }
-
-      score += aliasBonus;
-      return score;
-    }
-
-    const results = cards
-      .map((card: any) => ({ card, score: scoreCard(card) }))
-      .filter(({ score }) => score > -Infinity)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 30)
-      .map(({ card }) => ({
-        id: card.id,
-        name: card.name,
-        set_code: card.id.split('-')[0] || 'unknown',
-        card_number: card.number || 'unknown',
-        image_url: card.images?.large || card.images?.small || null,
-        set_name: `Set ${card.id.split('-')[0] || 'Unknown'}`,
-        rarity: card.rarity || 'Common',
-        market_price: null,
-      }));
-
-    console.log('✅ Local search successful, found', results.length, 'results');
+    console.log('✅ Database search successful, found', results.length, 'results');
 
     return NextResponse.json({ results, query: query.trim() });
   } catch (error) {
