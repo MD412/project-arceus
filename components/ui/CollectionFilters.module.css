@@ -23,6 +23,7 @@
   display: flex;
   gap: var(--sds-size-space-200);
   align-items: center;
+  flex-wrap: wrap;
   grid-column: 1;
   grid-row: 2;
 }
@@ -93,7 +94,7 @@
   height: 36px;
   overflow: hidden;
   box-sizing: border-box;
-  align-self: center;
+  align-self: stretch;
 }
 
 .viewButton {

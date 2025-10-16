@@ -26,6 +26,14 @@ export default function HomePage() {
   const [localCards, setLocalCards] = useState<CardEntry[] | undefined>(undefined);
   const [filters, setFilters] = useState<CollectionFiltersState>({ query: '', setCode: '', rarity: '', viewMode: 'grid' });
   const [selectedCard, setSelectedCard] = useState<CardEntry | null>(null);
+  // FUTURE FEATURE: Card size slider
+  // const [cardSize, setCardSize] = useState<number>(() => {
+  //   if (typeof window !== 'undefined') {
+  //     const saved = localStorage.getItem('cardSize');
+  //     return saved ? parseInt(saved, 10) : 200;
+  //   }
+  //   return 200;
+  // });
 
   useEffect(() => {
     // Initialize local state when dbCards are fetched
@@ -33,6 +41,13 @@ export default function HomePage() {
       setLocalCards(dbCards);
     }
   }, [dbCards]);
+
+  // FUTURE FEATURE: Save card size to localStorage
+  // useEffect(() => {
+  //   if (typeof window !== 'undefined') {
+  //     localStorage.setItem('cardSize', cardSize.toString());
+  //   }
+  // }, [cardSize]);
 
   // Authentication
   useEffect(() => {
@@ -87,45 +102,27 @@ export default function HomePage() {
       <div className="scroll-wrapper">
         {/* Sticky header + filters group */}
         <div className="sticky-header-group">
-          {/* Header Section */}
+          {/* Header Section with integrated filters */}
           <header className="header">
-            <div className="header-left">
-              <div className="header-title-group">
-                <h1>My Collection</h1>  
-                <p className="user-info">Welcome back, {user.email}!</p>
-              </div>
-              <div className="user-stats">
-                <span className="stat-item">Collected: {totalCollected}</span>
-                <span className="stat-separator"> · </span>
-                <span className="stat-item">Total Quantity: {totalQuantity}</span>
-                <span className="stat-separator"> · </span>
-                <span className="stat-item">Sets: {uniqueSets}</span>
-              </div>
+            <div className="header-title-group">
+              <h5>My Collection</h5>
             </div>
-            <div className="header-right">
-              {/* Payment Link Button */}
-              {process.env.NEXT_PUBLIC_PAYMENT_LINK_URL && (
-                <a
-                  href={process.env.NEXT_PUBLIC_PAYMENT_LINK_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="support-button"
-                >
-                  Go Pro / Support
-                </a>
-              )}
-              {/* Drag toggle temporarily removed */}
+            
+            <div className="user-stats">
+              <span className="stat-item">Collected: {totalCollected}</span>
+              <span className="stat-separator"> · </span>
+              <span className="stat-item">Total Quantity: {totalQuantity}</span>
+              <span className="stat-separator"> · </span>
+              <span className="stat-item">Sets: {uniqueSets}</span>
             </div>
-          </header>
 
-          {/* Floating Filters */}
-          <CollectionFilters 
-            className="floating-filters"
-            value={filters}
-            onChange={setFilters}
-            setOptions={[...new Set((localCards || []).map((c) => c.set_code).filter(Boolean))] as string[]}
-            rarityOptions={[...new Set((localCards || []).map((c: any) => c.rarity).filter(Boolean))] as string[]}
-          />
+            <CollectionFilters 
+              value={filters}
+              onChange={setFilters}
+              setOptions={[...new Set((localCards || []).map((c) => c.set_code).filter(Boolean))] as string[]}
+              rarityOptions={[...new Set((localCards || []).map((c: any) => c.rarity).filter(Boolean))] as string[]}
+            />
+          </header>
         </div>
 
         {/* Cards Grid/Table Section */}
@@ -176,6 +173,23 @@ export default function HomePage() {
       </div>
       {/* End scroll-wrapper */}
 
+      {/* Floating Card Size Slider - DISABLED - Future feature */}
+      {/* {filters.viewMode === 'grid' && (localCards?.length ?? 0) > 0 && (
+        <div className="card-size-slider">
+          <label htmlFor="card-size-range">Card Size</label>
+          <input
+            id="card-size-range"
+            type="range"
+            min="120"
+            max="300"
+            step="20"
+            value={cardSize}
+            onChange={(e) => setCardSize(parseInt(e.target.value, 10))}
+          />
+          <span className="size-label">{cardSize}px</span>
+        </div>
+      )} */}
+
       {/* Modal for table view card details */}
       {selectedCard && (
         <Modal
@@ -218,38 +232,34 @@ export default function HomePage() {
         .collection-page {
           height: 100%;
           overflow: hidden;
+          display: flex;
+          flex-direction: column;
         }
         
         /* Header: Edge-to-edge with glass effect */
         .header {
           display: flex;
+          flex-direction: row;
           align-items: center;
           justify-content: space-between;
-          padding: 12px;
+          padding: 0 12px;
           margin-bottom: 0;
           background: rgba(27, 62, 66, 0.85);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          flex-wrap: wrap;
-          gap: 12px;
+          gap: 24px;
         }
-        .header-left {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex: 1;
-          gap: 16px;
-        }
-        .header-title-group h1 {
+        .header-title-group h5 {
           margin: 0;
-          font-size: var(--font-size-500);
+          font-size: var(--font-size-300);
           line-height: 1.2;
         }
         .user-info {
           color: var(--text-secondary);
-          font-size: 0.875rem;
+          font-size: 0.75rem;
+          font-weight: normal;
           margin: 0;
           line-height: 1.4;
         }
@@ -269,87 +279,45 @@ export default function HomePage() {
         .stat-separator {
           display: inline;
         }
-        .header-right {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-        }
-        .support-button {
-          padding: 8px 16px;
-          border-radius: var(--sds-size-radius-100);
-          border: 1px solid var(--interactive-primary);
-          background: var(--interactive-primary);
-          color: var(--text-on-primary);
-          text-decoration: none;
-          font-size: 0.875rem;
-        }
-        .drag-toggle {
-          padding: 8px 16px;
-          border-radius: var(--sds-size-radius-100);
-          border: 1px solid var(--border-default);
-          background: var(--surface-background);
-          color: var(--text-primary);
-          font-size: 0.875rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .drag-toggle:hover {
-          border-color: var(--border-strong);
-          transform: translateY(-1px);
-        }
-        .drag-toggle--active {
-          background: var(--interactive-primary);
-          color: var(--text-on-primary);
-          border-color: var(--interactive-primary);
-        }
         
         /* Scroll wrapper: Main scrolling container */
         .scroll-wrapper {
           height: 100%;
           overflow-y: auto;
           overflow-x: hidden;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
         }
         
         /* Sticky header + filters group */
         .sticky-header-group {
           position: sticky;
-          top: 0;
+          top: 0px;
           z-index: 20;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          margin-bottom: -16px;
-        }
-        
-        /* Filters: Floating with glass effect */
-        :global(.floating-filters) {
-          margin: 0 24px 16px 24px;
-          padding: 12px;
-          background: rgba(27, 62, 66, 0.85);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border-radius: 8px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          pointer-events: auto;
         }
         
         /* Cards: Full width with horizontal padding only */
         .cards-section {
-          padding: 0 24px 24px 24px;
+          padding: 12px;
           position: relative;
           z-index: 1;
+          margin-bottom: 0px;
         }
         
         /* Table view: needs own scroll container */
         .cards-section--table {
           display: flex;
           flex-direction: column;
+          flex: 1;
           min-height: 0;
           padding: 0; /* Remove all padding for edge-to-edge table */
+          overflow: hidden; /* Contain the table scroll */
         }
         .cards-section--table :global(.table-wrapper) {
           flex: 1;
           min-height: 0;
+          max-height: 100%;
           overflow-y: auto;
           overflow-x: auto;
           border-radius: 0; /* Remove border radius for flush edges */
@@ -359,12 +327,19 @@ export default function HomePage() {
 
         /* Mobile Responsive Styles */
         @media (max-width: 768px) {
-          .header-title-group h1 {
-            font-size: calc(var(--font-size-500) - 8px);
+          .header {
+            padding: 0 8px;
+            gap: 8px;
+            flex-direction: column;
+            align-items: stretch;
+          }
+          
+          .header-title-group h5 {
+            font-size: calc(var(--font-size-300) - 2px);
           }
           
           .user-info {
-            font-size: 12px;
+            font-size: 10px;
           }
           
           .user-stats {
@@ -378,10 +353,92 @@ export default function HomePage() {
           .stat-separator {
             display: none;
           }
-          
-          :global(.floating-filters) {
-            margin: 0 12px 12px 12px;
-            padding: 8px;
+
+          .cards-section {
+            padding: 12px;
+          }
+        }
+
+        /* Floating Card Size Slider */
+        .card-size-slider {
+          position: fixed;
+          bottom: 24px;
+          top:24px;
+          right: 24px;
+          background: rgba(27, 62, 66, 0.95);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          padding: 12px 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          z-index: 50;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          min-width: 200px;
+        }
+
+        .card-size-slider label {
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: var(--text-secondary);
+          margin: 0;
+        }
+
+        .card-size-slider input[type="range"] {
+          width: 100%;
+          height: 6px;
+          border-radius: 3px;
+          background: rgba(255, 255, 255, 0.1);
+          outline: none;
+          -webkit-appearance: none;
+        }
+
+        .card-size-slider input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: var(--interactive-primary);
+          cursor: pointer;
+          transition: transform 0.15s ease;
+        }
+
+        .card-size-slider input[type="range"]::-webkit-slider-thumb:hover {
+          transform: scale(1.2);
+        }
+
+        .card-size-slider input[type="range"]::-moz-range-thumb {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: var(--interactive-primary);
+          cursor: pointer;
+          border: none;
+          transition: transform 0.15s ease;
+        }
+
+        .card-size-slider input[type="range"]::-moz-range-thumb:hover {
+          transform: scale(1.2);
+        }
+
+        .card-size-slider .size-label {
+          font-size: 0.875rem;
+          color: var(--text-primary);
+          text-align: center;
+          font-variant-numeric: tabular-nums;
+        }
+
+        @media (max-width: 768px) {
+          .card-size-slider {
+            bottom: 16px;
+            right: 16px;
+            min-width: 160px;
+            padding: 10px 12px;
           }
         }
       `}</style>

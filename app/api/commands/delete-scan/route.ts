@@ -1,58 +1,73 @@
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { supabaseAdmin, supabaseServer } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
 
 /**
  * POST /api/commands/delete-scan
  * Body: { scanId: string }
- * Headers: x-user-id must be provided by frontend
  *
  * 1. Soft-delete the scan_uploads row (set deleted_at, bump version)
  * 2. Enqueue a DELETE_SCAN command in command_queue for background cleanup
  * 3. Return 202 Accepted quickly so UI can remain optimistic
  */
 export async function POST(request: NextRequest) {
-  const userId = request.headers.get('x-user-id');
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized - User ID required' }, { status: 401 });
+  const supabaseUserCtx = await supabaseServer();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseUserCtx.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { scanId } = await request.json();
-  if (!scanId) {
+  if (!scanId || typeof scanId !== 'string') {
     return NextResponse.json({ error: 'scanId is required' }, { status: 400 });
   }
 
-  const supabase = supabaseAdmin();
+  const adminClient = supabaseAdmin();
+
+  const { data: scan, error: scanError } = await adminClient
+    .from('scan_uploads')
+    .select('id, user_id')
+    .eq('id', scanId)
+    .single();
+
+  if (scanError || !scan) {
+    return NextResponse.json({ error: 'Scan not found' }, { status: 404 });
+  }
+
+  if (scan.user_id !== user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   try {
-    // 1) Soft delete (mark deleted_at)
-    const { error: updateError } = await supabase
+    const { error: updateError } = await adminClient
       .from('scan_uploads')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', scanId)
-      .eq('user_id', userId);
+      .eq('user_id', user.id);
 
     if (updateError) {
       if (updateError.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Scan not found or no permission' }, { status: 404 });
+        return NextResponse.json({ error: 'Scan not found' }, { status: 404 });
       }
       throw updateError;
     }
 
-    // 2) Enqueue command for background processing
-    const { error: enqueueError } = await supabase.from('command_queue').insert({
+    const { error: enqueueError } = await adminClient.from('command_queue').insert({
       type: 'DELETE_SCAN',
-      payload: { scanId, userId },
+      payload: { scanId, userId: user.id },
     });
 
     if (enqueueError) {
       console.error('Failed to enqueue DELETE_SCAN command:', enqueueError);
-      // Note: we do NOT roll back the soft delete; surface error so UI can retry enqueue if desired
       return NextResponse.json({ error: 'Failed to enqueue delete command' }, { status: 500 });
     }
 
     return NextResponse.json({ accepted: true, commandType: 'DELETE_SCAN' }, { status: 202 });
   } catch (error: any) {
     console.error('Error in POST /api/commands/delete-scan:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'Internal server error' }, { status: 500 });
   }
-} 
+}
