@@ -1,20 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { supabaseAdmin, supabaseServer } from '@/lib/supabase/server';
 
 // PATCH /api/detections/[id]/correct
 // Resolves a replacement card and updates card_detections.guess_card_id
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params; // card_detections.id
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  const supabaseUserCtx = await supabaseServer();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseUserCtx.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = params; // card_detections.id
   const supabase = supabaseAdmin();
+
+  const { data: detection, error: detectionError } = await supabase
+    .from('card_detections')
+    .select('id, scan_id')
+    .eq('id', id)
+    .single();
+
+  if (detectionError || !detection) {
+    return NextResponse.json({ error: 'Detection not found' }, { status: 404 });
+  }
+
+  const { data: scan, error: scanError } = await supabase
+    .from('scan_uploads')
+    .select('id, user_id')
+    .eq('id', detection.scan_id)
+    .maybeSingle();
+
+  if (scanError) {
+    console.error('Error checking scan ownership:', scanError);
+  }
+
+  if (!scan) {
+    const { data: fallbackScan, error: fallbackError } = await supabase
+      .from('scans')
+      .select('id, user_id')
+      .eq('id', detection.scan_id)
+      .maybeSingle();
+    if (fallbackError) {
+      console.error('Error checking fallback scan ownership:', fallbackError);
+    }
+    if (!fallbackScan || fallbackScan.user_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  } else if (scan.user_id !== user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { replacement } = body as { replacement?: { id: string; set_code?: string; card_number?: string } };
+    const { replacement } = body as {
+      replacement?: { id: string; set_code?: string; card_number?: string };
+    };
     if (!replacement?.id) {
       return NextResponse.json({ error: 'replacement.id is required' }, { status: 400 });
     }
 
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     let cardId: string | null = null;
 
     if (uuidRegex.test(replacement.id)) {
@@ -94,47 +146,4 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 });
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

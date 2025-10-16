@@ -13,7 +13,7 @@ import {
   useDraggable,
 } from '@dnd-kit/core';
 import { TradingCard } from './TradingCard';
-import { Modal } from './Modal';
+import { CardDetailModal } from './CardDetailModal';
 
 // Match the data structure from your database
 export interface CardEntry {
@@ -133,7 +133,7 @@ export function DraggableCardGrid({
         </div>
         
         {selectedCard && (
-          <Modal
+          <CardDetailModal
             isOpen={!!selectedCard}
             onClose={() => setSelectedCard(null)}
             card={{
@@ -216,7 +216,7 @@ export function DraggableCardGrid({
       </DndContext>
 
               {selectedCard && (
-          <Modal
+          <CardDetailModal
             isOpen={!!selectedCard}
             onClose={() => setSelectedCard(null)}
             card={{

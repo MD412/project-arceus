@@ -4,7 +4,7 @@ const supabase = getSupabaseClient();
 
 export async function getCards(userId: string) {
   // Prefer server API to bypass client-side RLS/nested-select issues
-  const res = await fetch(`/api/collections?user_id=${encodeURIComponent(userId)}`, {
+  const res = await fetch(`/api/collections`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });

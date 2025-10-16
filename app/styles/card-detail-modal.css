@@ -1,0 +1,244 @@
+/* Card Detail Modal - For viewing/editing cards in collection */
+
+.card-detail-modal {
+  width: 80vw;
+  max-width: 1200px;
+  height: 75vh;
+  max-height: 800px;
+}
+
+/* Header customization */
+.card-detail-modal__title {
+  margin: 0;
+  font-size: var(--font-size-400);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.card-detail-modal__meta {
+  margin: 0;
+  font-size: var(--font-size-150);
+  color: var(--text-secondary);
+}
+
+/* Layout: 2-column grid */
+.card-detail-modal__layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sds-size-space-600);
+  padding: var(--sds-size-space-600);
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Left column: Large card image */
+.card-detail-modal__image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sds-size-space-200) 0 0 0;
+  background: transparent;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+}
+
+.card-detail-modal__image-full {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  border-radius: var(--sds-size-radius-200);
+  box-shadow: var(--shadow-lg);
+  object-fit: contain;
+  display: block;
+}
+
+/* Right column: Details panel */
+.card-detail-modal__details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sds-size-space-300);
+}
+
+.card-detail-modal__content {
+  flex: 1;
+}
+
+/* Section styling */
+.card-detail-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-400);
+}
+
+.card-detail-modal__section h3 {
+  margin: 0;
+  font-size: var(--font-size-150);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card-detail-modal__section p {
+  margin: 0;
+  font-size: var(--font-size-125);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Crop preview */
+.card-detail-modal__crop-wrapper {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sds-size-radius-200);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  overflow: hidden;
+  position: relative;
+  max-width: min(100%, 400px);
+  max-height: min(500px, calc(75vh - 300px));
+}
+
+.card-detail-modal__crop-image {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Collection details */
+.card-detail-modal__collection-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-200);
+  margin-bottom: var(--sds-size-space-400);
+}
+
+.card-detail-modal__detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sds-size-space-200);
+  background: var(--surface-subtle);
+  border-radius: var(--sds-size-radius-100);
+}
+
+.card-detail-modal__detail-label {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-detail-modal__detail-value {
+  color: var(--text-secondary);
+}
+
+/* Quantity controls */
+.card-detail-modal__quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-200);
+  justify-content: center;
+  margin-top: var(--sds-size-space-400);
+}
+
+.card-detail-modal__quantity-display {
+  font-size: var(--font-size-200);
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 2rem;
+  text-align: center;
+}
+
+/* Replace mode panel */
+.card-detail-modal__replace-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-300);
+}
+
+.card-detail-modal__replace-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--sds-size-space-200);
+}
+
+/* Footer: 3-column grid for actions */
+.card-detail-modal__footer {
+  flex: none;
+  z-index: 1;
+  padding: var(--sds-size-space-400) var(--sds-size-space-600);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--circuit-dark-teal);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--sds-size-space-300);
+}
+
+.card-detail-modal__footer-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sds-size-space-200);
+}
+
+.card-detail-modal__footer-pos {
+  opacity: 0.7;
+}
+
+.card-detail-modal__footer-cta {
+  display: inline-flex;
+  gap: var(--sds-size-space-200);
+  justify-content: center;
+}
+
+.card-detail-modal__footer-state {
+  display: inline-flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--sds-size-space-200);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .card-detail-modal__layout {
+    flex-direction: column;
+    gap: var(--sds-size-space-600);
+    min-height: fit-content;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .card-detail-modal__image {
+    padding: var(--sds-size-space-400);
+    border-right: none;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .card-detail-modal__image-full {
+    max-width: 100%;
+    max-height: 50vh;
+  }
+
+  .card-detail-modal__details {
+    padding: var(--sds-size-space-400);
+  }
+
+  .card-detail-modal__crop-wrapper {
+    max-width: 100%;
+    max-height: 40vh;
+  }
+
+  .card-detail-modal__footer {
+    grid-template-columns: 1fr;
+    row-gap: var(--sds-size-space-200);
+  }
+}
+

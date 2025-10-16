@@ -1,11 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { supabaseAdmin, supabaseServer } from '@/lib/supabase/server';
 
 // POST /api/scans/[id]/approve
 // Approves a scan by creating/upserting user_cards for all detections with a guessed card
-export async function POST(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params; // this is scan_uploads.id (view over scans)
-  const supabase = await supabaseAdmin();
+export async function POST(
+  _request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  const supabaseUserCtx = await supabaseServer();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseUserCtx.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = params; // this is scan_uploads.id (view over scans)
+  const supabase = supabaseAdmin();
 
   try {
     // 1) Load scan_upload row (view) to get user_id
@@ -18,6 +31,10 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'Scan not found' }, { status: 404 });
     }
 
+    if (upload.user_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // 2) In this schema, scan_uploads.id is scans.id (view over scans)
     const scanId: string = id;
 
@@ -25,7 +42,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
     const { data: detections, error: detErr } = await supabase
       .from('card_detections')
       .select('id, guess_card_id, guess_external_id')
-      .eq('scan_id', scanId)
+      .eq('scan_id', scanId);
     if (detErr) {
       return NextResponse.json({ error: detErr.message }, { status: 500 });
     }
@@ -35,7 +52,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ message: 'No detections for this scan', count: 0 });
     }
 
-    // 3.5) Auto-map external IDs → cards.id, backfill detections where missing
+    // 3.5) Auto-map external IDs -> cards.id, backfill detections where missing
     const missing = rows.filter((r) => !r.guess_card_id && r.guess_external_id);
     const externalIds = Array.from(new Set(missing.map((r) => r.guess_external_id as string)));
     const source = 'sv_text';
@@ -47,7 +64,9 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
         .select('external_id, card_id')
         .eq('source', source)
         .in('external_id', externalIds);
-      const keyMap = new Map<string, string>((keyRows || []).map((k: any) => [k.external_id, k.card_id]));
+      const keyMap = new Map<string, string>(
+        (keyRows || []).map((k: any) => [k.external_id, k.card_id]),
+      );
 
       // b) find remaining in cards by pokemon_tcg_api_id
       const remainingA = externalIds.filter((e) => !keyMap.has(e));
@@ -117,7 +136,9 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       .from('user_cards')
       .select('detection_id')
       .in('detection_id', detectionIds);
-    const existingDetectionSet = new Set((existingByDetection ?? []).map((r: any) => r.detection_id));
+    const existingDetectionSet = new Set(
+      (existingByDetection ?? []).map((r: any) => r.detection_id),
+    );
 
     const toInsert = (mapped || [])
       .filter((d) => !existingDetectionSet.has(d.id))
@@ -129,9 +150,7 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       }));
 
     if (toInsert.length > 0) {
-      const { error: insertErr } = await supabase
-        .from('user_cards')
-        .insert(toInsert);
+      const { error: insertErr } = await supabase.from('user_cards').insert(toInsert);
       if (insertErr) {
         return NextResponse.json({ error: insertErr.message }, { status: 500 });
       }
@@ -154,10 +173,13 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       }
     }
 
-    return NextResponse.json({ approved: toInsert.length, scan_id: scanId, status: 'completed' });
+    return NextResponse.json({
+      approved: toInsert.length,
+      scan_id: scanId,
+      status: 'completed',
+    });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 });
   }
 }
-
 

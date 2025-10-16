@@ -2,7 +2,10 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 import { loginTestUser } from './helpers/auth';
 
+const bulkTestEnabled = process.env.ENABLE_BULK_TEST_ROUTE === 'true';
+
 test.describe('Complete Upload and Review Flow', () => {
+  test.skip(!bulkTestEnabled, 'Bulk upload test route disabled');
   // Use a fresh context for each test
   test.use({ 
     storageState: undefined // Don't reuse authentication state

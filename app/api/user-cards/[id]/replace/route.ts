@@ -1,20 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase/server';
+import { supabaseAdmin, supabaseServer } from '@/lib/supabase/server';
 
 // PATCH /api/user-cards/[id]/replace
 // Replaces a user_cards.card_id with a resolved cards.id
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params; // user_cards.id
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  const supabaseUserCtx = await supabaseServer();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabaseUserCtx.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { id } = params; // user_cards.id
   const supabase = supabaseAdmin();
+
+  const { data: userCard, error: cardError } = await supabase
+    .from('user_cards')
+    .select('id, user_id')
+    .eq('id', id)
+    .single();
+
+  if (cardError || !userCard) {
+    return NextResponse.json({ error: 'User card not found' }, { status: 404 });
+  }
+
+  if (userCard.user_id !== user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { replacement } = body as { replacement?: { id: string; set_code?: string; card_number?: string } };
+    const { replacement } = body as {
+      replacement?: { id: string; set_code?: string; card_number?: string };
+    };
     if (!replacement?.id) {
       return NextResponse.json({ error: 'replacement.id is required' }, { status: 400 });
     }
 
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     let cardId: string | null = null;
 
     if (uuidRegex.test(replacement.id)) {
@@ -78,7 +108,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'Could not resolve target card' }, { status: 400 });
     }
 
-    // Update the user_cards row
     const { data: updated, error: updErr } = await supabase
       .from('user_cards')
       .update({ card_id: cardId })
@@ -94,53 +123,4 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 });
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

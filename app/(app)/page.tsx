@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { User } from '@supabase/supabase-js';
 import { CollectionFilters, type CollectionFiltersState } from '@/components/ui/CollectionFilters';
 import { CollectionTable } from '@/components/ui/CollectionTable';
-import { Modal } from '@/components/ui/Modal';
+import { CardDetailModal } from '@/components/ui/CardDetailModal';
 
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -192,7 +192,7 @@ export default function HomePage() {
 
       {/* Modal for table view card details */}
       {selectedCard && (
-        <Modal
+        <CardDetailModal
           isOpen={!!selectedCard}
           onClose={() => setSelectedCard(null)}
           card={{

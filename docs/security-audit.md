@@ -59,6 +59,13 @@ Recommendation: Redact or remove verbose logging of headers and bodies, especial
 
 Recommendation: Sanitize identifiers used in filesystem paths (allow only UUIDs) and store files in isolated storage, not the Next.js server's filesystem.
 
+## Remediation Status (2025-10-16)
+
+* ✅ Finding 1 addressed: collection and user-card routes now require authenticated Supabase sessions and enforce ownership checks before using the service-role client.【app/api/collections/route.ts:1】【app/api/user-cards/route.ts:1】【app/api/user-cards/[id]/replace/route.ts:1】
+* ✅ Finding 2 addressed: the training feedback endpoint validates the caller, verifies scan ownership, and records metadata with user attribution before touching storage.【app/api/training/add-failure/route.ts:1】
+* ✅ Finding 3 addressed: scan lifecycle endpoints now derive the user from the session, confirm resource ownership, and restrict service-role actions accordingly.【app/api/commands/delete-scan/route.ts:1】【app/api/scans/[id]/route.ts:1】【app/api/scans/[id]/retry/route.ts:1】【app/api/scans/[id]/approve/route.ts:1】
+* ✅ Finding 4 addressed: the bulk test uploader requires an authenticated session and is completely disabled unless `ENABLE_BULK_TEST_ROUTE` is explicitly set to `true`.【app/api/scans/bulk/test/route.ts:1】
+
 ## Additional Recommendations
 
 * Audit all remaining API routes for service-role usage and convert them to user-scoped clients where possible.

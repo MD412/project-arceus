@@ -1,0 +1,189 @@
+/* Card Correction Modal - For correcting AI detection mistakes in scan review */
+
+.card-correction-modal {
+  width: 80vw;
+  max-width: 1200px;
+  height: 75vh;
+  max-height: 800px;
+}
+
+/* Header customization */
+.card-correction-modal__title {
+  margin: 0;
+  font-size: var(--font-size-400);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.card-correction-modal__meta {
+  margin: 0;
+  font-size: var(--font-size-150);
+  color: var(--text-secondary);
+}
+
+/* Layout: 2-column grid for side-by-side comparison */
+.card-correction-modal__layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sds-size-space-600);
+  padding: var(--sds-size-space-600);
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Columns */
+.card-correction-modal__column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sds-size-space-300);
+}
+
+/* Sections */
+.card-correction-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-400);
+  flex: 0 0 auto;
+}
+
+.card-correction-modal__section h3 {
+  margin: 0;
+  font-size: var(--font-size-150);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Action section (button only) */
+.card-correction-modal__action {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-top: var(--sds-size-space-300);
+}
+
+/* AI Match image wrapper */
+.card-correction-modal__ai-match-wrapper {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sds-size-radius-200);
+  background: var(--surface-subtle);
+  overflow: hidden;
+  position: relative;
+  max-width: min(100%, 400px);
+  max-height: min(500px, calc(75vh - 300px));
+}
+
+.card-correction-modal__ai-match-image {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Original crop wrapper */
+.card-correction-modal__crop-wrapper {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--sds-size-radius-200);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-default);
+  overflow: hidden;
+  position: relative;
+  max-width: min(100%, 400px);
+  max-height: min(500px, calc(75vh - 300px));
+}
+
+.card-correction-modal__crop-image {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Placeholder for missing images */
+.card-correction-modal__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-subtle);
+  border: 2px dashed var(--border-default);
+  color: var(--text-tertiary);
+  font-size: var(--font-size-100);
+  text-align: center;
+  aspect-ratio: 2.5 / 3.5;
+  min-height: 400px;
+}
+
+/* Replace mode panel */
+.card-correction-modal__replace-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--sds-size-space-400);
+}
+
+.card-correction-modal__replace-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-200);
+}
+
+.card-correction-modal__replace-header h3 {
+  margin: 0;
+  font-size: var(--font-size-200);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.card-correction-modal__replace-header p {
+  margin: 0;
+  font-size: var(--font-size-100);
+  color: var(--text-secondary);
+}
+
+.card-correction-modal__replace-input {
+  position: relative;
+}
+
+.card-correction-modal__replace-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sds-size-space-200);
+  padding-top: var(--sds-size-space-200);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .card-correction-modal__layout {
+    flex-direction: column;
+    gap: var(--sds-size-space-600);
+    min-height: fit-content;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .card-correction-modal__column {
+    padding: var(--sds-size-space-400);
+    align-items: flex-start;
+  }
+
+  .card-correction-modal__ai-match-wrapper,
+  .card-correction-modal__crop-wrapper {
+    max-width: 100%;
+    max-height: 50vh;
+  }
+}
+

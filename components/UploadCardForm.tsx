@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import { getSupabaseClient } from '@/lib/supabase/browser';
 import { uploadCardImage } from '@/lib/uploadCardImage';
 import { Button } from '@/components/ui/Button'; // Restored Button
-import { Modal } from '@/components/ui/Modal'; // Restored Modal import
+import { BaseModal } from '@/components/ui/BaseModal';
 import { z } from 'zod';
 
 // All other imports and most of the component logic will be commented out
@@ -114,9 +114,8 @@ export default function UploadCardForm({ close, onAdded }: Props) {
 
   // Restore Modal usage, removing the temporary inline div wrapper
   return (
-    <Modal isOpen={true} onClose={close}>
-      {/* The Modal component now handles the title via its 'title' prop */}
-      <h2 className="circuit-form-title">Add Card</h2>
+    <BaseModal isOpen={true} onClose={close} title="Add Card">
+      <div style={{ padding: 'var(--sds-size-space-600)' }}>
       <form onSubmit={handleSubmit} className="circuit-form">
         <Input
           ref={fileRef}
@@ -192,7 +191,8 @@ export default function UploadCardForm({ close, onAdded }: Props) {
           </Button>
         </div>
       </form>
-    </Modal>
+      </div>
+    </BaseModal>
   );
 
   /* Original return statement commented out
