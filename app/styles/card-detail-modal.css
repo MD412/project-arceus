@@ -25,30 +25,30 @@
 .card-detail-modal__layout {
   flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
   gap: var(--sds-size-space-600);
-  padding: var(--sds-size-space-600);
+  padding: var(--sds-size-space-300);
   overflow: hidden;
-  height: 100%;
 }
 
 /* Left column: Large card image */
 .card-detail-modal__image {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sds-size-space-200) 0 0 0;
+  padding: 0;
   background: transparent;
-  height: 100%;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .card-detail-modal__image-full {
+  max-width: 100%;
+  max-height: 100%;
   width: auto;
   height: 100%;
-  max-width: 100%;
   border-radius: var(--sds-size-radius-200);
   box-shadow: var(--shadow-lg);
   object-fit: contain;
@@ -57,10 +57,13 @@
 
 /* Right column: Details panel */
 .card-detail-modal__details {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--sds-size-space-300);
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .card-detail-modal__content {
