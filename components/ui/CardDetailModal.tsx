@@ -4,6 +4,7 @@ import * as React from 'react';
 import { BaseModal } from './BaseModal';
 import { Button } from './Button';
 import { CardSearchInput } from './CardSearchInput';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
 import { type Card as SearchResultCard } from '@/hooks/useCardSearch';
 import { updateCardQuantity, replaceUserCard } from '@/services/cards';
 
@@ -133,98 +134,122 @@ export function CardDetailModal({
       className="card-detail-modal"
       title={title}
     >
-      <div className="card-detail-modal__layout">
-        {/* Left: Large card image */}
-        <div className="card-detail-modal__image">
-          <img 
-            src={imageUrl}
-            alt={displayCard.name}
-            className="card-detail-modal__image-full"
-          />
-        </div>
-        
-        {/* Right: Details panel */}
-        <div className="card-detail-modal__details">
-          {/* Raw crop preview if available */}
-          {displayCard.rawCropUrl && (
-            <div className="card-detail-modal__section">
-              <h3>Original Scan Crop</h3>
-              <div className="card-detail-modal__crop-wrapper">
-                <img
-                  src={displayCard.rawCropUrl}
-                  alt="Original scan crop"
-                  className="card-detail-modal__crop-image"
-                />
+      <Tabs defaultValue="card" className="card-detail-modal__tabs">
+        <TabsList>
+          <TabsTrigger value="card">Card</TabsTrigger>
+          {displayCard.rawCropUrl && <TabsTrigger value="scan">Scan</TabsTrigger>}
+          <TabsTrigger value="market">Market</TabsTrigger>
+        </TabsList>
+
+        {/* Card Tab - Main view with image and details */}
+        <TabsContent value="card">
+          <div className="card-detail-modal__layout">
+            {/* Left: Large card image */}
+            <div className="card-detail-modal__image">
+              <img 
+                src={imageUrl}
+                alt={displayCard.name}
+                className="card-detail-modal__image-full"
+              />
+            </div>
+            
+            {/* Right: Details panel */}
+            <div className="card-detail-modal__details">
+              {/* Collection Details Section */}
+              <div className="card-detail-modal__section">
+                <h3>Collection Details</h3>
+                <div className="card-detail-modal__collection-details">
+                  <div className="card-detail-modal__detail-item">
+                    <span className="card-detail-modal__detail-label">Quantity:</span>
+                    <span className="card-detail-modal__detail-value">{localQuantity}</span>
+                  </div>
+                  <div className="card-detail-modal__detail-item">
+                    <span className="card-detail-modal__detail-label">Condition:</span>
+                    <span className="card-detail-modal__detail-value">{displayCard.condition || 'Near Mint'}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+          </div>
+        </TabsContent>
 
-          <div className="card-detail-modal__content">
-            {isReplaceMode ? (
-              <div className="card-detail-modal__section card-detail-modal__replace-panel">
-                <h3>Replace Card</h3>
-                <CardSearchInput
-                  placeholder="Search by name or number…"
-                  onSelect={handleReplace}
-                />
-                <div className="card-detail-modal__replace-actions">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => setIsReplaceMode(false)} 
-                    disabled={isReplacing}
-                  >
-                    Cancel
-                  </Button>
+        {/* Scan Tab - Compare scan crop and correct if needed */}
+        {displayCard.rawCropUrl && (
+          <TabsContent value="scan">
+            <div className="card-detail-modal__scan-view">
+              {/* Left: Original scan crop */}
+              <div className="card-detail-modal__scan-column">
+                <div className="card-detail-modal__scan-image-wrapper">
+                  <img
+                    src={displayCard.rawCropUrl}
+                    alt="Original scan crop"
+                    className="card-detail-modal__scan-image"
+                  />
                 </div>
               </div>
-            ) : (
-              <>
-                {/* Market Value Section */}
-                <div className="card-detail-modal__section">
-                  <h3>Market Value</h3>
-                  <p>$24.99</p>
-                </div>
-                
-                {/* Collection Details Section */}
-                <div className="card-detail-modal__section">
-                  <h3>Collection Details</h3>
-                  <div className="card-detail-modal__collection-details">
-                    <div className="card-detail-modal__detail-item">
-                      <span className="card-detail-modal__detail-label">Quantity:</span>
-                      <span className="card-detail-modal__detail-value">{localQuantity}</span>
-                    </div>
-                    <div className="card-detail-modal__detail-item">
-                      <span className="card-detail-modal__detail-label">Condition:</span>
-                      <span className="card-detail-modal__detail-value">{displayCard.condition || 'Near Mint'}</span>
+
+              {/* Right: Replace card controls */}
+              <div className="card-detail-modal__scan-column card-detail-modal__scan-actions">
+                {isReplaceMode ? (
+                  <div className="card-detail-modal__replace-panel">
+                    <h3>Search for Correct Card</h3>
+                    <CardSearchInput
+                      placeholder="Search by name or number…"
+                      onSelect={handleReplace}
+                    />
+                    <div className="card-detail-modal__replace-actions">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setIsReplaceMode(false)} 
+                        disabled={isReplacing}
+                      >
+                        Cancel
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="card-detail-modal__quantity-controls">
+                ) : (
+                  <div className="card-detail-modal__scan-info">
+                    <h3>AI Identified As</h3>
+                    <div className="card-detail-modal__identified-card">
+                      <img 
+                        src={imageUrl}
+                        alt={displayCard.name}
+                        className="card-detail-modal__identified-image"
+                      />
+                      <div className="card-detail-modal__identified-details">
+                        <p className="card-detail-modal__identified-name">{displayCard.name}</p>
+                        <p className="card-detail-modal__identified-meta">#{displayCard.number} • {displayCard.setCode}</p>
+                      </div>
+                    </div>
                     <Button 
                       variant="secondary" 
-                      size="sm"
-                      disabled={isUpdating}
-                      onClick={() => handleQuantityChange(Math.max(1, localQuantity - 1))}
+                      size="md" 
+                      onClick={() => setIsReplaceMode(true)}
+                      className="card-detail-modal__replace-trigger"
                     >
-                      -
-                    </Button>
-                    <span className="card-detail-modal__quantity-display">{localQuantity}</span>
-                    <Button 
-                      variant="secondary" 
-                      size="sm"
-                      disabled={isUpdating}
-                      onClick={() => handleQuantityChange(localQuantity + 1)}
-                    >
-                      +
+                      Replace Card
                     </Button>
                   </div>
-                </div>
-              </>
-            )}
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        )}
+
+        {/* Market Tab - Pricing and market data */}
+        <TabsContent value="market">
+          <div className="card-detail-modal__market-view">
+            <div className="card-detail-modal__section">
+              <h3>Market Value</h3>
+              <p className="card-detail-modal__price-display">$24.99</p>
+              <p className="card-detail-modal__price-note">
+                Real-time pricing coming soon
+              </p>
+            </div>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Footer with action buttons */}
       <footer className="card-detail-modal__footer">
@@ -233,70 +258,29 @@ export function CardDetailModal({
         </div>
         
         <div className="card-detail-modal__footer-cta">
-          {!isReplaceMode ? (
-            <>
-              <Button variant="secondary" size="sm">View Prices</Button>
-              <Button variant="secondary" size="sm" onClick={() => setIsReplaceMode(true)}>
-                Replace Card
-              </Button>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                disabled={isDeleting || !card.id}
-                onClick={async () => {
-                  if (!card.id || !onDeleteCard) return;
-                  setIsDeleting(true);
-                  try {
-                    await onDeleteCard(card.id);
-                    onClose();
-                  } catch (error) {
-                    console.error('Failed to delete card:', error);
-                  } finally {
-                    setIsDeleting(false);
-                  }
-                }}
-              >
-                {isDeleting ? 'Removing...' : 'Remove from Collection'}
-              </Button>
-            </>
-          ) : (
-            <>
-              <CardSearchInput
-                placeholder="Search by name or number…"
-                placement="top"
-                onCancel={() => setIsReplaceMode(false)}
-                onSelect={handleReplace}
-              />
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setIsReplaceMode(false)} 
-                disabled={isReplacing}
-              >
-                Cancel
-              </Button>
-            </>
-          )}
+          <Button 
+            variant="destructive" 
+            size="sm"
+            disabled={isDeleting || !card.id}
+            onClick={async () => {
+              if (!card.id || !onDeleteCard) return;
+              setIsDeleting(true);
+              try {
+                await onDeleteCard(card.id);
+                onClose();
+              } catch (error) {
+                console.error('Failed to delete card:', error);
+              } finally {
+                setIsDeleting(false);
+              }
+            }}
+          >
+            {isDeleting ? 'Removing...' : 'Remove from Collection'}
+          </Button>
         </div>
         
         <div className="card-detail-modal__footer-state">
-          <Button 
-            variant="secondary" 
-            size="sm"
-            disabled={isUpdating}
-            onClick={() => handleQuantityChange(Math.max(1, localQuantity - 1))}
-          >
-            -
-          </Button>
-          <span className="card-detail-modal__quantity-display">{localQuantity}</span>
-          <Button 
-            variant="secondary" 
-            size="sm"
-            disabled={isUpdating}
-            onClick={() => handleQuantityChange(localQuantity + 1)}
-          >
-            +
-          </Button>
+          {/* Future: Quick actions or status indicators */}
         </div>
       </footer>
     </BaseModal>

@@ -1,0 +1,76 @@
+/* Tabs Component */
+.tabs {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.tabsList {
+  display: flex;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.tabsTrigger {
+  flex: 1;
+  padding: var(--sds-size-space-300) var(--sds-size-space-400);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-125);
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  position: relative;
+  white-space: nowrap;
+}
+
+.tabsTrigger:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: var(--surface-hover);
+}
+
+.tabsTrigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tabsTriggerActive {
+  color: var(--circuit-bright-blue);
+  border-bottom-color: var(--circuit-bright-blue);
+  font-weight: 600;
+}
+
+.tabsContent {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--sds-size-space-400);
+}
+
+/* Allow child content to override padding */
+.tabsContent > * {
+  height: 100%;
+}
+
+/* Remove scrollbar styling for a cleaner look */
+.tabsContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tabsContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabsContent::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 3px;
+}
+
+.tabsContent::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+

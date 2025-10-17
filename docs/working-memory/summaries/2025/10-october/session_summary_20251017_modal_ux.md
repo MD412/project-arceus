@@ -1,55 +1,63 @@
-# Session Summary - Oct 17, 2025 @ 12:30 AM
+# Session Summary - October 17, 2025 @ 9:30 PM
 
-## Modal System Cleanup + Scan Review UX
+**Mission:** Modal UX refinement + CSS debugging methodology
 
-**Duration:** ~2 hours  
-**Files Modified:** 22 files  
-**Status:** ✅ Complete - All tests passing
+---
 
-### Key Accomplishments
+## ✅ Accomplished
 
-- ✅ **Deleted legacy modal code** - Removed Modal.tsx + modal.css (574 lines)
-- ✅ **Migrated RenameScanModal** - Now uses BaseModal with BEM CSS
-- ✅ **Updated CircuitDS docs** - Complete modal page rewrite with live examples
-- ✅ **Fixed pokemontcg.io images** - Corrected image_url extraction in API routes
-- ✅ **Auto-search for Unknown Cards** - Modal opens in search mode with autofocus
-- ✅ **Improved modal UX** - Stays open after save, shows updated card, better loading states
-- ✅ **Type safety fixes** - Nullable detection types properly handled
+### Major UX Redesign: Scan Tab
+- **Moved "Replace Card" to Scan tab** - now side-by-side with scan crop
+- Left column: Original scan image
+- Right column: "AI Identified As" preview + Replace button
+- Much better mental model for verifying/correcting AI identification
+- Simplified Card tab (just collection details)
+- Cleaner footer (just delete button)
 
-### Files Changed
+### CSS Flexbox Victory 🎯
+- **Fixed persistent scan image overflow** after systematic constraint chain analysis
+- Root cause: Missing `flex: 1` on intermediate `section` element
+- Created `/debug-css` protocol for future difficult CSS issues
+- Key insight: Percentage-based sizing requires EVERY parent to have defined height
 
-**Deleted:**
-- `components/ui/Modal.tsx`
-- `app/styles/modal.css`
+### Documentation Created
+- `css-debugging-protocol.md` - Systematic approach for hard CSS problems
+- `COMMAND_REFERENCE.md` - Complete command reference (/start, /end, /debug-css, etc.)
 
-**Created:**
-- `app/styles/rename-scan-modal.css`
+### Minor Polish
+- Modal padding set to 0 for precise control
+- Tab buttons sharp corners
+- Darker teal hover state
+- Removed quantity controls
 
-**Modified:**
-- API: `scans/[id]/route.ts`, `cards/search/route.ts`, etc (8 files)
-- Components: CardCorrectionModal, CardSearchInput, DetectionGrid, DetectionTile, RenameScanModal (5 files)
-- Hooks: `useDetections.ts`
-- Docs: CircuitDS modal page, active_context, handoffs (4 files)
-- Config: `app/globals.css`
+---
 
-### Impact
+## 📁 Files Modified
 
-**User Experience:**
-- Unknown cards automatically open search - 2 fewer clicks
-- Modal stays open after correction - see results immediately
-- Loading states prevent confusion and double-clicks
+- `components/ui/CardDetailModal.tsx` - Scan tab restructure
+- `app/styles/card-detail-modal.css` - 2-column layout + fixes
+- `app/styles/card-correction-modal.css` - Padding adjustment
+- `docs/working-memory/css-debugging-protocol.md` - NEW
+- `docs/working-memory/COMMAND_REFERENCE.md` - NEW
 
-**Code Quality:**
-- Removed 574 lines of legacy code
-- All modals now use BEM naming consistently
-- Type-safe nullable handling throughout
+---
 
-### Next Session
+## 🎯 Next Session
 
-1. Test scan review flows with real data
-2. Monitor debug logs for missing image_urls
-3. Verify pokemontcg.io API images load correctly
+1. Test new Scan tab UX flow end-to-end
+2. Verify mobile responsive layout
+3. Check card-correction-modal still works
+4. Consider additional modal improvements
 
-**Branch:** main  
-**Handoff:** [context_handoff_20251017_0030.md](../../handoffs/2025/10-october/context_handoff_20251017_0030.md)
+---
 
+## 🎓 Key Learning
+
+**CSS Debugging:** When images overflow despite `max-height: 100%`, trace ENTIRE parent chain. One missing height constraint breaks the whole propagation. Use `/debug-css` protocol for systematic analysis.
+
+**UX Insight:** Place corrective actions where errors are visible (Scan tab) rather than generic locations (footer).
+
+---
+
+**Status:** ✅ Ready for testing  
+**Victory:** Systematic CSS debugging > guessing

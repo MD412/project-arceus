@@ -1,5 +1,9 @@
 /* Card Correction Modal - For correcting AI detection mistakes in scan review */
 
+.modal-content.card-correction-modal {
+  padding: 0;
+}
+
 .card-correction-modal {
   width: 80vw;
   max-width: 1200px;

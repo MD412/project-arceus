@@ -1,26 +1,27 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 17, 2025 @ 6:05 PM  
+**Last Updated:** October 17, 2025 @ 9:30 PM  
 **Branch:** `main`  
-**Status:** ✅ Card detail modal CSS fixed - images display properly
+**Status:** ✅ Major modal UX refinement complete - Scan tab redesigned
 
 ---
 
 ## 🎯 Current Status
 
-Modal image clipping resolved:
-- ✅ Card images display completely (no top/bottom clipping)
-- ✅ Layout refactored from Grid to Flexbox
-- ✅ Proper aspect ratio maintained
-- ✅ Images fill available space appropriately
+Modal refinement complete:
+- ✅ Scan tab redesigned: side-by-side comparison (scan crop vs identified card)
+- ✅ Replace Card moved to Scan tab (better UX)
+- ✅ CSS flexbox constraint chain debugged and documented
+- ✅ CSS debugging protocol established (`/debug-css` command)
+- ✅ All uncommitted changes ready for commit
 
 ---
 
 ## 📖 Quick Links
 
-- **📋 [Latest Handoff (Oct 17, 6:05 PM)](./handoffs/2025/10-october/context_handoff_20251017_1805.md)** ← **START HERE**
-- **📋 [Session Summary](./summaries/2025/10-october/session_summary_20251017_modal_css.md)** ← **Quick Overview**
-- **📋 [Previous: Scan Review UX (Oct 17, 12:30 AM)](./handoffs/2025/10-october/context_handoff_20251017_0030.md)**
+- **📋 [Latest Handoff (Oct 17, 9:30 PM)](./handoffs/2025/10-october/context_handoff_20251017_2130.md)** ← **START HERE**
+- **📋 [Session Summary](./summaries/2025/10-october/session_summary_20251017_modal_ux.md)** ← **Quick Overview**
+- **📋 [CSS Debugging Protocol](./css-debugging-protocol.md)** ← **Use `/debug-css` for hard CSS issues**
 - **📂 [Organization Guide](./ORGANIZATION.md)**
 - **⌨️ [Commands](./COMMAND_REFERENCE.md)**
 
@@ -30,9 +31,9 @@ Modal image clipping resolved:
 
 ## 🔴 Priority
 
-1. **Test modal with edge cases** - Try landscape cards, different aspect ratios, missing images
-2. **Verify mobile responsiveness** - Check modal layout on small screens
-3. **Monitor for layout issues** - Watch for any new clipping cases
+1. **Test new Scan tab UX** - Verify side-by-side layout and Replace Card flow
+2. **Verify mobile responsiveness** - Check 2-column layout stacks properly on mobile
+3. **Test card-correction-modal** - Ensure padding changes don't break scan review flow
 
 ---
 
