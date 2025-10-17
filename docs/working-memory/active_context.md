@@ -1,25 +1,28 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 16, 2025 @ 9:30 PM  
+**Last Updated:** October 17, 2025 @ 12:30 AM  
 **Branch:** `main`  
-**Status:** ✅ Modal refactor complete - working in grid + table + scan views
+**Status:** ✅ Scan review UX complete - pokemontcg.io images fixed, modal improvements deployed
 
 ---
 
 ## 🎯 Current Status
 
-Completed modal system refactor with full testing:
-- BaseModal, CardDetailModal, CardCorrectionModal all working correctly
-- Grid view, table view, and scan review all use proper modals
-- BEM naming, clean CSS, SSR guards added
-- No class conflicts, all linter errors resolved
+Modal system + scan review improvements:
+- ✅ Legacy Modal.tsx and modal.css removed (574 lines)
+- ✅ pokemontcg.io API images now display in scan modals
+- ✅ Auto-search for Unknown Cards (search mode + autofocus)
+- ✅ Modal stays open after correction (better review flow)
+- ✅ Loading states prevent double-submission
+- ✅ CircuitDS docs updated with all modal examples
 
 ---
 
 ## 📖 Quick Links
 
-- **📋 [Latest Handoff (Oct 16, 9:30 PM)](./handoffs/2025/10-october/context_handoff_20251016_2130.md)** ← **START HERE**
-- **📋 [Modal Refactor Details](./handoffs/2025/10-october/modal_refactor_20251016.md)** ← **Technical Deep Dive**
+- **📋 [Latest Handoff (Oct 17, 12:30 AM)](./handoffs/2025/10-october/context_handoff_20251017_0030.md)** ← **START HERE**
+- **📋 [Session Summary](./summaries/2025/10-october/session_summary_20251017_modal_ux.md)** ← **Quick Overview**
+- **📋 [Card Search API Fix](./reports/2025/10-october/card_search_api_fix_20251017.md)**
 - **📂 [Organization Guide](./ORGANIZATION.md)**
 - **⌨️ [Commands](./COMMAND_REFERENCE.md)**
 
@@ -29,9 +32,9 @@ Completed modal system refactor with full testing:
 
 ## 🔴 Priority
 
-1. **Cleanup legacy code** - Remove old Modal.tsx and modal.css (after backup)
-2. **Update CircuitDS docs** - Modal page needs new component examples
-3. **Optional: Card size slider** - Re-enable with improvements (see `docs/future-features/card-size-slider.md`)
+1. **Test scan review flows** - Verify Unknown Card auto-search, modal stays open, images load
+2. **Monitor debug logs** - Check terminal for cards missing image_urls data
+3. **Monitor card search** - Ensure new Supabase query keeps latency low
 
 ---
 
@@ -42,10 +45,10 @@ Completed modal system refactor with full testing:
 - ❌ Trace ID propagation
 - ❌ Search component consolidation
 - ❌ Performance profiling
-- ❌ Card search function fix (search_cards → search_similar_cards)
+- ❌ Card size slider (see `docs/future-features/card-size-slider.md`)
 
 
-**Last handoff:** [October 16, 9:30 PM](./handoffs/2025/10-october/context_handoff_20251016_2130.md)  
-**Next steps:** Cleanup legacy Modal files, update CircuitDS docs
+**Last handoff:** [October 17, 12:30 AM](./handoffs/2025/10-october/context_handoff_20251017_0030.md)  
+**Next steps:** Test scan review with real data, monitor image loading
 
 **Note:** ✅ Render worker working great! Security remediations complete (see [security-audit.md](../security-audit.md))

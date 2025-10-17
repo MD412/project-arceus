@@ -77,8 +77,19 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 
     const enrichedCards = (detections ?? []).map((detection, index) => {
       const c = (detection as any).card || {};
-      const imageUrl = c.image_url || c.image_urls?.small || null;
+      // Extract image URL from image_urls JSON field (pokemontcg.io API images)
+      const imageUrl = c.image_urls?.small || c.image_urls?.large || null;
       const cardName = c.name || 'Unknown Card';
+
+      // Debug logging to trace image URL issues
+      if (!imageUrl && c.id) {
+        console.log('[SCAN API] Missing image_url for card:', { 
+          card_id: c.id, 
+          card_name: cardName,
+          image_urls: c.image_urls,
+          has_image_urls: !!c.image_urls 
+        });
+      }
 
       return {
         card_index: index,

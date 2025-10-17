@@ -9,9 +9,10 @@ interface CardSearchInputProps {
   className?: string;
   placement?: 'top' | 'bottom';
   onCancel?: () => void; // Called when user explicitly cancels (e.g., Escape with empty query)
+  autoFocus?: boolean; // Auto-focus the search input when mounted
 }
 
-export function CardSearchInput({ onSelect, placeholder, className, placement = 'bottom', onCancel }: CardSearchInputProps) {
+export function CardSearchInput({ onSelect, placeholder, className, placement = 'bottom', onCancel, autoFocus }: CardSearchInputProps) {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -116,6 +117,7 @@ export function CardSearchInput({ onSelect, placeholder, className, placement = 
         aria-activedescendant={isOpen && results.length > 0 ? `option-${selectedIndex}` : undefined}
         aria-autocomplete="list"
         className={styles.input}
+        autoFocus={autoFocus}
       />
       
       {isOpen && (
@@ -173,7 +175,7 @@ export function CardSearchInput({ onSelect, placeholder, className, placement = 
                       <div className={styles.cardRarity}>{card.rarity}</div>
                     )}
                   </div>
-                  {card.market_price !== null && (
+                  {typeof card.market_price === 'number' && Number.isFinite(card.market_price) && (
                     <div className={styles.cardPrice}>
                       ${card.market_price.toFixed(2)}
                     </div>

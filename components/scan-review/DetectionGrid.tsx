@@ -110,7 +110,7 @@ export default function DetectionGrid({ scanId, onReviewed, hideBulkActions = fa
       if (error) throw error;
       toast.success('Scan discarded');
       queryClient.invalidateQueries({ queryKey: ['review-inbox'] });
-      onReviewed();
+      onReviewed(scanId);
     } catch (err) {
       console.error(err);
       toast.error('Failed to discard scan');
@@ -162,7 +162,7 @@ export default function DetectionGrid({ scanId, onReviewed, hideBulkActions = fa
             try {
               await correctDetection(editingDetection.id, cardId);
               console.log('Correction saved successfully');
-              setEditing(null);
+              // Don't close modal - let user continue reviewing or manually close
               toast.success('Card corrected successfully');
             } catch (error) {
               console.error('Failed to correct card:', error);

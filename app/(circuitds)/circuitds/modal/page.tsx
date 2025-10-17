@@ -5,20 +5,36 @@ import PageLayout from '@/components/layout/PageLayout';
 import ContentSection from '@/components/layout/ContentSection';
 import ExampleShowcase from '@/components/layout/ExampleShowcase';
 import CodeBlock from '../components/CodeBlock';
-import { Modal } from '@/components/ui/Modal';
+import { BaseModal } from '@/components/ui/BaseModal';
+import { CardDetailModal } from '@/components/ui/CardDetailModal';
+import { CardCorrectionModal } from '@/components/ui/CardCorrectionModal';
 import { Button } from '@/components/ui/Button';
 
 export default function ModalPage() {
   const [basicModalOpen, setBasicModalOpen] = useState(false);
-  const [cardModalOpen, setCardModalOpen] = useState(false);
+  const [cardDetailModalOpen, setCardDetailModalOpen] = useState(false);
+  const [correctionModalOpen, setCorrectionModalOpen] = useState(false);
   
   const exampleCard = {
+    id: 'demo-1',
     name: "Charizard ex",
     imageUrl: "/ui-playground-pk-img/bulbasaur.jpg",
     number: "185",
     setCode: "sv5",
     setName: "Temporal Forces",
-    description: "A powerful Fire-type Pokémon known for its fierce battles and loyal nature. This special edition card features holographic artwork."
+    quantity: 2,
+    condition: "Near Mint",
+  };
+
+  const exampleDetection = {
+    id: 'demo-detection-1',
+    crop_url: 'demo/crop.jpg',
+    card: {
+      name: "Pikachu",
+      card_number: "25",
+      set_code: "sv5",
+      image_url: "/ui-playground-pk-img/bulbasaur.jpg",
+    },
   };
 
   return (
@@ -28,37 +44,45 @@ export default function ModalPage() {
     >
       <ContentSection title="Overview">
         <p>
-          Our modal implementation follows shadcn/ui patterns using Radix UI primitives. 
-          The modal system is designed to provide a focused experience for viewing detailed 
-          information or completing complex interactions.
+          CircuitDS provides a modular modal system built with composition in mind. 
+          Each modal component serves a specific purpose and follows BEM naming conventions 
+          for consistent styling.
         </p>
+        <ul style={{ marginTop: 'var(--sds-size-space-300)', color: 'var(--text-secondary)' }}>
+          <li><strong>BaseModal</strong> - Foundation for custom content</li>
+          <li><strong>CardDetailModal</strong> - Collection card details and management</li>
+          <li><strong>CardCorrectionModal</strong> - Scan review and AI corrections</li>
+        </ul>
       </ContentSection>
 
-      <ContentSection title="Basic Modal">
+      <ContentSection title="BaseModal">
+        <p style={{ marginBottom: 'var(--sds-size-space-400)' }}>
+          The foundation modal provides backdrop, container, close button, and SSR guards. 
+          Use this for custom content that doesn't fit the specialized modals.
+        </p>
         <ExampleShowcase>
           <Button onClick={() => setBasicModalOpen(true)}>
-            Open Basic Modal
+            Open BaseModal
           </Button>
           
-          <Modal
+          <BaseModal
             isOpen={basicModalOpen}
             onClose={() => setBasicModalOpen(false)}
+            title="Custom Modal"
+            className="demo-modal"
           >
             <div style={{ padding: 'var(--sds-size-space-600)' }}>
-              <h2 style={{ marginBottom: 'var(--sds-size-space-400)' }}>
-                Basic Modal Example
-              </h2>
               <p style={{ marginBottom: 'var(--sds-size-space-400)', color: 'var(--text-secondary)' }}>
                 This is a simple modal with custom content. You can put any content here.
               </p>
               <Button onClick={() => setBasicModalOpen(false)}>
-                Close Modal
+                Got it
               </Button>
             </div>
-          </Modal>
+          </BaseModal>
         </ExampleShowcase>
 
-        <CodeBlock language="tsx" code={`import { Modal } from '@/components/ui/Modal';
+        <CodeBlock language="tsx" code={`import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/Button';
 
 function Example() {
@@ -70,40 +94,42 @@ function Example() {
         Open Modal
       </Button>
       
-      <Modal
+      <BaseModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
+        title="Custom Modal"
+        className="my-custom-modal"
       >
         <div style={{ padding: 'var(--sds-size-space-600)' }}>
-          <h2>Modal Content</h2>
           <p>Your content goes here</p>
         </div>
-      </Modal>
+      </BaseModal>
     </>
   );
 }`} />
       </ContentSection>
 
-      <ContentSection title="Card Info Modal">
+      <ContentSection title="CardDetailModal">
         <p style={{ marginBottom: 'var(--sds-size-space-400)' }}>
-          The CardInfoModal is a specialized modal designed for displaying detailed card information. 
-          It features a large image on the left and detailed information on the right, optimized for 
-          the trading card use case.
+          Specialized for collection management. Shows card image, market value, quantity controls, 
+          and actions like replace and delete.
         </p>
         
         <ExampleShowcase>
-          <Button onClick={() => setCardModalOpen(true)}>
+          <Button onClick={() => setCardDetailModalOpen(true)}>
             View Card Details
           </Button>
           
-          <Modal
-            isOpen={cardModalOpen}
-            onClose={() => setCardModalOpen(false)}
+          <CardDetailModal
+            isOpen={cardDetailModalOpen}
+            onClose={() => setCardDetailModalOpen(false)}
             card={exampleCard}
+            onDeleteCard={async (cardId: string) => console.log('Delete card:', cardId)}
+            onReplaced={(updated) => console.log('Card replaced:', updated)}
           />
         </ExampleShowcase>
 
-        <CodeBlock language="tsx" code={`import { Modal } from '@/components/ui/Modal';
+        <CodeBlock language="tsx" code={`import { CardDetailModal } from '@/components/ui/CardDetailModal';
 
 function CardGrid() {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -119,10 +145,12 @@ function CardGrid() {
       ))}
       
       {selectedCard && (
-        <Modal
+        <CardDetailModal
           isOpen={!!selectedCard}
           onClose={() => setSelectedCard(null)}
           card={selectedCard}
+          onDeleteCard={async (cardId) => await handleDelete(cardId)}
+          onReplaced={(updated) => handleCardReplaced(updated)}
         />
       )}
     </>
@@ -130,37 +158,87 @@ function CardGrid() {
 }`} />
       </ContentSection>
 
-      <ContentSection title="Modal Features">
+      <ContentSection title="CardCorrectionModal">
+        <p style={{ marginBottom: 'var(--sds-size-space-400)' }}>
+          For scan review workflows. Shows AI match vs original scan crop side-by-side, 
+          with search functionality to correct mistakes.
+        </p>
+        
+        <ExampleShowcase>
+          <Button onClick={() => setCorrectionModalOpen(true)}>
+            Review Detection
+          </Button>
+          
+          <CardCorrectionModal
+            isOpen={correctionModalOpen}
+            onClose={() => setCorrectionModalOpen(false)}
+            detection={exampleDetection}
+            onSave={(cardId) => {
+              console.log('Corrected to:', cardId);
+              setCorrectionModalOpen(false);
+            }}
+          />
+        </ExampleShowcase>
+
+        <CodeBlock language="tsx" code={`import { CardCorrectionModal } from '@/components/ui/CardCorrectionModal';
+
+function ScanReview() {
+  const [selectedDetection, setSelectedDetection] = useState(null);
+  
+  return (
+    <>
+      {detections.map(detection => (
+        <DetectionCard
+          key={detection.id}
+          {...detection}
+          onClick={() => setSelectedDetection(detection)}
+        />
+      ))}
+      
+      {selectedDetection && (
+        <CardCorrectionModal
+          isOpen={!!selectedDetection}
+          onClose={() => setSelectedDetection(null)}
+          detection={selectedDetection}
+          onSave={(cardId) => handleCorrection(cardId)}
+        />
+      )}
+    </>
+  );
+}`} />
+      </ContentSection>
+
+      <ContentSection title="Design Principles">
         <div className="modal-features-grid">
           <div className="feature-card">
-            <h3>Large Display Area</h3>
+            <h3>Composition</h3>
             <p>
-              The modal takes up 90% of viewport height and up to 1200px width, 
-              providing ample space for detailed content.
+              Build specialized modals by composing BaseModal with domain-specific content. 
+              Each modal serves one clear purpose.
             </p>
           </div>
           
           <div className="feature-card">
-            <h3>Accessibility</h3>
+            <h3>BEM Naming</h3>
             <p>
-              Built-in keyboard navigation, focus management, and screen reader support. 
-              Press ESC to close, click outside to dismiss.
+              CSS follows strict BEM conventions: <code>.card-detail-modal__header</code>, 
+              <code>.card-correction-modal__layout</code> for predictable styling.
             </p>
           </div>
           
           <div className="feature-card">
-            <h3>Mobile Responsive</h3>
+            <h3>SSR Safe</h3>
             <p>
-              On mobile devices, the modal becomes full-screen with optimized layouts 
-              for touch interactions.
+              All modals include client-side mounting guards to prevent hydration mismatches 
+              in Next.js SSR.
             </p>
           </div>
           
           <div className="feature-card">
-            <h3>Smooth Animations</h3>
+            <h3>Accessible</h3>
             <p>
-              Fade-in backdrop and slide-in content animations provide a polished, 
-              professional feel.
+              Keyboard navigation (ESC to close), backdrop clicks, focus trapping, 
+              and proper ARIA attributes included.
             </p>
           </div>
         </div>
@@ -169,20 +247,20 @@ function CardGrid() {
       <ContentSection title="Implementation Notes">
         <ul className="implementation-list">
           <li>
-            <strong>No Portal Required:</strong> Unlike traditional React portal-based modals, 
-            our implementation renders inline with proper z-index management.
+            <strong>BaseModal Foundation:</strong> All specialized modals wrap BaseModal 
+            for consistent backdrop, container, and close behavior.
           </li>
           <li>
-            <strong>Body Scroll Lock:</strong> When the modal opens, body scrolling is disabled 
-            to prevent background interaction.
+            <strong>Separate CSS Files:</strong> Each modal has its own CSS file 
+            (<code>base-modal.css</code>, <code>card-detail-modal.css</code>, etc.) to avoid conflicts.
           </li>
           <li>
-            <strong>Click Outside:</strong> Clicking the backdrop closes the modal, following 
-            standard UX patterns.
+            <strong>TypeScript Interfaces:</strong> Strongly typed props ensure correct usage 
+            and catch errors at compile time.
           </li>
           <li>
-            <strong>Custom Styling:</strong> The modal accepts a className prop for custom 
-            styling needs.
+            <strong>Mobile Optimized:</strong> Responsive layouts transform to full-screen 
+            on mobile with touch-optimized spacing.
           </li>
         </ul>
       </ContentSection>

@@ -73,7 +73,7 @@ async function fetchDetections(scanId: string): Promise<DetectionRecord[]> {
         name: c.name,
         set_code: c.set_code,
         card_number: c.card_number,
-        image_url: c.image_url || c.image_urls?.small || null,
+        image_url: c.image_urls?.small || c.image_urls?.large || null,
       } : null;
       return { ...d, card: normalized } as DetectionRecord & { card?: CardLite | null };
     });

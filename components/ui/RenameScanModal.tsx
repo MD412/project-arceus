@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from './Button';
-import { Modal } from './Modal';
+import { BaseModal } from './BaseModal';
 import { Input } from '../forms/Input';
 
 interface RenameScanModalProps {
@@ -17,16 +17,15 @@ export function RenameScanModal({ currentTitle, onRename, onClose }: RenameScanM
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTitle.trim()) {
-    onRename(newTitle.trim());
-    onClose();
+      onRename(newTitle.trim());
+      onClose();
     }
   };
 
   return (
-    <Modal isOpen={true} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="rename-modal-content">
-        <h2 className="modal-title">Rename Scan</h2>
-        <p>Enter a new title for your scan:</p>
+    <BaseModal isOpen={true} onClose={onClose} title="Rename Scan" className="rename-scan-modal">
+      <form onSubmit={handleSubmit} className="rename-scan-modal__form">
+        <p className="rename-scan-modal__description">Enter a new title for your scan:</p>
         <Input
           type="text"
           value={newTitle}
@@ -34,7 +33,7 @@ export function RenameScanModal({ currentTitle, onRename, onClose }: RenameScanM
           placeholder="Enter new scan title"
           autoFocus
         />
-        <div className="modal-actions">
+        <div className="rename-scan-modal__actions">
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -43,6 +42,6 @@ export function RenameScanModal({ currentTitle, onRename, onClose }: RenameScanM
           </Button>
         </div>
       </form>
-    </Modal>
+    </BaseModal>
   );
 } 

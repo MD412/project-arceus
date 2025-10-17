@@ -17,7 +17,7 @@
 @import './styles/base-modal.css';
 @import './styles/card-detail-modal.css';
 @import './styles/card-correction-modal.css';
-@import './styles/modal.css'; /* Legacy - will be removed */
+@import './styles/rename-scan-modal.css';
 @import './styles/sheet.css';
 @import './styles/table.css';
 

@@ -1,0 +1,25 @@
+/* Rename Scan Modal */
+.rename-scan-modal {
+  max-width: 500px;
+}
+
+.rename-scan-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sds-size-space-400);
+  padding: var(--sds-size-space-600);
+}
+
+.rename-scan-modal__description {
+  margin: 0;
+  font-size: var(--font-size-125);
+  color: var(--text-secondary);
+}
+
+.rename-scan-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sds-size-space-200);
+  margin-top: var(--sds-size-space-200);
+}
+

@@ -6,8 +6,8 @@ import styles from './DetectionTile.module.css';
 
 interface Detection {
   id: string;
-  crop_url: string;
-  guess_card_id?: string;
+  crop_url: string | null;
+  guess_card_id?: string | null;
   card?: {
     name: string;
     set_name?: string;
@@ -16,7 +16,7 @@ interface Detection {
       small?: string;
     };
   };
-  confidence?: number;
+  confidence?: number | null;
   tile_source?: string;
 }
 
@@ -30,6 +30,7 @@ export default function DetectionTile({ detection, onClick }: DetectionTileProps
   const isLowConfidence = confidencePercent < 80;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const cropSrc = React.useMemo(() => {
+    if (!detection.crop_url) return '';
     const isAbsolute = /^https?:\/\//i.test(detection.crop_url);
     if (isAbsolute) return detection.crop_url;
     if (supabaseUrl) {
@@ -51,11 +52,13 @@ export default function DetectionTile({ detection, onClick }: DetectionTileProps
       }}
     >
       <div className={styles.imageContainer}>
-        <img 
-          src={cropSrc} 
-          alt={detection.card?.name || 'Unknown card'}
-          className={styles.cropImage}
-        />
+        {cropSrc && (
+          <img 
+            src={cropSrc} 
+            alt={detection.card?.name || 'Unknown card'}
+            className={styles.cropImage}
+          />
+        )}
         {detection.tile_source && (
           <span className={styles.tileSource}>{detection.tile_source}</span>
         )}
