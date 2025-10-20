@@ -22,11 +22,12 @@ interface CardEntry {
   set_name: string;
   image_url: string;
   raw_crop_url?: string | null;
+  rarity?: string | null;
+  language?: string;
   user_id: string;
   created_at: string;
   quantity: number;
   condition?: string;
-  language?: string;
 }
 
 export default function HomePage() {
@@ -129,7 +130,7 @@ export default function HomePage() {
               value={filters}
               onChange={setFilters}
               setOptions={[...new Set((localCards || []).map((c) => c.set_code).filter(Boolean))] as string[]}
-              rarityOptions={[...new Set((localCards || []).map((c: any) => c.rarity).filter(Boolean))] as string[]}
+              rarityOptions={[...new Set((localCards || []).map((c) => c.rarity).filter(Boolean))] as string[]}
             />
           </header>
         </div>
@@ -151,7 +152,7 @@ export default function HomePage() {
                 const q = filters.query.trim().toLowerCase();
                 const matchesQuery = !q || c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q);
                 const matchesSet = !filters.setCode || c.set_code === filters.setCode;
-                const matchesRarity = !filters.rarity || (c as any).rarity === filters.rarity;
+                const matchesRarity = !filters.rarity || c.rarity === filters.rarity;
                 return matchesQuery && matchesSet && matchesRarity;
               })}
               onCardClick={setSelectedCard}
@@ -164,7 +165,7 @@ export default function HomePage() {
                   const q = filters.query.trim().toLowerCase();
                   const matchesQuery = !q || c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q);
                   const matchesSet = !filters.setCode || c.set_code === filters.setCode;
-                  const matchesRarity = !filters.rarity || (c as any).rarity === filters.rarity;
+                  const matchesRarity = !filters.rarity || c.rarity === filters.rarity;
                   return matchesQuery && matchesSet && matchesRarity;
                 })
                 .map((card) => (

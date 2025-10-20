@@ -105,10 +105,6 @@ export function TradingCard({
       <div className="circuit-trading-card-info">
         <h3 className="circuit-trading-card-name">{name}</h3>
         <p className="circuit-trading-card-meta">
-          {number && <span>{number}</span>}
-          {number && (condition || setName) && <span> • </span>}
-          {condition && <span>{formatCondition(condition)}</span>}
-          {condition && setName && <span> • </span>}
           {setName && <span>{setName}</span>}
         </p>
       </div>

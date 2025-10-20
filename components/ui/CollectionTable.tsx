@@ -41,10 +41,10 @@ export function CollectionTable({ cards, onCardClick, onDelete }: CollectionTabl
     let aValue: any = a[sortField as keyof CardEntry];
     let bValue: any = b[sortField as keyof CardEntry];
 
-    // Handle rarity (it's on the card object but typed differently)
+    // Handle rarity
     if (sortField === 'rarity') {
-      aValue = (a as any).rarity || '';
-      bValue = (b as any).rarity || '';
+      aValue = a.rarity || '';
+      bValue = b.rarity || '';
     }
 
     // Handle null/undefined values
@@ -151,10 +151,10 @@ export function CollectionTable({ cards, onCardClick, onDelete }: CollectionTabl
               {card.set_name}
             </TableCell>
             <TableCell>
-              {(card as any).rarity || 'Unknown'}
+              {card.rarity || 'Unknown'}
             </TableCell>
             <TableCell>
-              {formatLanguageDisplay(((card as any).language || 'en') as LanguageCode, 'flag-code')}
+              {formatLanguageDisplay((card.language || 'en') as LanguageCode, 'flag-code')}
             </TableCell>
             <TableCell className="circuit-table-cell--numeric">
               {card.quantity}

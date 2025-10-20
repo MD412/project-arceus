@@ -24,6 +24,8 @@ export interface CardEntry {
   set_name: string;
   image_url: string;
   raw_crop_url?: string | null;
+  rarity?: string | null;
+  language?: string;
   user_id: string;
   created_at: string;
   quantity: number; // Required field from user_cards
@@ -126,7 +128,7 @@ export function DraggableCardGrid({
               number={card.number}
               setCode={card.set_code}
               setName={card.set_name}
-              language={(card as any).language}
+              language={card.language}
               quantity={card.quantity}
               condition={card.condition}
               onClick={() => setSelectedCard(card)}
@@ -148,7 +150,7 @@ export function DraggableCardGrid({
               quantity: selectedCard.quantity,
               condition: selectedCard.condition,
               rawCropUrl: selectedCard.raw_crop_url || undefined,
-              language: (selectedCard as any).language || 'en',
+              language: selectedCard.language || 'en',
             }}
             onDeleteCard={async (cardId: string) => {
               if (onDelete && selectedCard) {
@@ -222,7 +224,7 @@ export function DraggableCardGrid({
                 number={activeCard.number}
                 setCode={activeCard.set_code}
                 setName={activeCard.set_name}
-                language={(activeCard as any).language}
+                language={activeCard.language}
                 quantity={activeCard.quantity}
                 condition={activeCard.condition}
               />
@@ -245,7 +247,7 @@ export function DraggableCardGrid({
               quantity: selectedCard.quantity,
               condition: selectedCard.condition,
               rawCropUrl: selectedCard.raw_crop_url || undefined,
-              language: (selectedCard as any).language || 'en',
+              language: selectedCard.language || 'en',
             }}
             onDeleteCard={async (cardId: string) => {
               if (onDelete && selectedCard) {
@@ -328,7 +330,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         number={card.number}
         setCode={card.set_code}
         setName={card.set_name}
-        language={(card as any).language}
+        language={card.language}
         quantity={card.quantity}
         condition={card.condition}
         onClick={onClick}
