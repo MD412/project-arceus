@@ -119,6 +119,7 @@ export function CollectionTable({ cards, onCardClick, onDelete }: CollectionTabl
           <SortableHeader field="number" style={{ width: '100px' }}>Number</SortableHeader>
           <SortableHeader field="set_code" style={{ width: '140px' }}>Set</SortableHeader>
           <SortableHeader field="rarity" style={{ width: '120px' }}>Rarity</SortableHeader>
+          <TableHead style={{ width: '90px' }}>Language</TableHead>
           <SortableHeader field="quantity" className="circuit-table-cell--numeric" style={{ width: '80px' }}>Qty</SortableHeader>
           <SortableHeader field="condition" style={{ width: '120px' }}>Condition</SortableHeader>
           <SortableHeader field="created_at" style={{ width: '120px' }}>Added</SortableHeader>
@@ -150,6 +151,9 @@ export function CollectionTable({ cards, onCardClick, onDelete }: CollectionTabl
             </TableCell>
             <TableCell>
               {(card as any).rarity || 'Unknown'}
+            </TableCell>
+            <TableCell>
+              {formatLanguageDisplay(((card as any).language || 'en') as LanguageCode, 'flag-code')}
             </TableCell>
             <TableCell className="circuit-table-cell--numeric">
               {card.quantity}

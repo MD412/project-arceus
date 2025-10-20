@@ -126,6 +126,7 @@ export function DraggableCardGrid({
               number={card.number}
               setCode={card.set_code}
               setName={card.set_name}
+              language={(card as any).language}
               quantity={card.quantity}
               condition={card.condition}
               onClick={() => setSelectedCard(card)}
@@ -147,12 +148,22 @@ export function DraggableCardGrid({
               quantity: selectedCard.quantity,
               condition: selectedCard.condition,
               rawCropUrl: selectedCard.raw_crop_url || undefined,
+              language: (selectedCard as any).language || 'en',
             }}
             onDeleteCard={async (cardId: string) => {
               if (onDelete && selectedCard) {
                 onDelete(cardId, selectedCard.name);
                 setSelectedCard(null); // Close modal after deletion
               }
+            }}
+            onLanguageChange={async (cardId: string, newLanguage: string) => {
+              const response = await fetch(`/api/user-cards/${cardId}/language`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ language: newLanguage }),
+              });
+              if (!response.ok) throw new Error('Failed to update language');
+              setSelectedCard((prev) => prev ? ({ ...prev, language: newLanguage } as any) : prev);
             }}
             onReplaced={(u) => {
               // Optimistically update selected card details locally
@@ -209,6 +220,7 @@ export function DraggableCardGrid({
                 number={activeCard.number}
                 setCode={activeCard.set_code}
                 setName={activeCard.set_name}
+                language={(activeCard as any).language}
                 quantity={activeCard.quantity}
                 condition={activeCard.condition}
               />
@@ -231,12 +243,22 @@ export function DraggableCardGrid({
               quantity: selectedCard.quantity,
               condition: selectedCard.condition,
               rawCropUrl: selectedCard.raw_crop_url || undefined,
+              language: (selectedCard as any).language || 'en',
             }}
             onDeleteCard={async (cardId: string) => {
               if (onDelete && selectedCard) {
                 onDelete(cardId, selectedCard.name);
                 setSelectedCard(null); // Close modal after deletion
               }
+            }}
+            onLanguageChange={async (cardId: string, newLanguage: string) => {
+              const response = await fetch(`/api/user-cards/${cardId}/language`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ language: newLanguage }),
+              });
+              if (!response.ok) throw new Error('Failed to update language');
+              setSelectedCard((prev) => prev ? ({ ...prev, language: newLanguage } as any) : prev);
             }}
             onReplaced={(u) => {
               // Optimistically update selected card details locally
@@ -302,6 +324,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         number={card.number}
         setCode={card.set_code}
         setName={card.set_name}
+        language={(card as any).language}
         quantity={card.quantity}
         condition={card.condition}
         onClick={onClick}

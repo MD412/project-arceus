@@ -18,6 +18,8 @@ interface TradingCardProps {
   setCode?: string;
   /** Set name (e.g., "VStar Universe") - displayed instead of code */
   setName?: string;
+  /** Language/region code (e.g., "en", "jp") */
+  language?: string;
   /** Optional extra class names */
   className?: string;
   /** Click handler for opening modal or other actions */
@@ -32,6 +34,7 @@ export function TradingCard({
   number,
   setCode,
   setName,
+  language,
   className,
   onClick,
 }: TradingCardProps) {
@@ -87,6 +90,13 @@ export function TradingCard({
         ) : (
           <div className="circuit-trading-card-img circuit-trading-card-placeholder">
             <span>No Image</span>
+          </div>
+        )}
+        
+        {/* Language badge - only show if not English */}
+        {language && language !== 'en' && (
+          <div className="circuit-trading-card-language-badge">
+            {language.toUpperCase()}
           </div>
         )}
       </div>

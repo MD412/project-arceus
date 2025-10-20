@@ -163,7 +163,8 @@ export async function GET(request: NextRequest) {
         id: uc.id,
         quantity: uc.quantity ?? 1,
         condition: uc.condition ?? 'unknown',
-        created_at: uc.added_at || uc.updated_at || null,
+        language: uc.language ?? 'en',
+        created_at: uc.date_added || uc.updated_at || null,
         raw_crop_url: rawCropUrl,
         card: {
           id: uc.cards?.id,

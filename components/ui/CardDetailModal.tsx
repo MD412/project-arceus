@@ -5,8 +5,10 @@ import { BaseModal } from './BaseModal';
 import { Button } from './Button';
 import { CardSearchInput } from './CardSearchInput';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
+import { LanguageSelect } from './LanguageSelect';
 import { type Card as SearchResultCard } from '@/hooks/useCardSearch';
 import { updateCardQuantity, replaceUserCard } from '@/services/cards';
+import { type LanguageCode } from '@/lib/languages';
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -21,6 +23,7 @@ interface CardDetailModalProps {
     quantity?: number;
     condition?: string;
     rawCropUrl?: string;
+    language?: string;
   };
   onDeleteCard?: (cardId: string) => Promise<void>;
   onReplaced?: (updated: {
@@ -30,6 +33,7 @@ interface CardDetailModalProps {
     setCode: string;
     setName: string;
   }) => void;
+  onLanguageChange?: (cardId: string, language: string) => Promise<void>;
 }
 
 /**
@@ -49,7 +53,8 @@ export function CardDetailModal({
   onClose, 
   card,
   onDeleteCard,
-  onReplaced
+  onReplaced,
+  onLanguageChange,
 }: CardDetailModalProps) {
   const [localQuantity, setLocalQuantity] = React.useState(card.quantity || 1);
   const [isUpdating, setIsUpdating] = React.useState(false);
@@ -57,12 +62,38 @@ export function CardDetailModal({
   const [isReplaceMode, setIsReplaceMode] = React.useState(false);
   const [isReplacing, setIsReplacing] = React.useState(false);
   const [displayCard, setDisplayCard] = React.useState(card);
+  const [currentLanguage, setCurrentLanguage] = React.useState<LanguageCode>(
+    (card.language as LanguageCode) || 'en'
+  );
+  const [isUpdatingLanguage, setIsUpdatingLanguage] = React.useState(false);
 
   // Update local quantity when card changes
   React.useEffect(() => {
     setLocalQuantity(card.quantity || 1);
     setDisplayCard(card);
+    setCurrentLanguage((card.language as LanguageCode) || 'en');
   }, [card]);
+
+  const handleLanguageChange = async (newLanguage: LanguageCode) => {
+    if (!card.id || isUpdatingLanguage) return;
+    
+    console.log('[CardDetailModal] Changing language from', currentLanguage, 'to', newLanguage);
+    setIsUpdatingLanguage(true);
+    try {
+      if (onLanguageChange) {
+        await onLanguageChange(card.id, newLanguage);
+        setCurrentLanguage(newLanguage);
+        console.log('[CardDetailModal] Language updated successfully to', newLanguage);
+      } else {
+        console.warn('[CardDetailModal] No onLanguageChange handler provided');
+      }
+    } catch (error) {
+      console.error('[CardDetailModal] Failed to update language:', error);
+      setCurrentLanguage((card.language as LanguageCode) || 'en');
+    } finally {
+      setIsUpdatingLanguage(false);
+    }
+  };
 
   const handleQuantityChange = async (newQuantity: number) => {
     if (!card.id || isUpdating) return;
@@ -166,6 +197,15 @@ export function CardDetailModal({
                   <div className="card-detail-modal__detail-item">
                     <span className="card-detail-modal__detail-label">Condition:</span>
                     <span className="card-detail-modal__detail-value">{displayCard.condition || 'Near Mint'}</span>
+                  </div>
+                  <div className="card-detail-modal__detail-item">
+                    <span className="card-detail-modal__detail-label">Language:</span>
+                    <LanguageSelect
+                      value={currentLanguage}
+                      onChange={handleLanguageChange}
+                      disabled={isUpdatingLanguage}
+                      compact={true}
+                    />
                   </div>
                 </div>
               </div>
