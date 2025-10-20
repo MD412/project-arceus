@@ -22,6 +22,7 @@ export async function getCards(userId: string) {
     set_name: uc.card?.set_name || '',
     image_url: uc.card?.image_url || '',
     raw_crop_url: uc.raw_crop_url || null,
+    rarity: uc.card?.rarity || null,
     user_id: userId,
     created_at: uc.created_at,
     quantity: uc.quantity || 1,

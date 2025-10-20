@@ -6,23 +6,38 @@ import { useRouter } from 'next/navigation';
 import { getCurrentUser } from '@/lib/supabase/browser';
 import { useCards } from '@/hooks/useCards';
 
-import { DraggableCardGrid, type CardEntry } from '@/components/ui/DraggableCardGrid';
+import { TradingCard } from '@/components/ui/TradingCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { User } from '@supabase/supabase-js';
 import { CollectionFilters, type CollectionFiltersState } from '@/components/ui/CollectionFilters';
 import { CollectionTable } from '@/components/ui/CollectionTable';
 import { CardDetailModal } from '@/components/ui/CardDetailModal';
 
+// Card type for the collection
+interface CardEntry {
+  id: string;
+  name: string;
+  number: string;
+  set_code: string;
+  set_name: string;
+  image_url: string;
+  raw_crop_url?: string | null;
+  user_id: string;
+  created_at: string;
+  quantity: number;
+  condition?: string;
+  language?: string;
+}
+
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [enableDrag, setEnableDrag] = useState(false);
   const router = useRouter();
 
   // Data Fetching via Custom Hook
   const { cards: dbCards, isLoading: areCardsLoading, deleteCard } = useCards(user?.id);
   
-  // Local state for optimistic reordering
+  // Local state for optimistic updates
   const [localCards, setLocalCards] = useState<CardEntry[] | undefined>(undefined);
   const [filters, setFilters] = useState<CollectionFiltersState>({ query: '', setCode: '', rarity: '', viewMode: 'grid' });
   const [selectedCard, setSelectedCard] = useState<CardEntry | null>(null);
@@ -67,12 +82,6 @@ export default function HomePage() {
     if (window.confirm(`Are you sure you want to delete ${cardName}?`)) {
       deleteCard(cardId);
     }
-  };
-
-  const handleReorder = (reorderedCards: CardEntry[]) => {
-    // Optimistically update the local state for instant feedback
-    setLocalCards(reorderedCards);
-    // TODO: Persist the new order to the database via an API call
   };
 
   // Loading state for auth
@@ -149,25 +158,30 @@ export default function HomePage() {
               onDelete={handleDeleteCard}
             />
           ) : (
-            <DraggableCardGrid 
-              cards={(localCards || []).filter((c) => {
-                const q = filters.query.trim().toLowerCase();
-                const matchesQuery = !q || c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q);
-                const matchesSet = !filters.setCode || c.set_code === filters.setCode;
-                const matchesRarity = !filters.rarity || (c as any).rarity === filters.rarity;
-                return matchesQuery && matchesSet && matchesRarity;
-              })}
-              onReorder={handleReorder}
-              onDelete={handleDeleteCard}
-              enableDrag={enableDrag}
-              onCardReplaced={(userCardId, update) => {
-                setLocalCards((prev) =>
-                  (prev || []).map((c) =>
-                    c.id === userCardId ? { ...c, ...update } : c
-                  )
-                );
-              }}
-            />
+            <div className="card-grid" data-testid="card-grid">
+              {(localCards || [])
+                .filter((c) => {
+                  const q = filters.query.trim().toLowerCase();
+                  const matchesQuery = !q || c.name.toLowerCase().includes(q) || c.number.toLowerCase().includes(q);
+                  const matchesSet = !filters.setCode || c.set_code === filters.setCode;
+                  const matchesRarity = !filters.rarity || (c as any).rarity === filters.rarity;
+                  return matchesQuery && matchesSet && matchesRarity;
+                })
+                .map((card) => (
+                  <TradingCard
+                    key={card.id}
+                    name={card.name}
+                    imageUrl={card.image_url}
+                    number={card.number}
+                    setCode={card.set_code}
+                    setName={card.set_name}
+                    language={card.language}
+                    quantity={card.quantity}
+                    condition={card.condition}
+                    onClick={() => setSelectedCard(card)}
+                  />
+                ))}
+            </div>
           )}
         </section>
       </div>
@@ -205,12 +219,29 @@ export default function HomePage() {
             quantity: selectedCard.quantity,
             condition: selectedCard.condition,
             rawCropUrl: selectedCard.raw_crop_url || undefined,
+            language: selectedCard.language || 'en',
           }}
           onDeleteCard={async (cardId: string) => {
             handleDeleteCard(cardId, selectedCard.name);
             setSelectedCard(null);
           }}
+          onLanguageChange={async (cardId: string, newLanguage: string) => {
+            const response = await fetch(`/api/user-cards/${cardId}/language`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ language: newLanguage }),
+            });
+            if (!response.ok) throw new Error('Failed to update language');
+            // Update local state
+            setLocalCards((prev) =>
+              (prev || []).map((c) =>
+                c.id === cardId ? { ...c, language: newLanguage } : c
+              )
+            );
+            setSelectedCard((prev) => prev ? { ...prev, language: newLanguage } : prev);
+          }}
           onReplaced={(updated) => {
+            // Update collection list
             setLocalCards((prev) =>
               (prev || []).map((c) =>
                 c.id === selectedCard.id ? { 
@@ -223,7 +254,15 @@ export default function HomePage() {
                 } : c
               )
             );
-            setSelectedCard(null);
+            // Keep modal open and reflect updated details
+            setSelectedCard((prev) => prev ? {
+              ...prev,
+              name: updated.name,
+              image_url: updated.imageUrl,
+              number: updated.number,
+              set_code: updated.setCode,
+              set_name: updated.setName,
+            } : prev);
           }}
         />
       )}

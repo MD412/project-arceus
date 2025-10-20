@@ -5,10 +5,10 @@ import { BaseModal } from './BaseModal';
 import { Button } from './Button';
 import { CardSearchInput } from './CardSearchInput';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
-import { LanguageSelect } from './LanguageSelect';
+import { Dropdown } from './Dropdown';
 import { type Card as SearchResultCard } from '@/hooks/useCardSearch';
 import { updateCardQuantity, replaceUserCard } from '@/services/cards';
-import { type LanguageCode } from '@/lib/languages';
+import { type LanguageCode, formatLanguageDisplay } from '@/lib/languages';
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -198,13 +198,28 @@ export function CardDetailModal({
                     <span className="card-detail-modal__detail-label">Condition:</span>
                     <span className="card-detail-modal__detail-value">{displayCard.condition || 'Near Mint'}</span>
                   </div>
-                  <div className="card-detail-modal__detail-item">
+                  <div className="card-detail-modal__detail-item card-detail-modal__detail-item--language">
                     <span className="card-detail-modal__detail-label">Language:</span>
-                    <LanguageSelect
-                      value={currentLanguage}
-                      onChange={handleLanguageChange}
-                      disabled={isUpdatingLanguage}
-                      compact={true}
+                    <Dropdown
+                      align="right"
+                      trigger={
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={isUpdatingLanguage}
+                          className="card-detail-modal__lang-trigger"
+                        >
+                          {formatLanguageDisplay(currentLanguage, 'flag-code')}
+                        </Button>
+                      }
+                      items={[
+                        { label: formatLanguageDisplay('en' as LanguageCode, 'flag-code'), href: '#en' },
+                        { label: formatLanguageDisplay('jp' as LanguageCode, 'flag-code'), href: '#jp' },
+                      ]}
+                      onItemClick={async (item) => {
+                        const code = item.href.endsWith('jp') ? ('jp' as LanguageCode) : ('en' as LanguageCode);
+                        await handleLanguageChange(code);
+                      }}
                     />
                   </div>
                 </div>

@@ -137,7 +137,8 @@ export async function GET(request: NextRequest) {
           set_code,
           set_name,
           card_number,
-          image_urls
+          image_urls,
+          rarity
         ),
         detection:detection_id (
           id,
@@ -173,6 +174,7 @@ export async function GET(request: NextRequest) {
           set_name: uc.cards?.set_name,
           card_number: uc.cards?.card_number,
           image_url: uc.cards?.image_urls?.small || null,
+          rarity: uc.cards?.rarity || null,
         },
       };
     });

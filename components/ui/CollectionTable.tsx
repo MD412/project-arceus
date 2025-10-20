@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './Table';
 import type { CardEntry } from './DraggableCardGrid';
+import { formatLanguageDisplay, type LanguageCode } from '@/lib/languages';
 import Image from 'next/image';
 import { Trash, CaretUp, CaretDown } from '@phosphor-icons/react';
 

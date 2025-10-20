@@ -28,13 +28,13 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Override default tab content padding for better control */
 .card-detail-modal__tabs [role="tabpanel"] {
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Header customization */
@@ -58,7 +58,7 @@
   gap: var(--sds-size-space-600);
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   padding: var(--sds-size-space-300);
 }
 
@@ -93,7 +93,7 @@
   align-items: flex-start;
   gap: var(--sds-size-space-400);
   min-height: 0;
-  overflow-y: auto;
+  overflow: visible;
   padding-right: var(--sds-size-space-200);
 }
 
@@ -136,6 +136,8 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* Allow column to shrink below content width in flex layout */
+  min-width: 0;
 }
 
 /* Left column: Scan image */
@@ -167,6 +169,8 @@
   flex-direction: column;
   align-items: stretch;
   gap: var(--sds-size-space-400);
+  /* Ensure actions column can shrink responsively */
+  min-width: 0;
 }
 
 /* Scan info panel (default state) */
@@ -174,6 +178,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--sds-size-space-400);
+  /* Allow inner content to shrink without forcing overflow */
+  min-width: 0;
+  /* Fill available height and allow shrinking */
+  flex: 1;
+  min-height: 0;
 }
 
 .card-detail-modal__scan-info h3 {
@@ -195,13 +204,25 @@
   background: var(--surface-subtle);
   border-radius: var(--sds-size-radius-200);
   border: 1px solid var(--border-default);
+  /* Stretch to container and allow responsive scaling */
+  width: 100%;
+  min-width: 0;
+  /* Respect available height */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .card-detail-modal__identified-image {
-  max-width: 200px;
+  /* Match the working scan image pattern: scale with container */
+  width: auto;
   height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
   border-radius: var(--sds-size-radius-100);
   box-shadow: var(--shadow-md);
+  object-fit: contain;
 }
 
 .card-detail-modal__identified-details {
@@ -250,15 +271,16 @@
 
 /* Collection details */
 .card-detail-modal__collection-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sds-size-space-200);
+  display: grid;
+  grid-auto-rows: minmax(36px, auto);
+  row-gap: var(--sds-size-space-200);
   margin-bottom: var(--sds-size-space-400);
 }
 
 .card-detail-modal__detail-item {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 120px 1fr; /* fixed label, fluid value */
+  column-gap: var(--sds-size-space-300);
   align-items: center;
   padding: var(--sds-size-space-200);
   background: var(--surface-subtle);

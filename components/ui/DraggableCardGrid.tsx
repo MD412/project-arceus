@@ -164,6 +164,8 @@ export function DraggableCardGrid({
               });
               if (!response.ok) throw new Error('Failed to update language');
               setSelectedCard((prev) => prev ? ({ ...prev, language: newLanguage } as any) : prev);
+              // Propagate language change to parent's localCards state
+              onCardReplaced?.(cardId, { language: newLanguage } as any);
             }}
             onReplaced={(u) => {
               // Optimistically update selected card details locally
@@ -259,6 +261,8 @@ export function DraggableCardGrid({
               });
               if (!response.ok) throw new Error('Failed to update language');
               setSelectedCard((prev) => prev ? ({ ...prev, language: newLanguage } as any) : prev);
+              // Propagate language change to parent's localCards state
+              onCardReplaced?.(cardId, { language: newLanguage } as any);
             }}
             onReplaced={(u) => {
               // Optimistically update selected card details locally
