@@ -146,7 +146,7 @@ export function CollectionTable({ cards, onCardClick, onDelete }: CollectionTabl
             <TableCell className="table-card-name">{card.name}</TableCell>
             <TableCell className="table-card-number">{card.number}</TableCell>
             <TableCell title={card.set_name}>
-              {card.set_code}
+              {card.set_name}
             </TableCell>
             <TableCell>
               {(card as any).rarity || 'Unknown'}

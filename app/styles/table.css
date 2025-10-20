@@ -64,7 +64,7 @@
 }
 
 .circuit-table-body .circuit-table-row:hover {
-  background: var(--surface-background-hover);
+  background: rgba(45, 106, 101, 0.2);
 }
 
 .circuit-table-body .circuit-table-row:last-child {

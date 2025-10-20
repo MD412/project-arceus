@@ -45,7 +45,7 @@ export function CardCorrectionModal({
   const cardImage = detection.card?.image_url || undefined;
   const cardName = detection.card?.name || 'Unknown Card';
   const cardNumber = detection.card?.card_number;
-  const setCode = detection.card?.set_code;
+  const setName = detection.card?.set_name;
 
   // Auto-enable search mode for Unknown Cards
   const isUnknownCard = !detection.card?.id || cardName === 'Unknown Card';
@@ -77,11 +77,11 @@ export function CardCorrectionModal({
   const title = (
     <>
       <h2 className="card-correction-modal__title">{cardName}</h2>
-      {(cardNumber || setCode) && (
+      {(cardNumber || setName) && (
         <p className="card-correction-modal__meta">
           {cardNumber && `#${cardNumber}`}
-          {cardNumber && setCode && ' • '}
-          {setCode}
+          {cardNumber && setName && ' • '}
+          {setName}
         </p>
       )}
     </>

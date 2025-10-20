@@ -125,6 +125,7 @@ export function DraggableCardGrid({
               imageUrl={card.image_url}
               number={card.number}
               setCode={card.set_code}
+              setName={card.set_name}
               quantity={card.quantity}
               condition={card.condition}
               onClick={() => setSelectedCard(card)}
@@ -207,6 +208,7 @@ export function DraggableCardGrid({
                 imageUrl={activeCard.image_url}
                 number={activeCard.number}
                 setCode={activeCard.set_code}
+                setName={activeCard.set_name}
                 quantity={activeCard.quantity}
                 condition={activeCard.condition}
               />
@@ -299,6 +301,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         imageUrl={card.image_url}
         number={card.number}
         setCode={card.set_code}
+        setName={card.set_name}
         quantity={card.quantity}
         condition={card.condition}
         onClick={onClick}

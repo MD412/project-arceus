@@ -192,7 +192,7 @@ def resolve_card_uuid(supabase_client, source: str, external_card_id: str) -> Op
         embedding_res = (
             supabase_client
             .from_("card_embeddings")
-            .select("card_id, name, set_code, card_number, rarity, image_url")
+            .select("card_id, name, set_code, set_name, card_number, rarity, image_url")
             .eq("card_id", external_card_id)
             .single()
             .execute()
@@ -206,6 +206,7 @@ def resolve_card_uuid(supabase_client, source: str, external_card_id: str) -> Op
                 "pokemon_tcg_api_id": emb_data["card_id"],
                 "name": emb_data.get("name"),
                 "set_code": emb_data.get("set_code"),
+                "set_name": emb_data.get("set_name"),
                 "card_number": emb_data.get("card_number"),
                 "rarity": emb_data.get("rarity"),
             }

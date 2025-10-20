@@ -16,6 +16,8 @@ interface TradingCardProps {
   number?: string;
   /** Set code or shorthand (e.g., "BASE") */
   setCode?: string;
+  /** Set name (e.g., "VStar Universe") - displayed instead of code */
+  setName?: string;
   /** Optional extra class names */
   className?: string;
   /** Click handler for opening modal or other actions */
@@ -29,6 +31,7 @@ export function TradingCard({
   condition,
   number,
   setCode,
+  setName,
   className,
   onClick,
 }: TradingCardProps) {
@@ -93,10 +96,10 @@ export function TradingCard({
         <h3 className="circuit-trading-card-name">{name}</h3>
         <p className="circuit-trading-card-meta">
           {number && <span>{number}</span>}
-          {number && (condition || setCode) && <span> • </span>}
+          {number && (condition || setName) && <span> • </span>}
           {condition && <span>{formatCondition(condition)}</span>}
-          {condition && setCode && <span> • </span>}
-          {setCode && <span>{setCode.toUpperCase()}</span>}
+          {condition && setName && <span> • </span>}
+          {setName && <span>{setName}</span>}
         </p>
       </div>
     </div>

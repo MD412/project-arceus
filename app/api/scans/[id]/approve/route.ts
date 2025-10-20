@@ -85,12 +85,13 @@ export async function POST(
       if (remainingB.length > 0) {
         const { data: embRows } = await supabase
           .from('card_embeddings')
-          .select('card_id, name, set_code, card_number, rarity, image_url')
+          .select('card_id, name, set_code, set_name, card_number, rarity, image_url')
           .in('card_id', remainingB);
         const inserts = (embRows || []).map((e: any) => ({
           pokemon_tcg_api_id: e.card_id,
           name: e.name || `Card ${e.card_id}`,
           set_code: e.set_code || null,
+          set_name: e.set_name || null,
           card_number: e.card_number || null,
           rarity: e.rarity || null,
           image_urls: e.image_url ? { small: e.image_url } : null,

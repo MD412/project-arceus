@@ -99,6 +99,7 @@ def process_batch(batch: list, clip_identifier: CLIPCardIdentifier, supabase_cli
             "card_id": card_id,
             "name": card.get("name"),
             "set_code": card_id.split('-')[0] if card_id else None,
+            "set_name": card.get("set", {}).get("name"),  # Extract set name from card.set.name
             "card_number": card.get("number"),
             "rarity": card.get("rarity"),
             "image_url": card.get("images", {}).get("large") or card.get("images", {}).get("small"),

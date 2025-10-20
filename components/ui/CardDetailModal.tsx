@@ -123,7 +123,7 @@ export function CardDetailModal({
   const title = (
     <>
       <h2 className="card-detail-modal__title">{displayCard.name}</h2>
-      <p className="card-detail-modal__meta">#{displayCard.number} • {displayCard.setCode}</p>
+      <p className="card-detail-modal__meta">#{displayCard.number} • {displayCard.setName}</p>
     </>
   );
 
@@ -219,7 +219,7 @@ export function CardDetailModal({
                       />
                       <div className="card-detail-modal__identified-details">
                         <p className="card-detail-modal__identified-name">{displayCard.name}</p>
-                        <p className="card-detail-modal__identified-meta">#{displayCard.number} • {displayCard.setCode}</p>
+                        <p className="card-detail-modal__identified-meta">#{displayCard.number} • {displayCard.setName}</p>
                       </div>
                     </div>
                     <Button 
