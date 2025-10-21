@@ -24,16 +24,48 @@
   top: 100%;
   z-index: 1000;
   min-width: 200px;
+  width: max-content;
+  max-width: 400px;
+  max-height: 75vh;
   margin-top: var(--sds-size-space-100);
   background-color: var(--surface-container-level-1);
   border: var(--sds-size-stroke-border) solid var(--border-default);
   border-radius: var(--sds-size-radius-200);
   box-shadow: 0 var(--sds-size-depth-100) var(--sds-size-depth-200) rgba(0, 0, 0, 0.25);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   pointer-events: auto;
   
   /* Animation */
   animation: dropdown-fade-in 0.15s ease-out;
+}
+
+/* Spotify-style floating scrollbar */
+.dropdown-menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+  background: transparent; /* No track background */
+  margin: 4px 0; /* Keep scrollbar away from rounded corners */
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box; /* Makes it look floating */
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+  background-clip: padding-box;
+}
+
+/* Firefox */
+.dropdown-menu {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 .dropdown-menu--left {
@@ -48,6 +80,7 @@
   list-style: none;
   margin: 0;
   padding: var(--sds-size-space-200) 0;
+  padding-right: 4px; /* Give space for floating scrollbar */
 }
 
 .dropdown-item {
@@ -92,6 +125,9 @@
 
 .dropdown-item-label {
   flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Animation */

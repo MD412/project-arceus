@@ -11,10 +11,15 @@ export interface CollectionFiltersState {
   viewMode?: 'grid' | 'table';
 }
 
+interface SetOption {
+  code: string;
+  name: string;
+}
+
 interface CollectionFiltersProps {
   value: CollectionFiltersState;
   onChange: (next: CollectionFiltersState) => void;
-  setOptions: string[];
+  setOptions: SetOption[];
   rarityOptions: string[];
   className?: string;
 }
@@ -22,6 +27,9 @@ interface CollectionFiltersProps {
 export function CollectionFilters({ value, onChange, setOptions, rarityOptions, className = '' }: CollectionFiltersProps) {
   const update = (partial: Partial<CollectionFiltersState>) => onChange({ ...value, ...partial });
   const viewMode = value.viewMode || 'grid';
+
+  // Find the current set name for display
+  const currentSetName = setOptions.find(s => s.code === value.setCode)?.name || 'All Sets';
 
   return (
     <div className={`${styles.toolbar} ${className}`}>
@@ -37,9 +45,15 @@ export function CollectionFilters({ value, onChange, setOptions, rarityOptions, 
 
       <div className={styles.filtersRow}>
         <Dropdown
-          trigger={<button className={`button_button_uCVc button_button_filter_uCVc`}>{value.setCode || 'All Sets'}</button>}
-          items={[{ label: 'All Sets', href: '#' }, ...setOptions.map((s) => ({ label: s, href: `#${s}` }))]}
-          onItemClick={(item) => update({ setCode: item.label === 'All Sets' ? '' : item.label })}
+          trigger={<button className={`button_button_uCVc button_button_filter_uCVc`}>{currentSetName}</button>}
+          items={[
+            { label: 'All Sets', href: '#all' }, 
+            ...setOptions.map((s) => ({ label: s.name, href: `#${s.code}` }))
+          ]}
+          onItemClick={(item) => {
+            const selectedSet = setOptions.find(s => s.name === item.label);
+            update({ setCode: selectedSet ? selectedSet.code : '' });
+          }}
         />
 
         <Dropdown

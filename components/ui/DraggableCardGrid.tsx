@@ -150,24 +150,12 @@ export function DraggableCardGrid({
               quantity: selectedCard.quantity,
               condition: selectedCard.condition,
               rawCropUrl: selectedCard.raw_crop_url || undefined,
-              language: selectedCard.language || 'en',
             }}
             onDeleteCard={async (cardId: string) => {
               if (onDelete && selectedCard) {
                 onDelete(cardId, selectedCard.name);
                 setSelectedCard(null); // Close modal after deletion
               }
-            }}
-            onLanguageChange={async (cardId: string, newLanguage: string) => {
-              const response = await fetch(`/api/user-cards/${cardId}/language`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ language: newLanguage }),
-              });
-              if (!response.ok) throw new Error('Failed to update language');
-              setSelectedCard((prev) => prev ? ({ ...prev, language: newLanguage } as any) : prev);
-              // Propagate language change to parent's localCards state
-              onCardReplaced?.(cardId, { language: newLanguage } as any);
             }}
             onReplaced={(u) => {
               // Optimistically update selected card details locally
@@ -247,24 +235,12 @@ export function DraggableCardGrid({
               quantity: selectedCard.quantity,
               condition: selectedCard.condition,
               rawCropUrl: selectedCard.raw_crop_url || undefined,
-              language: selectedCard.language || 'en',
             }}
             onDeleteCard={async (cardId: string) => {
               if (onDelete && selectedCard) {
                 onDelete(cardId, selectedCard.name);
                 setSelectedCard(null); // Close modal after deletion
               }
-            }}
-            onLanguageChange={async (cardId: string, newLanguage: string) => {
-              const response = await fetch(`/api/user-cards/${cardId}/language`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ language: newLanguage }),
-              });
-              if (!response.ok) throw new Error('Failed to update language');
-              setSelectedCard((prev) => prev ? ({ ...prev, language: newLanguage } as any) : prev);
-              // Propagate language change to parent's localCards state
-              onCardReplaced?.(cardId, { language: newLanguage } as any);
             }}
             onReplaced={(u) => {
               // Optimistically update selected card details locally

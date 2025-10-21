@@ -26,7 +26,30 @@ export function Dropdown({
   onItemClick 
 }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [autoAlign, setAutoAlign] = useState<'left' | 'right'>(align);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Auto-position dropdown to prevent cutoff
+  useEffect(() => {
+    if (isOpen && menuRef.current && dropdownRef.current) {
+      const menu = menuRef.current;
+      const dropdown = dropdownRef.current;
+      const menuRect = menu.getBoundingClientRect();
+      const dropdownRect = dropdown.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+
+      // Check if dropdown extends past right edge
+      const wouldOverflowRight = dropdownRect.left + menuRect.width > viewportWidth;
+      
+      // Auto-adjust alignment
+      if (align === 'left' && wouldOverflowRight) {
+        setAutoAlign('right');
+      } else {
+        setAutoAlign(align);
+      }
+    }
+  }, [isOpen, align]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -79,7 +102,7 @@ export function Dropdown({
       </div>
       
       {isOpen && (
-        <div className={clsx('dropdown-menu', `dropdown-menu--${align}`)}>
+        <div ref={menuRef} className={clsx('dropdown-menu', `dropdown-menu--${autoAlign}`)}>
           <ul className="dropdown-list" role="menu">
             {items.map((item, index) => (
               <li key={`${item.href}-${index}`} role="none">
@@ -101,6 +124,7 @@ export function Dropdown({
                   tabIndex={item.disabled ? -1 : 0}
                   role="menuitem"
                   aria-disabled={item.disabled}
+                  title={item.label}
                 >
                   {item.icon && <span className="dropdown-item-icon">{item.icon}</span>}
                   <span className="dropdown-item-label">{item.label}</span>

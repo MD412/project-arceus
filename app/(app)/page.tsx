@@ -129,7 +129,12 @@ export default function HomePage() {
             <CollectionFilters 
               value={filters}
               onChange={setFilters}
-              setOptions={[...new Set((localCards || []).map((c) => c.set_code).filter(Boolean))] as string[]}
+              setOptions={Array.from(
+                new Map((localCards || [])
+                  .filter(c => c.set_code && c.set_name)
+                  .map(c => [c.set_code, { code: c.set_code, name: c.set_name }])
+                ).values()
+              )}
               rarityOptions={[...new Set((localCards || []).map((c) => c.rarity).filter(Boolean))] as string[]}
             />
           </header>
@@ -220,26 +225,10 @@ export default function HomePage() {
             quantity: selectedCard.quantity,
             condition: selectedCard.condition,
             rawCropUrl: selectedCard.raw_crop_url || undefined,
-            language: selectedCard.language || 'en',
           }}
           onDeleteCard={async (cardId: string) => {
             handleDeleteCard(cardId, selectedCard.name);
             setSelectedCard(null);
-          }}
-          onLanguageChange={async (cardId: string, newLanguage: string) => {
-            const response = await fetch(`/api/user-cards/${cardId}/language`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ language: newLanguage }),
-            });
-            if (!response.ok) throw new Error('Failed to update language');
-            // Update local state
-            setLocalCards((prev) =>
-              (prev || []).map((c) =>
-                c.id === cardId ? { ...c, language: newLanguage } : c
-              )
-            );
-            setSelectedCard((prev) => prev ? { ...prev, language: newLanguage } : prev);
           }}
           onReplaced={(updated) => {
             // Update collection list

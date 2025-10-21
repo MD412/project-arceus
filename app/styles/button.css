@@ -125,7 +125,7 @@
 .button_button_filter_uCVc {
   background-color: rgba(0, 0, 0, 0.2);
   color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.15);
+  border: none;
   height: 100%; /* Fill toolbar height */
   padding: var(--sds-size-space-150) var(--sds-size-space-300); /* 6px vertical, 12px horizontal */
   transition: all 0.15s ease;
@@ -133,12 +133,10 @@
 
 .button_button_filter_uCVc:hover:not(:disabled) {
   background-color: rgba(0, 0, 0, 0.25);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .button_button_filter_uCVc:active:not(:disabled) {
   background-color: rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* Toolbar Button - A special variant for the main app header - More compact and modern */
