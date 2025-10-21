@@ -1,36 +1,37 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 21, 2025 @ 4:00 PM  
+**Last Updated:** October 21, 2025 @ 9:00 PM  
 **Branch:** `main`  
-**Status:** ✅ Clean - UI polish session complete, language work shelved
+**Status:** ✅ Clean - Minimal header design + teal theme complete
 
 ---
 
 ## 🎯 Current Status
 
-**Session Focus:** Collection page UI polish and responsive fixes
+**Session Focus:** Header simplification, teal theme implementation, mobile polish
 
-### Latest Session (Oct 21, 4:00 PM) - UI Polish
-- ✅ Collection filter responsive spacing fixed
-- ✅ Flex layout prevents awkward wrapping
-- ✅ Spotify-style floating scrollbars
-- ✅ Smart dropdown auto-positioning
-- ✅ Full set names in dropdowns
-- ✅ Borderless UI polish
-- ✅ Language dropdown removed from Card tab
-- ⏸️ Language filter work shelved (user request)
+### Latest Session (Oct 21, 9:00 PM) - UI Minimalism
+- ✅ Removed title and stats from header (minimal design)
+- ✅ Teal theme for all filter elements (search, buttons, view toggle)
+- ✅ Header spacing unified (4px gap)
+- ✅ Mobile polish (padding, button heights, consistency)
+- ✅ Sidebar defaults to minimized
+- ✅ Toolbar gap consistent (8px all breakpoints)
 
 ### Combined Status from All Sessions
 
 **Shipped Features:**
+- Minimal header design (no title/stats, just search + filters)
+- Teal theme for all interactive elements
 - Set name display (38,822 rows backfilled)
 - Modal UX fixes (stays open on replace)
 - Rarity support (backend + frontend)
 - Responsive image scaling (scan tab)
-- Collection filter improvements (spacing, layout, dropdowns)
+- Collection filter improvements (spacing, layout, dropdowns, teal theme)
+- Sidebar defaults to minimized
 
 **In Progress:**
-- Search input styling polish (next session)
+- Scans page cleanup (next session)
 
 **Deferred:**
 - Language support (infrastructure exists, UI shelved)
@@ -40,13 +41,15 @@
 ## 📖 Quick Links
 
 ### Latest Handoff
-- **📋 [Session: UI Polish (Oct 21, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_1600.md)** ← **Current session**
+- **📋 [Session: UI Minimalism (Oct 21, 9:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_2100.md)** ← **Current session**
 
 ### Previous Handoffs
+- **📋 [Session: UI Polish (Oct 21, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_1600.md)** ← Filters + dropdowns
 - **📋 [Session A: Language Foundation (Oct 21, 12:00 AM)](./handoffs/2025/10-october/context_handoff_20251021_0000.md)** ← Language + set names
 - **📋 [Session B: Modal + Rarity (Oct 20, 4:00 AM)](./handoffs/2025/10-october/context_handoff_20251020_0400.md)** ← UX fixes + rarity
 
 ### Supporting Docs
+- **📋 [UI Minimalism Summary](./summaries/2025/10-october/session_summary_20251021_ui_minimal.md)**
 - **📋 [UI Polish Session Summary](./summaries/2025/10-october/session_summary_20251021_ui_polish.md)**
 - **📋 [Session A Summary](./summaries/2025/10-october/session_summary_20251020_extended.md)**
 - **📋 [Session B Summary](./summaries/2025/10-october/session_summary_20251021_parallel.md)**
@@ -61,27 +64,33 @@
 
 ## 🔴 Top Priorities
 
-### 1. **Test UI Changes** ✅ Ready for Testing
-**Status:** Code shipped this session, needs user validation  
+### 1. **Scans Page Cleanup** 🎯 Next Session
+**Status:** User mentioned "need to unfuck the scans page"  
 **Tasks:**
-- Test responsive spacing (mobile/tablet/desktop)
-- Verify set dropdown shows full names
-- Check dropdown auto-positioning
-- Validate floating scrollbar appearance
+- Apply minimal header design principles
+- Check spacing, consistency, mobile responsiveness
+- Apply teal theme if appropriate
+- Unify design language with collection page
 
-**Impact:** Major UX improvement for collection filters
+**Impact:** Consistent UX across main app pages
 
-### 2. **Continue Search Input Styling** 🎨 In Progress
-**Status:** User wants to polish search input  
-**Next:** User will provide direction on styling changes
+**Files:** `app/(scans)/*/page.tsx`, related CSS
 
-**Files:** `components/ui/CollectionFilters.module.css`
+### 2. **Test Collection Page Changes** ✅ Ready for Testing
+**Status:** Major UI overhaul shipped this session  
+**Tasks:**
+- Verify teal theme looks good (search hover, filter buttons, view toggle)
+- Test mobile responsive behavior (padding, button heights)
+- Validate touch targets on mobile
+- Check sidebar minimize/expand functionality
+
+**Impact:** Validate minimal header design works well
 
 ### 3. **Test Rarity Display** ✅ SQL Done, Testing Needed
 **Status:** SQL backfill complete (user confirmed)  
 **Tasks:**
 - Verify table view shows actual rarities
-- Test rarity filter dropdown (now shows full names)
+- Test rarity filter dropdown
 - Test rarity sorting
 
 **Expected:** Should work immediately (all code shipped)
@@ -89,9 +98,7 @@
 ### 4. **Test Modal Workflow** ✅ Code Shipped
 **Status:** Code shipped in Session B, needs user testing  
 **Tasks:**
-- Open card detail modal
-- Switch to Scan tab
-- Click "Replace Card"
+- Open card detail modal, switch to Scan tab, replace card
 - Verify modal stays open
 
 ---
@@ -114,17 +121,21 @@
 ## 🔧 Technical State
 
 ### ✅ Working Systems
+- Minimal header design (no title/stats)
+- Teal theme for all interactive elements
 - Set names (38,822 cards updated)
 - Rarity data flow (API → UI)
 - Modal UX (stays open on replace)
 - Responsive images (scan tab)
-- Collection filters (responsive, borderless)
+- Collection filters (teal theme, consistent spacing)
 - Dropdown auto-positioning
 - Floating scrollbars
+- Sidebar defaults to minimized
 
 ### ⚠️ Needs Testing
-- Collection filter UI changes (shipped this session)
-- Set name dropdowns (shipped this session)
+- Minimal header design (shipped this session)
+- Teal theme (search, filters, view toggle - shipped this session)
+- Mobile responsive changes (padding, button heights)
 - Rarity display (SQL backfill done, UI untested)
 - Modal workflow (code shipped Session B)
 
@@ -163,55 +174,48 @@
 
 ---
 
-## 📊 Session Summary
+## 📊 Latest Session Summary
 
-### Files Modified This Session (13)
-**Components:** 7 files (CardDetailModal, CardSearchInput, Dropdown, CollectionFilters, DraggableCardGrid, page.tsx)  
-**Styles:** 4 files (CollectionFilters.module.css, dropdown.css, button.css, globals.css)  
-**Hooks/API:** 2 files (useCardSearch.ts, search route - both reverted)
+### Files Modified This Session (5)
+**Components:** 1 file (page.tsx)  
+**Styles:** 3 files (CollectionFilters.module.css, button.css, globals.css)  
+**Layout:** 1 file (GlobalNavigationWrapper.tsx)
 
 ### Work Completed
-✅ Reverted language filter implementation  
-✅ Removed language dropdown from UI  
-✅ Fixed collection filter responsive spacing  
-✅ Redesigned toolbar layout (grid → flex)  
-✅ Added floating scrollbars  
-✅ Implemented dropdown auto-positioning  
-✅ Changed to full set names  
-✅ Borderless UI aesthetic
+✅ Removed title and stats from header (minimal design)  
+✅ Teal theme for all filter elements (search, buttons, view toggle)  
+✅ Header spacing unified (4px gap, 8px toolbar gap)  
+✅ Mobile header padding (8px all sides)  
+✅ Mobile view button height matching  
+✅ Sidebar defaults to minimized  
+✅ Consistent spacing across all breakpoints
 
 ### Work Deferred
-⏸️ Language filtering feature  
-⏸️ Search input styling (continued next session)
+⏸️ Scans page cleanup (next session)
 
 ---
 
 ## 🎯 Next Session Plan
 
-### Phase 1: UI Testing (30 min)
-1. Test collection filter spacing on all breakpoints
-2. Verify set dropdown shows full names
-3. Check dropdown auto-positioning
-4. Validate scrollbar appearance
+### Phase 1: Scans Page Cleanup (1-2 hours)
+1. Review scans page current state
+2. Apply minimal header design if appropriate
+3. Check spacing, consistency with collection page
+4. Apply teal theme to interactive elements
+5. Mobile responsive polish
 
-### Phase 2: Search Input Polish (1 hour)
-1. Continue styling search input per user direction
-2. Possible additions: search icon, improved focus states, etc.
-3. Fine-tune responsive behavior
+### Phase 2: Testing (30 min)
+1. Test collection page minimal header on mobile/desktop
+2. Verify teal theme looks good on all elements
+3. Validate sidebar minimize/expand
+4. Check touch targets on mobile
 
-### Phase 3: Feature Validation (30 min)
-1. Test rarity display in table view
-2. Verify modal replacement workflow
-3. Check any remaining responsive issues
-
-### Phase 4: Decision Points
-1. Language support: Resume or defer indefinitely?
-2. Additional UI polish priorities?
-3. Move to feature work or continue UX improvements?
+### Phase 3: Next UI Target
+1. Identify any remaining inconsistencies
+2. Continue UI unification across app
+3. Consider other pages needing polish
 
 ---
 
-**Previous handoff:** [UI Polish Session](./handoffs/2025/10-october/context_handoff_20251021_1600.md)  
-**Next steps:** Test UI changes, continue search styling, validate existing features  
-
-**Note:** User experiencing "LLM fatigue" - fresh start next session recommended 😅
+**Previous handoff:** [UI Minimalism Session](./handoffs/2025/10-october/context_handoff_20251021_2100.md)  
+**Next steps:** Scans page cleanup, test collection changes, continue UI polish

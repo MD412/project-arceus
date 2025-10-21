@@ -164,7 +164,7 @@ body {
   justify-content: space-between;
   margin-bottom: var(--sds-size-space-800);
   flex-wrap: wrap;
-  gap: var(--sds-size-space-400);
+  gap: var(--sds-size-space-200);
   padding-top: var(--sds-size-space-300) !important;
   padding-bottom: var(--sds-size-space-300) !important;
 }
@@ -172,8 +172,13 @@ body {
 @media (max-width: 768px) {
   .header {
     margin-bottom: var(--sds-size-space-600);
-    gap: var(--sds-size-space-300);
+    gap: var(--sds-size-space-200);
   }
+}
+
+/* Next.js scoped header override */
+.header.jsx-aa28693b3fcbf41c {
+  gap: var(--sds-size-space-100) !important;
 }
 
 /* Sections */

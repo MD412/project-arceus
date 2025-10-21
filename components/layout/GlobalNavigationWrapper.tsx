@@ -12,7 +12,7 @@ interface GlobalNavigationWrapperProps {
   isMinimized?: boolean;
 }
 
-export default function GlobalNavigationWrapper({ isMinimized = false }: GlobalNavigationWrapperProps) {
+export default function GlobalNavigationWrapper({ isMinimized = true }: GlobalNavigationWrapperProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isMobile = useMediaQuery('(max-width: 767px)');

@@ -114,18 +114,6 @@ export default function HomePage() {
         <div className="sticky-header-group">
           {/* Header Section with integrated filters */}
           <header className="header">
-            <div className="header-title-group">
-              <h5>My Collection</h5>
-            </div>
-            
-            <div className="user-stats">
-              <span className="stat-item">Collected: {totalCollected}</span>
-              <span className="stat-separator"> · </span>
-              <span className="stat-item">Total Quantity: {totalQuantity}</span>
-              <span className="stat-separator"> · </span>
-              <span className="stat-item">Sets: {uniqueSets}</span>
-            </div>
-
             <CollectionFilters 
               value={filters}
               onChange={setFilters}
@@ -278,12 +266,7 @@ export default function HomePage() {
           -webkit-backdrop-filter: blur(12px);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-          gap: 24px;
-        }
-        .header-title-group h5 {
-          margin: 0;
-          font-size: var(--font-size-300);
-          line-height: 1.2;
+          gap: var(--sds-size-space-100);
         }
         .user-info {
           color: var(--text-secondary);
@@ -291,22 +274,6 @@ export default function HomePage() {
           font-weight: normal;
           margin: 0;
           line-height: 1.4;
-        }
-        .user-stats {
-          color: var(--text-secondary);
-          font-size: 0.875rem;
-          margin: 0;
-          line-height: 1.4;
-          white-space: nowrap;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-        .stat-item {
-          display: inline;
-        }
-        .stat-separator {
-          display: inline;
         }
         
         /* Scroll wrapper: Main scrolling container */
@@ -357,30 +324,14 @@ export default function HomePage() {
         /* Mobile Responsive Styles */
         @media (max-width: 768px) {
           .header {
-            padding: 0 8px;
+            padding: 8px;
             gap: 8px;
             flex-direction: column;
             align-items: stretch;
           }
           
-          .header-title-group h5 {
-            font-size: calc(var(--font-size-300) - 2px);
-          }
-          
           .user-info {
             font-size: 10px;
-          }
-          
-          .user-stats {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 2px;
-            white-space: normal;
-            font-size: 10px;
-          }
-          
-          .stat-separator {
-            display: none;
           }
 
           .cards-section {

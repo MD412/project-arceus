@@ -1,8 +1,9 @@
 .toolbar {
   display: flex;
-  gap: var(--sds-size-space-100);
+  gap: var(--sds-size-space-200);
   align-items: center;
   padding: 0;
+  width: 100%; /* Take full width */
   /* Background and border removed - handled by parent */
   background: transparent;
   border: none;
@@ -30,7 +31,7 @@
   .toolbar {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--sds-size-space-400);
+    gap: var(--sds-size-space-200);
   }
   
   .searchWrap {
@@ -38,7 +39,7 @@
   }
   
   .filtersRow {
-    gap: var(--sds-size-space-400);
+    gap: var(--sds-size-space-100);
     flex-wrap: wrap;
   }
   
@@ -60,7 +61,7 @@
 }
 
 .search:hover {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(74, 155, 148, 0.15); /* circuit-light-teal with transparency */
 }
 
 .search:focus,
@@ -90,7 +91,7 @@
   gap: 0;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--sds-size-radius-100);
-  background: rgba(0, 0, 0, 0.2);
+  background: transparent;
   height: 36px;
   overflow: hidden;
   box-sizing: border-box;
@@ -119,14 +120,16 @@
   vertical-align: middle;
 }
 
-/* Mobile - larger touch targets for view buttons */
+/* Mobile - match filter button height */
 @media (max-width: 712px) {
   .viewToggle {
-    height: 44px;
+    height: auto;
   }
   
   .viewButton {
-    width: 44px;
+    width: auto;
+    min-width: 44px; /* Maintain touch target width */
+    padding: 0 12px; /* Match filter button padding */
   }
   
   .viewButton svg {
@@ -161,12 +164,12 @@
 }
 
 .viewButtonActive {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(74, 155, 148, 0.15); /* circuit-light-teal - matches filter buttons */
   color: var(--interactive-primary);
 }
 
 .viewButtonActive:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(74, 155, 148, 0.25); /* matches filter button hover */
 }
 
 /* Mobile layout is default (defined above) */
