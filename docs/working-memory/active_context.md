@@ -1,21 +1,21 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 21, 2025 @ 7:30 PM  
+**Last Updated:** October 22, 2025 @ 2:30 PM  
 **Branch:** `main`  
-**Status:** ✅ Clean - Table content fixes and CLIP optimization complete
+**Status:** ✅ Modified - CardSearchInput filters added, password manager issue investigated
 
 ---
 
 ## 🎯 Current Status
 
-**Session Focus:** Header simplification, teal theme implementation, mobile polish
+**Session Focus:** Search filters, password manager investigation, UI polish
 
-### Latest Session (Oct 21, 7:30 PM) - Table Content Fixes & CLIP Optimization
-- ✅ Fixed table content: auto-generated scan titles, actual card counts, specific dates
-- ✅ Fixed column alignment: centered status tags, right-aligned uploaded dates
-- ✅ Fixed password manager interference with search fields
-- ✅ Optimized CLIP threshold from 0.85 to 0.6 to fix "Unknown Card" issue
-- ✅ Made action buttons always visible for better UX
+### Latest Session (Oct 22, 2:30 PM) - CardSearchInput Filters
+- ✅ Added dropdown filters to search (rarity and set filters)
+- ✅ Implemented filter bar with teal theme and proper spacing
+- ✅ Fixed empty state positioning below filter bar
+- 🔍 Investigated password manager issue (found it affects all sites, not our bug)
+- ✅ Restored click-to-open dropdown behavior
 
 ### Combined Status from All Sessions
 
@@ -42,7 +42,7 @@
 ## 📖 Quick Links
 
 ### Latest Handoff
-- **📋 [Session: Table Content Fixes & CLIP Optimization (Oct 21, 7:30 PM)](./handoffs/2025/10-october/context_handoff_20251021_1930.md)** ← **Current session**
+- **📋 [Session: CardSearchInput Filters & Password Manager Investigation (Oct 22, 2:30 PM)](./handoffs/2025/10-october/context_handoff_20251022_1430.md)** ← **Current session**
 
 ### Previous Handoffs
 - **📋 [Session: UI Polish (Oct 21, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_1600.md)** ← Filters + dropdowns
@@ -65,18 +65,18 @@
 
 ## 🔴 Top Priorities
 
-### 1. **Test CLIP Detection Accuracy** 🎯 Next Session
-**Status:** CLIP threshold optimized, need to verify card identification works  
+### 1. **Worker Health Monitoring** 🎯 Next Session
+**Status:** Auto-recovery system has missing functions  
 **Tasks:**
-- Upload test scan to verify cards are now identified (not "Unknown Card")
-- Monitor accuracy vs coverage trade-off with 0.6 threshold
-- Consider confidence score display in UI
+- Fix missing `worker_health` table and `get_stuck_jobs` function
+- Address auto-recovery system errors in logs
+- Improve worker monitoring and observability
 
-**Impact:** Validate CLIP optimization and improve user experience
+**Impact:** Better worker reliability and error handling
 
-**Files:** `worker/worker.py`, scan upload workflow
+**Files:** Worker monitoring scripts, database migrations
 
-### 2. **Worker Health Monitoring** 🎯 Next Session
+### 2. **Test CLIP Detection Accuracy** 🎯 Next Session
 **Status:** Auto-recovery system has missing functions  
 **Tasks:**
 - Fix missing `worker_health` table and `get_stuck_jobs` function

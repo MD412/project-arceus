@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCardSearch, type Card } from '@/hooks/useCardSearch';
 import { Input } from '@/components/forms/Input';
+import { Dropdown } from './Dropdown';
 import styles from './CardSearchInput.module.css';
 
 interface CardSearchInputProps {
@@ -17,24 +18,40 @@ export function CardSearchInput({ onSelect, placeholder, className, placement = 
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [wasOpenFromFocus, setWasOpenFromFocus] = useState(false);
+  const [rarityFilter, setRarityFilter] = useState('');
+  const [setFilter, setSetFilter] = useState('');
   const { data, isLoading, error } = useCardSearch(query);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const results = data?.results || [];
   
+  // Get unique rarities and sets from results for filter options
+  const uniqueRarities = Array.from(new Set(results.map(card => card.rarity).filter(Boolean)));
+  const uniqueSets = Array.from(new Set(results.map(card => card.set_name).filter(Boolean)));
+  
+  // Filter results based on selected filters
+  const filteredResults = results.filter(card => {
+    const matchesRarity = !rarityFilter || card.rarity === rarityFilter;
+    const matchesSet = !setFilter || card.set_name === setFilter;
+    return matchesRarity && matchesSet;
+  });
+  
   // Debug logging
   console.log('CardSearchInput state:', { 
     query, 
     isLoading, 
     error: error?.message, 
-    resultsCount: results.length 
+    resultsCount: results.length,
+    filteredCount: filteredResults.length,
+    rarityFilter,
+    setFilter
   });
 
   // Reset selection when results change
   useEffect(() => {
     setSelectedIndex(0);
-  }, [results]);
+  }, [filteredResults]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -108,7 +125,7 @@ export function CardSearchInput({ onSelect, placeholder, className, placement = 
         onKeyDown={handleKeyDown}
         onFocus={() => {
           setWasOpenFromFocus(true);
-          if (query.length >= 2) setIsOpen(true);
+          setIsOpen(true);
         }}
         onBlur={() => setWasOpenFromFocus(false)}
         placeholder={placeholder || "Search cards..."}
@@ -140,15 +157,72 @@ export function CardSearchInput({ onSelect, placeholder, className, placement = 
             </div>
           )}
           
-          {!isLoading && !error && results.length === 0 && query.length >= 2 && (
-            <div className={styles.empty}>
-              <span>No cards found</span>
-            </div>
-          )}
-          
-          {!isLoading && !error && results.length > 0 && (
-            <ul className={styles.results} role="listbox">
-              {results.map((card, index) => (
+          {!isLoading && !error && (
+            <>
+              {/* Filter Bar */}
+              <div className={styles.filterBar}>
+                <div className={styles.filterButtons}>
+                  <Dropdown
+                    trigger={
+                      <button className="button_button_uCVc button_button_filter_uCVc">
+                        {rarityFilter || 'All Rarities'}
+                      </button>
+                    }
+                    items={[
+                      { label: 'All Rarities', href: '#' },
+                      ...uniqueRarities.map((rarity) => ({ label: rarity, href: `#${rarity}` }))
+                    ]}
+                    onItemClick={(item) => {
+                      setRarityFilter(item.label === 'All Rarities' ? '' : item.label);
+                      setSelectedIndex(0);
+                    }}
+                  />
+                  
+                  <Dropdown
+                    trigger={
+                      <button className="button_button_uCVc button_button_filter_uCVc">
+                        {setFilter || 'All Sets'}
+                      </button>
+                    }
+                    items={[
+                      { label: 'All Sets', href: '#' },
+                      ...uniqueSets.map((set) => ({ label: set, href: `#${set}` }))
+                    ]}
+                    onItemClick={(item) => {
+                      setSetFilter(item.label === 'All Sets' ? '' : item.label);
+                      setSelectedIndex(0);
+                    }}
+                  />
+                </div>
+                
+                <button 
+                  className="button_button_uCVc button_button_filter_uCVc"
+                  onClick={() => {
+                    setRarityFilter('');
+                    setSetFilter('');
+                    setSelectedIndex(0);
+                  }}
+                  title="Clear filters"
+                >
+                  Clear
+                </button>
+              </div>
+              
+              {filteredResults.length === 0 && query.length >= 2 && (
+                <div className={styles.empty}>
+                  <span>No cards found</span>
+                </div>
+              )}
+              
+              {query.length < 2 && (
+                <div className={styles.empty}>
+                  <span>Type at least 2 characters to search</span>
+                </div>
+              )}
+              
+              {filteredResults.length > 0 && (
+                <ul className={styles.results} role="listbox">
+                {filteredResults.map((card, index) => (
                 <li
                   key={card.id}
                   id={`option-${index}`}
@@ -188,6 +262,8 @@ export function CardSearchInput({ onSelect, placeholder, className, placement = 
                 </li>
               ))}
             </ul>
+              )}
+            </>
           )}
         </div>
       )}
