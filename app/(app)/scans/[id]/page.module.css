@@ -6,8 +6,8 @@
 }
 
 .scanDetailHeader {
-  padding: var(--sds-size-space-200) var(--sds-size-space-400); /* 8px vertical, 16px horizontal */
-  background: var(--circuit-mid-teal); /* Darker teal for better contrast */
+  padding: var(--sds-size-space-200) var(--sds-size-space-300); /* 8px vertical, 12px horizontal - matches collection page */
+  background: rgba(74, 155, 148, 0.08);
   border-bottom: 1px solid var(--border-default);
   flex-shrink: 0;
   position: sticky;
@@ -36,5 +36,5 @@
 .scanDetailGridContainer {
   flex: 1;
   overflow: auto;
-  padding: var(--sds-size-space-400);
+  padding: var(--sds-size-space-300); /* 12px - matches collection page */
 }

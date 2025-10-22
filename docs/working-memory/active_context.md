@@ -1,8 +1,8 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 21, 2025 @ 9:00 PM  
+**Last Updated:** October 21, 2025 @ 10:00 PM  
 **Branch:** `main`  
-**Status:** ✅ Clean - Minimal header design + teal theme complete
+**Status:** ✅ Clean - Scans page UI unification complete
 
 ---
 
@@ -10,13 +10,13 @@
 
 **Session Focus:** Header simplification, teal theme implementation, mobile polish
 
-### Latest Session (Oct 21, 9:00 PM) - UI Minimalism
-- ✅ Removed title and stats from header (minimal design)
-- ✅ Teal theme for all filter elements (search, buttons, view toggle)
-- ✅ Header spacing unified (4px gap)
-- ✅ Mobile polish (padding, button heights, consistency)
-- ✅ Sidebar defaults to minimized
-- ✅ Toolbar gap consistent (8px all breakpoints)
+### Latest Session (Oct 21, 10:00 PM) - Scans Page UI Unification
+- ✅ Applied teal theme to ProcessingQueueCard status badges
+- ✅ Unified ScanHistoryTable with CollectionTable components
+- ✅ Fixed table column alignment and scrollable body
+- ✅ Removed max-width for edge-to-edge layout
+- ✅ Fixed Next.js 15 API params handling
+- ✅ Unified spacing and layout patterns
 
 ### Combined Status from All Sessions
 
@@ -31,7 +31,9 @@
 - Sidebar defaults to minimized
 
 **In Progress:**
-- Scans page cleanup (next session)
+- Table content fixes (scan titles, card counts, dates)
+- Column alignment improvements
+- Action button visibility
 
 **Deferred:**
 - Language support (infrastructure exists, UI shelved)
@@ -41,7 +43,7 @@
 ## 📖 Quick Links
 
 ### Latest Handoff
-- **📋 [Session: UI Minimalism (Oct 21, 9:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_2100.md)** ← **Current session**
+- **📋 [Session: Scans Page UI Unification (Oct 21, 10:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_2200.md)** ← **Current session**
 
 ### Previous Handoffs
 - **📋 [Session: UI Polish (Oct 21, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_1600.md)** ← Filters + dropdowns
@@ -64,36 +66,37 @@
 
 ## 🔴 Top Priorities
 
-### 1. **Scans Page Cleanup** 🎯 Next Session
-**Status:** User mentioned "need to unfuck the scans page"  
+### 1. **Table Content & Alignment Fixes** 🎯 Next Session
+**Status:** Scans page UI unified, now need content improvements  
 **Tasks:**
-- Apply minimal header design principles
-- Check spacing, consistency, mobile responsiveness
-- Apply teal theme if appropriate
-- Unify design language with collection page
+- Fix "Untitled Scan" titles (generate sequential IDs)
+- Display actual card counts instead of "0"
+- Show specific dates instead of "X days ago"
+- Center status tags, right-align uploaded dates
+- Make action buttons visible without hover
 
-**Impact:** Consistent UX across main app pages
+**Impact:** Better user experience and data clarity
 
-**Files:** `app/(scans)/*/page.tsx`, related CSS
+**Files:** `components/ui/ScanHistoryTable.tsx`, related components
 
-### 2. **Test Collection Page Changes** ✅ Ready for Testing
-**Status:** Major UI overhaul shipped this session  
+### 2. **Test Scans Page Changes** ✅ Ready for Testing
+**Status:** UI unification shipped this session  
 **Tasks:**
-- Verify teal theme looks good (search hover, filter buttons, view toggle)
-- Test mobile responsive behavior (padding, button heights)
-- Validate touch targets on mobile
-- Check sidebar minimize/expand functionality
+- Verify teal theme on ProcessingQueueCard status badges
+- Test table scrolling behavior
+- Validate column alignment
+- Check mobile responsiveness
 
-**Impact:** Validate minimal header design works well
+**Impact:** Validate unified design language
 
-### 3. **Test Rarity Display** ✅ SQL Done, Testing Needed
-**Status:** SQL backfill complete (user confirmed)  
+### 3. **Scan Title Generation** 🎯 Next Session
+**Status:** All scans show "Untitled Scan"  
 **Tasks:**
-- Verify table view shows actual rarities
-- Test rarity filter dropdown
-- Test rarity sorting
+- Generate sequential scan IDs (scan-0001, scan-0002, etc.)
+- Include date/time in titles for easy identification
+- Update scan detail page routing if needed
 
-**Expected:** Should work immediately (all code shipped)
+**Impact:** Better scan identification and organization
 
 ### 4. **Test Modal Workflow** ✅ Code Shipped
 **Status:** Code shipped in Session B, needs user testing  
@@ -217,5 +220,5 @@
 
 ---
 
-**Previous handoff:** [UI Minimalism Session](./handoffs/2025/10-october/context_handoff_20251021_2100.md)  
-**Next steps:** Scans page cleanup, test collection changes, continue UI polish
+**Previous handoff:** [Scans Page UI Unification](./handoffs/2025/10-october/context_handoff_20251021_2200.md)  
+**Next steps:** Table content fixes, scan title generation, column alignment improvements

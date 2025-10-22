@@ -65,29 +65,31 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
     }
   };
 
-  const formatTimeAgo = (dateString: string) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays}d ago`;
+    // Format: MM/DD/YYYY, HH:MM AM/PM
+    return date.toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   return (
     <div className="processing-queue-card">
-      <div className="processing-queue-card__header">
+      <div className="processing-queue-card__header" data-scan-id={upload.id}>
         <div className="processing-queue-card__title-section">
           <Link href={`/scans/${upload.id}`} className="processing-queue-card__title">
             {upload.scan_title || 'Untitled Scan'}
           </Link>
           <span className="processing-queue-card__timestamp">
-            {formatTimeAgo(upload.created_at)}
+            {formatDate(upload.created_at)}
+          </span>
+          <span className="processing-queue-card__uuid" title="Scan UUID">
+            {upload.id}
           </span>
         </div>
         
@@ -195,6 +197,13 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
           color: var(--text-secondary);
         }
         
+        .processing-queue-card__uuid {
+          font-size: var(--font-size-50);
+          color: var(--text-tertiary);
+          font-family: monospace;
+          user-select: all;
+        }
+        
         .processing-queue-card__status {
           display: flex;
           align-items: center;
@@ -207,27 +216,27 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
         }
         
         .processing-queue-card__status--blue {
-          background: #eff6ff;
-          color: #1d4ed8;
-          border: 1px solid #bfdbfe;
+          background: rgba(74, 155, 148, 0.15);
+          color: var(--text-primary);
+          border: 1px solid rgba(74, 155, 148, 0.3);
         }
         
         .processing-queue-card__status--yellow {
-          background: #fffbeb;
-          color: #d97706;
-          border: 1px solid #fed7aa;
+          background: rgba(74, 155, 148, 0.12);
+          color: var(--text-primary);
+          border: 1px solid rgba(74, 155, 148, 0.25);
         }
         
         .processing-queue-card__status--red {
-          background: #fef2f2;
-          color: #dc2626;
-          border: 1px solid #fecaca;
+          background: rgba(239, 68, 68, 0.15);
+          color: var(--status-error);
+          border: 1px solid rgba(239, 68, 68, 0.3);
         }
         
         .processing-queue-card__status--gray {
-          background: #f9fafb;
-          color: #6b7280;
-          border: 1px solid #e5e7eb;
+          background: rgba(0, 0, 0, 0.1);
+          color: var(--text-secondary);
+          border: 1px solid var(--border-default);
         }
         
         .processing-queue-card__progress {
@@ -237,7 +246,7 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
         .processing-queue-card__progress-bar {
           width: 100%;
           height: 4px;
-          background: #e5e7eb;
+          background: rgba(74, 155, 148, 0.1);
           border-radius: 2px;
           overflow: hidden;
           margin-bottom: var(--sds-size-space-100);
@@ -245,7 +254,7 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
         
         .processing-queue-card__progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+          background: linear-gradient(90deg, rgba(74, 155, 148, 0.6), rgba(74, 155, 148, 0.9));
           border-radius: 2px;
           animation: progress-indeterminate 2s ease-in-out infinite;
         }
@@ -278,23 +287,23 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
         }
         
         .processing-queue-card__error {
-          background: #fef2f2;
-          border: 1px solid #fecaca;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.25);
         }
         
         .processing-queue-card__error-text {
           font-size: var(--font-size-75);
-          color: #dc2626;
+          color: var(--status-error);
         }
         
         .processing-queue-card__queue {
-          background: #fffbeb;
-          border: 1px solid #fed7aa;
+          background: rgba(74, 155, 148, 0.1);
+          border: 1px solid rgba(74, 155, 148, 0.25);
         }
         
         .processing-queue-card__queue-text {
           font-size: var(--font-size-75);
-          color: #d97706;
+          color: var(--text-primary);
         }
         
         .processing-queue-card__actions {

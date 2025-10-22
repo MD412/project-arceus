@@ -104,21 +104,21 @@
   border-color: #991b1b;
 }
 
-/* Info Button */
+/* Info Button - Teal theme */
 .button_button_info_uCVc {
-  background-color: var(--color-blue-500);
-  color: var(--text-inverse);
-  border-color: var(--color-blue-500);
+  background-color: rgba(74, 155, 148, 0.25);
+  color: var(--text-primary);
+  border-color: transparent;
 }
 
 .button_button_info_uCVc:hover:not(:disabled) {
-  background-color: var(--color-blue-700);
-  border-color: var(--color-blue-700);
+  background-color: rgba(74, 155, 148, 0.35);
+  border-color: transparent;
 }
 
 .button_button_info_uCVc:active:not(:disabled) {
-  background-color: var(--color-blue-700);
-  border-color: var(--color-blue-700);
+  background-color: rgba(74, 155, 148, 0.45);
+  border-color: transparent;
 }
 
 /* Filter Button - matches 'All Sets' / 'All Rarities' styling in docs */

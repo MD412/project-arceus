@@ -133,6 +133,7 @@ export function CardDetailModal({
       onClose={onClose}
       className="card-detail-modal"
       title={title}
+      inline={true}
     >
       <Tabs defaultValue="card" className="card-detail-modal__tabs">
         <TabsList>

@@ -16,10 +16,10 @@ async function requireUser() {
 }
 
 // GET /api/scans/[id] - fetch scan details with cards
-export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, error } = await requireUser();
   if (error) return error;
-  const { id } = params;
+  const { id } = await params;
 
   const supabase = supabaseAdmin();
 
@@ -130,11 +130,11 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 }
 
 // PATCH /api/scans/[id] - for renaming
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, error } = await requireUser();
   if (error) return error;
 
-  const { id } = params;
+  const { id } = await params;
   const { scan_title } = await request.json();
 
   if (!scan_title) {
@@ -180,11 +180,11 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE /api/scans/[id]
-export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { user, error } = await requireUser();
   if (error) return error;
 
-  const { id } = params;
+  const { id } = await params;
   const supabase = supabaseAdmin();
 
   try {

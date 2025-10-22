@@ -110,23 +110,25 @@ export default function HomePage() {
     <div className="collection-page">
       {/* Scrollable content area - includes header so content scrolls behind it */}
       <div className="scroll-wrapper">
-        {/* Sticky header + filters group */}
-        <div className="sticky-header-group">
-          {/* Header Section with integrated filters */}
-          <header className="header">
-            <CollectionFilters 
-              value={filters}
-              onChange={setFilters}
-              setOptions={Array.from(
-                new Map((localCards || [])
-                  .filter(c => c.set_code && c.set_name)
-                  .map(c => [c.set_code, { code: c.set_code, name: c.set_name }])
-                ).values()
-              )}
-              rarityOptions={[...new Set((localCards || []).map((c) => c.rarity).filter(Boolean))] as string[]}
-            />
-          </header>
-        </div>
+        {/* Sticky header + filters group - hide when modal is open */}
+        {!selectedCard && (
+          <div className="sticky-header-group">
+            {/* Header Section with integrated filters */}
+            <header className="header">
+              <CollectionFilters 
+                value={filters}
+                onChange={setFilters}
+                setOptions={Array.from(
+                  new Map((localCards || [])
+                    .filter(c => c.set_code && c.set_name)
+                    .map(c => [c.set_code, { code: c.set_code, name: c.set_name }])
+                  ).values()
+                )}
+                rarityOptions={[...new Set((localCards || []).map((c) => c.rarity).filter(Boolean))] as string[]}
+              />
+            </header>
+          </div>
+        )}
 
         {/* Cards Grid/Table Section */}
         <section className={`cards-section ${filters.viewMode === 'table' ? 'cards-section--table' : ''}`}>
@@ -307,7 +309,7 @@ export default function HomePage() {
           flex-direction: column;
           flex: 1;
           min-height: 0;
-          padding: 0; /* Remove all padding for edge-to-edge table */
+          padding: 0 !important; /* Remove all padding for edge-to-edge table */
           overflow: hidden; /* Contain the table scroll */
         }
         .cards-section--table :global(.table-wrapper) {

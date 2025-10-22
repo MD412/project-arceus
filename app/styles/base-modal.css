@@ -1,4 +1,6 @@
-/* Base Modal Styles - Shared by all modal variants */
+/* Base Modal Styles - Dual Mode (Overlay + Inline Panel) */
+
+/* ===== OVERLAY MODE (Default) ===== */
 
 /* Backdrop */
 .modal-backdrop {
@@ -39,15 +41,43 @@
   animation: slideIn 0.3s ease-out;
 }
 
-/* Header */
+/* ===== INLINE PANEL MODE ===== */
+
+/* Panel - fills parent container */
+.modal-panel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--circuit-dark-teal);
+  overflow: hidden;
+  z-index: 100;
+}
+
+/* ===== SHARED STYLES ===== */
+
+/* Header - shared by both modes */
 .modal-header {
   flex: none;
   z-index: 1;
-  padding: var(--sds-size-space-400) var(--sds-size-space-600);
   background: var(--circuit-dark-teal);
   display: flex;
   align-items: center;
+}
+
+/* Header for overlay mode */
+.modal-content .modal-header {
+  padding: var(--sds-size-space-400) var(--sds-size-space-600);
   justify-content: space-between;
+}
+
+/* Header for inline panel mode */
+.modal-panel .modal-header {
+  padding: var(--sds-size-space-300) var(--sds-size-space-400);
+  border-bottom: 1px solid var(--border-default);
+  gap: var(--sds-size-space-300);
 }
 
 .modal-title {
@@ -64,7 +94,7 @@
   color: var(--text-primary);
 }
 
-/* Close button */
+/* Close button (overlay mode - X icon) */
 .modal-close {
   position: absolute;
   top: var(--sds-size-space-400);
@@ -98,6 +128,36 @@
   border-color: var(--border-strong);
 }
 
+/* Back button (inline panel mode - arrow) */
+.modal-back {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--sds-size-radius-100);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  margin: 0;
+}
+
+.modal-back svg {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.modal-back:hover {
+  background: rgba(74, 155, 148, 0.15);
+  color: var(--text-primary);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -121,6 +181,7 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+  /* Overlay mode */
   .modal-container {
     padding: 0;
   }
@@ -131,6 +192,16 @@
     max-width: 100%;
     max-height: 100%;
     border-radius: 0;
+  }
+  
+  /* Inline panel mode */
+  .modal-panel .modal-header {
+    padding: var(--sds-size-space-200) var(--sds-size-space-300);
+  }
+  
+  .modal-back {
+    width: 32px;
+    height: 32px;
   }
 }
 

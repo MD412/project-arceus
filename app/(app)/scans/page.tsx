@@ -137,16 +137,6 @@ export default function ScansPage() {
 
   return (
     <div className="scans-page">
-      {/* Header */}
-      <header className="scans-page__header">
-        <div className="scans-page__header-content">
-          <h1 className="scans-page__title">Scans</h1>
-          <p className="scans-page__description">
-            Track your Pokemon card scan processing and view results
-          </p>
-        </div>
-      </header>
-
       {totalUploads === 0 ? (
         <div className="scans-page__empty-state">
           <div className="scans-page__empty-content">
@@ -180,7 +170,7 @@ export default function ScansPage() {
                     onClick={handleFixStuckScans}
                     title="Reset scans that have been stuck for more than 5 minutes"
                   >
-                    🔧 Fix Stuck Scans
+                    Fix Stuck Scans
                   </Button>
                 )}
                   </div>
@@ -236,54 +226,53 @@ export default function ScansPage() {
 
       <style jsx>{`
         .scans-page {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: var(--sds-size-space-400);
-        }
-
-        .scans-page__header {
-          margin-bottom: var(--sds-size-space-600);
-          padding-bottom: var(--sds-size-space-400);
-          border-bottom: 1px solid var(--border-default);
-        }
-
-        .scans-page__header-content {
-          flex: 1;
-        }
-
-        .scans-page__title {
-          margin: 0 0 var(--sds-size-space-100) 0;
-          font-size: var(--font-size-600);
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-
-        .scans-page__description {
           margin: 0;
-          color: var(--text-secondary);
-          font-size: var(--font-size-100);
+          padding: 0;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
         }
-
-
 
         .scans-page__priority-section {
-          margin-bottom: var(--sds-size-space-800);
+          margin: 0;
+          padding: var(--sds-size-space-200); /* 8px */
+          flex-shrink: 0;
         }
 
         .scans-page__history-section {
-          margin-bottom: var(--sds-size-space-600);
+          margin: 0;
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-height: 0;
+          overflow: hidden;
+        }
+        
+        .scans-page__history-section :global(.table-wrapper) {
+          flex: 1;
+          min-height: 0;
+          max-height: 100%;
         }
 
         .scans-page__section-header {
-          margin-bottom: var(--sds-size-space-400);
+          margin: 0;
+          padding: var(--sds-size-space-200); /* 8px */
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--sds-size-space-200);
+          flex-wrap: wrap;
+          flex-shrink: 0;
         }
 
         .scans-page__section-title {
           display: flex;
           align-items: center;
           gap: var(--sds-size-space-200);
-          margin: 0 0 var(--sds-size-space-100) 0;
-          font-size: var(--font-size-400);
+          margin: 0;
+          font-size: var(--font-size-300);
           font-weight: 600;
           color: var(--text-primary);
         }
@@ -292,20 +281,18 @@ export default function ScansPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 24px;
-          height: 24px;
+          min-width: 20px;
+          height: 20px;
           padding: 0 var(--sds-size-space-100);
-          background: var(--surface-secondary);
-          color: var(--text-secondary);
+          background: rgba(74, 155, 148, 0.15);
+          color: var(--text-primary);
           border-radius: var(--sds-size-radius-full);
           font-size: var(--font-size-75);
           font-weight: 500;
         }
 
         .scans-page__section-description {
-          margin: 0;
-          color: var(--text-secondary);
-          font-size: var(--font-size-75);
+          display: none;
         }
 
 
@@ -322,7 +309,7 @@ export default function ScansPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          min-height: 200px;
+          flex: 1;
           color: var(--text-secondary);
           font-size: var(--font-size-100);
         }
@@ -335,7 +322,7 @@ export default function ScansPage() {
           display: flex;
           align-items: center;
           justify-content: center;
-          min-height: 400px;
+          flex: 1;
           text-align: center;
         }
 
@@ -355,13 +342,12 @@ export default function ScansPage() {
 
         @media (max-width: 768px) {
           .scans-page {
-            padding: var(--sds-size-space-300);
+            padding: 0;
           }
 
-          .scans-page__header {
+          .scans-page__section-header {
             flex-direction: column;
             align-items: flex-start;
-            gap: var(--sds-size-space-300);
           }
 
           .scans-page__priority-grid {
@@ -370,7 +356,13 @@ export default function ScansPage() {
           }
 
           .scans-page__section-title {
-            font-size: var(--font-size-300);
+            font-size: var(--font-size-200);
+          }
+
+          .scans-page__section-count {
+            min-width: 18px;
+            height: 18px;
+            font-size: var(--font-size-50);
           }
         }
       `}</style>
