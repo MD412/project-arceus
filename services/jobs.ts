@@ -17,16 +17,50 @@ export const getJobs = async () => {
     throw new Error(`Error fetching jobs: ${JSON.stringify(error, null, 2)}`);
   }
 
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Get scan IDs to fetch detection counts
+  const scanIds = data.map(scan => scan.id);
+
+  // Fetch detection counts for all scans
+  const { data: detections, error: detError } = await supabase
+    .from('card_detections')
+    .select('id, scan_id')
+    .in('scan_id', scanIds);
+
+  if (detError) {
+    console.error('Error fetching detections:', detError);
+  }
+
+  // Count detections per scan
+  const countByScan = new Map<string, number>();
+  for (const det of detections || []) {
+    const key = det.scan_id as string;
+    countByScan.set(key, (countByScan.get(key) || 0) + 1);
+  }
+
+  // Generate sequential scan titles
+  const generateScanTitle = (scan: any, index: number) => {
+    if (scan.title && scan.title.trim() !== '') return scan.title;
+    
+    const scanNumber = String(data.length - index).padStart(4, '0');
+    const date = new Date(scan.created_at);
+    const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '');
+    return `Scan ${scanNumber} - ${dateStr}`;
+  };
+
   // Map scans table columns to match scan_uploads expected format
-  return data?.map(scan => ({
+  return data.map((scan, index) => ({
     id: scan.id,
     user_id: scan.user_id,
-    scan_title: scan.title,
+    scan_title: generateScanTitle(scan, index),
     processing_status: scan.status,
     storage_path: scan.storage_path,
     results: {
       summary_image_path: scan.summary_image_path,
-      total_cards_detected: 0 // Default value since we don't have this data
+      total_cards_detected: countByScan.get(scan.id) || 0
     },
     error_message: scan.error_message,
     created_at: scan.created_at,

@@ -1,8 +1,8 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 21, 2025 @ 10:00 PM  
+**Last Updated:** October 21, 2025 @ 7:30 PM  
 **Branch:** `main`  
-**Status:** ✅ Clean - Scans page UI unification complete
+**Status:** ✅ Clean - Table content fixes and CLIP optimization complete
 
 ---
 
@@ -10,13 +10,12 @@
 
 **Session Focus:** Header simplification, teal theme implementation, mobile polish
 
-### Latest Session (Oct 21, 10:00 PM) - Scans Page UI Unification
-- ✅ Applied teal theme to ProcessingQueueCard status badges
-- ✅ Unified ScanHistoryTable with CollectionTable components
-- ✅ Fixed table column alignment and scrollable body
-- ✅ Removed max-width for edge-to-edge layout
-- ✅ Fixed Next.js 15 API params handling
-- ✅ Unified spacing and layout patterns
+### Latest Session (Oct 21, 7:30 PM) - Table Content Fixes & CLIP Optimization
+- ✅ Fixed table content: auto-generated scan titles, actual card counts, specific dates
+- ✅ Fixed column alignment: centered status tags, right-aligned uploaded dates
+- ✅ Fixed password manager interference with search fields
+- ✅ Optimized CLIP threshold from 0.85 to 0.6 to fix "Unknown Card" issue
+- ✅ Made action buttons always visible for better UX
 
 ### Combined Status from All Sessions
 
@@ -43,7 +42,7 @@
 ## 📖 Quick Links
 
 ### Latest Handoff
-- **📋 [Session: Scans Page UI Unification (Oct 21, 10:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_2200.md)** ← **Current session**
+- **📋 [Session: Table Content Fixes & CLIP Optimization (Oct 21, 7:30 PM)](./handoffs/2025/10-october/context_handoff_20251021_1930.md)** ← **Current session**
 
 ### Previous Handoffs
 - **📋 [Session: UI Polish (Oct 21, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_1600.md)** ← Filters + dropdowns
@@ -66,37 +65,34 @@
 
 ## 🔴 Top Priorities
 
-### 1. **Table Content & Alignment Fixes** 🎯 Next Session
-**Status:** Scans page UI unified, now need content improvements  
+### 1. **Test CLIP Detection Accuracy** 🎯 Next Session
+**Status:** CLIP threshold optimized, need to verify card identification works  
 **Tasks:**
-- Fix "Untitled Scan" titles (generate sequential IDs)
-- Display actual card counts instead of "0"
-- Show specific dates instead of "X days ago"
-- Center status tags, right-align uploaded dates
-- Make action buttons visible without hover
+- Upload test scan to verify cards are now identified (not "Unknown Card")
+- Monitor accuracy vs coverage trade-off with 0.6 threshold
+- Consider confidence score display in UI
 
-**Impact:** Better user experience and data clarity
+**Impact:** Validate CLIP optimization and improve user experience
 
-**Files:** `components/ui/ScanHistoryTable.tsx`, related components
+**Files:** `worker/worker.py`, scan upload workflow
 
-### 2. **Test Scans Page Changes** ✅ Ready for Testing
-**Status:** UI unification shipped this session  
+### 2. **Worker Health Monitoring** 🎯 Next Session
+**Status:** Auto-recovery system has missing functions  
 **Tasks:**
-- Verify teal theme on ProcessingQueueCard status badges
-- Test table scrolling behavior
-- Validate column alignment
-- Check mobile responsiveness
+- Fix missing `worker_health` table and `get_stuck_jobs` function
+- Address auto-recovery system errors in logs
+- Improve worker monitoring and observability
 
-**Impact:** Validate unified design language
+**Impact:** Better worker reliability and error handling
 
-### 3. **Scan Title Generation** 🎯 Next Session
-**Status:** All scans show "Untitled Scan"  
+### 3. **Card Detection Quality Analysis** 🎯 Future Session
+**Status:** CLIP threshold optimized, need to analyze detection quality  
 **Tasks:**
-- Generate sequential scan IDs (scan-0001, scan-0002, etc.)
-- Include date/time in titles for easy identification
-- Update scan detail page routing if needed
+- Investigate YOLO crop quality if CLIP matches are inaccurate
+- Check image preprocessing pipeline for quality loss
+- Consider hybrid OCR + CLIP approach for better accuracy
 
-**Impact:** Better scan identification and organization
+**Impact:** Improve overall card identification accuracy
 
 ### 4. **Test Modal Workflow** ✅ Code Shipped
 **Status:** Code shipped in Session B, needs user testing  
@@ -220,5 +216,5 @@
 
 ---
 
-**Previous handoff:** [Scans Page UI Unification](./handoffs/2025/10-october/context_handoff_20251021_2200.md)  
-**Next steps:** Table content fixes, scan title generation, column alignment improvements
+**Previous handoff:** [Table Content Fixes & CLIP Optimization](./handoffs/2025/10-october/context_handoff_20251021_1930.md)  
+**Next steps:** Test CLIP accuracy, fix worker health monitoring, analyze detection quality

@@ -465,7 +465,7 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
             
             # Batch identify all cards at once
             logging.info(f"[..] Identifying cards (CLIP): {len(card_crops)} cards in batch")
-            batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.85)
+            batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.6)
             logging.info(f"[OK] Identifications complete")
             
             # Process results

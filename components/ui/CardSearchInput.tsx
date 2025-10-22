@@ -118,6 +118,11 @@ export function CardSearchInput({ onSelect, placeholder, className, placement = 
         aria-autocomplete="list"
         className={styles.input}
         autoFocus={autoFocus}
+        autoComplete="off"
+        data-lpignore="true"
+        data-form-type="other"
+        name="cardSearchInput"
+        id="cardSearchInput"
       />
       
       {isOpen && (

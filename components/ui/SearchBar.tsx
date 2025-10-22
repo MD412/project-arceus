@@ -33,11 +33,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
         />
       </svg>
       <input
-        type="text"
+        type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className="search-bar__input"
+        autoComplete="off"
+        data-lpignore="true"
+        data-form-type="other"
+        name="siteSearch"
+        id="siteSearch"
       />
       {value && (
         <button

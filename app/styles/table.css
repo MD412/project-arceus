@@ -251,12 +251,8 @@
 
 /* Table Actions */
 .table-actions {
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.circuit-table-row:hover .table-actions {
   opacity: 1;
+  transition: opacity 0.15s ease;
 }
 
 .table-action-button {

@@ -53,6 +53,11 @@ export function CardSearchInputWithExternalResults({
         role="combobox"
         aria-autocomplete="list"
         className={styles.input}
+        autoComplete="off"
+        data-lpignore="true"
+        data-form-type="other"
+        name="externalCardSearch"
+        id="externalCardSearch"
       />
     </div>
   );

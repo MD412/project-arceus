@@ -86,16 +86,11 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const diffInMs = now.getTime() - date.getTime();
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-    if (diffInDays === 0) return 'Today';
-    if (diffInDays === 1) return 'Yesterday';
-    if (diffInDays < 7) return `${diffInDays}d ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)}w ago`;
-    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)}mo ago`;
-    return `${Math.floor(diffInDays / 365)}y ago`;
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
   };
 
   const getStatusBadgeClass = (status: string) => {
@@ -151,7 +146,7 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
             style={{ cursor: 'pointer' }}
           >
             <TableCell className="table-scan-name">{upload.scan_title || 'Untitled Scan'}</TableCell>
-            <TableCell>
+            <TableCell className="circuit-table-cell--center">
               <span className={getStatusBadgeClass(upload.processing_status)}>
                 {upload.processing_status.replace('_', ' ')}
               </span>
@@ -159,7 +154,7 @@ export function ScanHistoryTable({ uploads, onRename, onDelete, onFlagForTrainin
             <TableCell className="circuit-table-cell--numeric">
               {upload.results?.total_cards_detected ?? '—'}
             </TableCell>
-            <TableCell className="table-date-cell">
+            <TableCell className="circuit-table-cell--numeric table-date-cell">
               {formatDate(upload.created_at)}
             </TableCell>
             <TableCell>
