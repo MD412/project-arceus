@@ -4,7 +4,6 @@ import * as React from 'react';
 import { createPortal } from 'react-dom';
 import { X, ArrowLeft, MoreVertical } from 'lucide-react';
 import { Dropdown, type DropdownItem } from './Dropdown';
-import { getVariant, trackABTest } from '@/lib/ab-test';
 
 interface BaseModalProps {
   isOpen: boolean;
@@ -48,14 +47,6 @@ export function BaseModal({
   onMenuItemClick
 }: BaseModalProps) {
   if (!isOpen) return null;
-
-  // A/B test for X button position
-  const xButtonVariant = getVariant('modal-x-button');
-  
-  const handleClose = () => {
-    trackABTest('modal-x-button', xButtonVariant, 'close-clicked');
-    onClose();
-  };
 
   // Inline panel mode - renders directly in place
   if (inline) {
@@ -137,13 +128,13 @@ export function BaseModal({
                     align="right"
                     onItemClick={onMenuItemClick}
                   />
-                  {showCloseButton && xButtonVariant === 'A' && (
+                  {showCloseButton && (
                     <button
-                      onClick={handleClose}
+                      onClick={onClose}
                       className="modal-close"
                       aria-label="Close modal"
                     >
-                      <X size={20} />
+                      <X size={24} />
                     </button>
                   )}
                 </div>
