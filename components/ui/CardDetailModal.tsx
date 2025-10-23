@@ -164,9 +164,11 @@ export function CardDetailModal({
         if (item.label === 'Delete' || item.label === 'Deleting...') {
           handleDelete();
         } else if (item.label === 'Change') {
-          // Switch to Scan tab and enter replace mode, focusing the search input
+          // Switch to Scan tab if available, otherwise stay on Card tab
           if (displayCard.rawCropUrl) {
             setActiveTab('scan');
+          } else {
+            setActiveTab('card');
           }
           setIsReplaceMode(true);
         }
@@ -181,34 +183,55 @@ export function CardDetailModal({
 
         {/* Card Tab - Main view with image and details */}
         <TabsContent value="card">
-          <div className="card-detail-modal__layout">
-            {/* Left: Large card image */}
-            <div className="card-detail-modal__image">
-              <img 
-                src={imageUrl}
-                alt={displayCard.name}
-                className="card-detail-modal__image-full"
+          {isReplaceMode && !displayCard.rawCropUrl ? (
+            <div className="card-detail-modal__replace-panel">
+              <h3>Search for Correct Card</h3>
+              <CardSearchInput
+                placeholder="Search by name or number…"
+                onSelect={handleReplace}
+                autoFocus
               />
+              <div className="card-detail-modal__replace-actions">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setIsReplaceMode(false)} 
+                  disabled={isReplacing}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
-            
-            {/* Right: Details panel */}
-            <div className="card-detail-modal__details">
-              {/* Collection Details Section */}
-              <div className="card-detail-modal__section">
-                <h3>Collection Details</h3>
-                <div className="card-detail-modal__collection-details">
-                  <div className="card-detail-modal__detail-item">
-                    <span className="card-detail-modal__detail-label">Quantity:</span>
-                    <span className="card-detail-modal__detail-value">{localQuantity}</span>
-                  </div>
-                  <div className="card-detail-modal__detail-item">
-                    <span className="card-detail-modal__detail-label">Condition:</span>
-                    <span className="card-detail-modal__detail-value">{displayCard.condition || 'Near Mint'}</span>
+          ) : (
+            <div className="card-detail-modal__layout">
+              {/* Left: Large card image */}
+              <div className="card-detail-modal__image">
+                <img 
+                  src={imageUrl}
+                  alt={displayCard.name}
+                  className="card-detail-modal__image-full"
+                />
+              </div>
+              
+              {/* Right: Details panel */}
+              <div className="card-detail-modal__details">
+                {/* Collection Details Section */}
+                <div className="card-detail-modal__section">
+                  <h3>Collection Details</h3>
+                  <div className="card-detail-modal__collection-details">
+                    <div className="card-detail-modal__detail-item">
+                      <span className="card-detail-modal__detail-label">Quantity:</span>
+                      <span className="card-detail-modal__detail-value">{localQuantity}</span>
+                    </div>
+                    <div className="card-detail-modal__detail-item">
+                      <span className="card-detail-modal__detail-label">Condition:</span>
+                      <span className="card-detail-modal__detail-value">{displayCard.condition || 'Near Mint'}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </TabsContent>
 
         {/* Scan Tab - Compare scan crop and correct if needed */}
