@@ -22,7 +22,6 @@ interface CardDetailModalProps {
     condition?: string;
     rawCropUrl?: string;
   };
-  onDeleteCard?: (cardId: string) => Promise<void>;
   onReplaced?: (updated: {
     name: string;
     imageUrl: string;
@@ -30,6 +29,7 @@ interface CardDetailModalProps {
     setCode: string;
     setName: string;
   }) => void;
+  onDeleteCard?: (cardId: string) => Promise<void>;
 }
 
 /**
@@ -48,8 +48,8 @@ export function CardDetailModal({
   isOpen, 
   onClose, 
   card,
-  onDeleteCard,
   onReplaced,
+  onDeleteCard,
 }: CardDetailModalProps) {
   const [localQuantity, setLocalQuantity] = React.useState(card.quantity || 1);
   const [isUpdating, setIsUpdating] = React.useState(false);
@@ -57,6 +57,21 @@ export function CardDetailModal({
   const [isReplaceMode, setIsReplaceMode] = React.useState(false);
   const [isReplacing, setIsReplacing] = React.useState(false);
   const [displayCard, setDisplayCard] = React.useState(card);
+  const [activeTab, setActiveTab] = React.useState<'card' | 'scan' | 'market'>('card');
+
+  // Delete handler
+  const handleDelete = async () => {
+    if (!card.id || !onDeleteCard) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteCard(card.id);
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete card:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Update local quantity when card changes
   React.useEffect(() => {
@@ -127,6 +142,16 @@ export function CardDetailModal({
     </>
   );
 
+  // Create menu items with delete handler
+  const menuItems = [
+    { 
+      label: isDeleting ? 'Deleting...' : 'Delete', 
+      href: '#', 
+      disabled: isDeleting || !card.id 
+    },
+    { label: 'Change', href: '/change' }
+  ];
+
   return (
     <BaseModal 
       isOpen={isOpen} 
@@ -134,8 +159,20 @@ export function CardDetailModal({
       className="card-detail-modal"
       title={title}
       inline={true}
+      menuItems={menuItems}
+      onMenuItemClick={(item) => {
+        if (item.label === 'Delete' || item.label === 'Deleting...') {
+          handleDelete();
+        } else if (item.label === 'Change') {
+          // Switch to Scan tab and enter replace mode, focusing the search input
+          if (displayCard.rawCropUrl) {
+            setActiveTab('scan');
+          }
+          setIsReplaceMode(true);
+        }
+      }}
     >
-      <Tabs defaultValue="card" className="card-detail-modal__tabs">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'card' | 'scan' | 'market')} defaultValue="card" className="card-detail-modal__tabs">
         <TabsList>
           <TabsTrigger value="card">Card</TabsTrigger>
           {displayCard.rawCropUrl && <TabsTrigger value="scan">Scan</TabsTrigger>}
@@ -197,6 +234,7 @@ export function CardDetailModal({
                     <CardSearchInput
                       placeholder="Search by name or number…"
                       onSelect={handleReplace}
+                      autoFocus
                     />
                     <div className="card-detail-modal__replace-actions">
                       <Button 
@@ -252,38 +290,6 @@ export function CardDetailModal({
         </TabsContent>
       </Tabs>
 
-      {/* Footer with action buttons */}
-      <footer className="card-detail-modal__footer">
-        <div className="card-detail-modal__footer-nav">
-          <span className="card-detail-modal__footer-pos" />
-        </div>
-        
-        <div className="card-detail-modal__footer-cta">
-          <Button 
-            variant="destructive" 
-            size="sm"
-            disabled={isDeleting || !card.id}
-            onClick={async () => {
-              if (!card.id || !onDeleteCard) return;
-              setIsDeleting(true);
-              try {
-                await onDeleteCard(card.id);
-                onClose();
-              } catch (error) {
-                console.error('Failed to delete card:', error);
-              } finally {
-                setIsDeleting(false);
-              }
-            }}
-          >
-            {isDeleting ? 'Removing...' : 'Remove from Collection'}
-          </Button>
-        </div>
-        
-        <div className="card-detail-modal__footer-state">
-          {/* Future: Quick actions or status indicators */}
-        </div>
-      </footer>
     </BaseModal>
   );
 }

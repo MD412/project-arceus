@@ -427,11 +427,8 @@ a {
 }
 
 .modal-title {
-  font: var(--font-heading, 600 21px/1.2 var(--font-family-display));
   color: var(--text-heading-strong, var(--eva-bright-yellow));
-  margin-top: 0;
-  margin-bottom: var(--sds-size-space-600, 24px);
-  letter-spacing: var(--letter-spacing-heading, -2%);
+  margin: 0;
 }
 
 /* === Circuit Design System Component Styles === */

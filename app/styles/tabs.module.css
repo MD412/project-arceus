@@ -74,3 +74,20 @@
   background: var(--text-tertiary);
 }
 
+/* Mobile: Allow independent scrolling */
+@media (max-width: 768px) {
+  .tabsContent {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Specific targeting for tabpanel with generated class */
+  div[role="tabpanel"].tabsContent {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 8px;
+  }
+}
+

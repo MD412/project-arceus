@@ -1,8 +1,8 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 22, 2025 @ 2:30 PM  
+**Last Updated:** October 23, 2025 @ 4:00 PM  
 **Branch:** `main`  
-**Status:** ✅ Modified - CardSearchInput filters added, password manager issue investigated
+**Status:** ✅ Modified - Card Detail Modal UI revamp in progress
 
 ---
 
@@ -42,7 +42,7 @@
 ## 📖 Quick Links
 
 ### Latest Handoff
-- **📋 [Session: CardSearchInput Filters & Password Manager Investigation (Oct 22, 2:30 PM)](./handoffs/2025/10-october/context_handoff_20251022_1430.md)** ← **Current session**
+- **📋 [Session: Card Detail Modal UI Revamp (Oct 23, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251023_1600.md)** ← **Current session**
 
 ### Previous Handoffs
 - **📋 [Session: UI Polish (Oct 21, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251021_1600.md)** ← Filters + dropdowns
@@ -65,40 +65,36 @@
 
 ## 🔴 Top Priorities
 
-### 1. **Worker Health Monitoring** 🎯 Next Session
-**Status:** Auto-recovery system has missing functions  
+### 1. **Card Detail Modal UI Revamp** 🎯 **Next Session Priority**
+**Status:** Ready to modernize modal interface  
 **Tasks:**
-- Fix missing `worker_health` table and `get_stuck_jobs` function
-- Address auto-recovery system errors in logs
-- Improve worker monitoring and observability
+- Review current modal components and layout
+- Apply CircuitDS design system patterns
+- Improve visual design and spacing
+- Enhance responsive behavior and accessibility
+- Test modal workflow (stays open on replace)
+
+**Impact:** Better user experience for card detail interactions
+
+**Files:** `components/scan-review/`, `components/ui/`, CircuitDS components
+
+### 2. **Worker Health Monitoring** 🎯 **Deferred**
+**Status:** Investigation complete, manual SQL needed  
+**Tasks:**
+- Apply manual SQL migrations for worker_health table
+- Create get_stuck_jobs function in database
+- Fix Unicode encoding issues in production system
 
 **Impact:** Better worker reliability and error handling
 
-**Files:** Worker monitoring scripts, database migrations
-
-### 2. **Test CLIP Detection Accuracy** 🎯 Next Session
-**Status:** Auto-recovery system has missing functions  
+### 3. **Test CLIP Detection Accuracy** 🎯 **Deferred**
+**Status:** CLIP threshold optimized, needs testing  
 **Tasks:**
-- Fix missing `worker_health` table and `get_stuck_jobs` function
-- Address auto-recovery system errors in logs
-- Improve worker monitoring and observability
+- Run CLIP automation tests
+- Verify 0.6 threshold works for card identification
+- Monitor false positive/negative rates
 
-**Impact:** Better worker reliability and error handling
-
-### 3. **Card Detection Quality Analysis** 🎯 Future Session
-**Status:** CLIP threshold optimized, need to analyze detection quality  
-**Tasks:**
-- Investigate YOLO crop quality if CLIP matches are inaccurate
-- Check image preprocessing pipeline for quality loss
-- Consider hybrid OCR + CLIP approach for better accuracy
-
-**Impact:** Improve overall card identification accuracy
-
-### 4. **Test Modal Workflow** ✅ Code Shipped
-**Status:** Code shipped in Session B, needs user testing  
-**Tasks:**
-- Open card detail modal, switch to Scan tab, replace card
-- Verify modal stays open
+**Impact:** Validate card identification accuracy
 
 ---
 
@@ -196,25 +192,16 @@
 
 ## 🎯 Next Session Plan
 
-### Phase 1: Scans Page Cleanup (1-2 hours)
-1. Review scans page current state
-2. Apply minimal header design if appropriate
-3. Check spacing, consistency with collection page
-4. Apply teal theme to interactive elements
-5. Mobile responsive polish
+### **Card Detail Modal UI Revamp** 🎨
 
-### Phase 2: Testing (30 min)
-1. Test collection page minimal header on mobile/desktop
-2. Verify teal theme looks good on all elements
-3. Validate sidebar minimize/expand
-4. Check touch targets on mobile
-
-### Phase 3: Next UI Target
-1. Identify any remaining inconsistencies
-2. Continue UI unification across app
-3. Consider other pages needing polish
+**General Prep:**
+- Review current modal components in `components/scan-review/`
+- Apply CircuitDS design system patterns
+- Improve visual hierarchy, spacing, and responsive behavior
+- Test modal workflow (stays open on replace)
+- Enhance card image display and accessibility
 
 ---
 
-**Previous handoff:** [Table Content Fixes & CLIP Optimization](./handoffs/2025/10-october/context_handoff_20251021_1930.md)  
-**Next steps:** Test CLIP accuracy, fix worker health monitoring, analyze detection quality
+**Previous handoff:** [Worker Health Investigation & Cleanup](./handoffs/2025/10-october/context_handoff_20251022_1600.md)  
+**Next steps:** Card detail modal UI revamp with CircuitDS design system

@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { X, ArrowLeft } from 'lucide-react';
+import { X, ArrowLeft, MoreVertical } from 'lucide-react';
+import { Dropdown, type DropdownItem } from './Dropdown';
 
 interface BaseModalProps {
   isOpen: boolean;
@@ -13,6 +14,10 @@ interface BaseModalProps {
   showCloseButton?: boolean;
   /** Render as inline panel instead of overlay modal */
   inline?: boolean;
+  /** Custom menu items for the three-dot menu */
+  menuItems?: DropdownItem[];
+  /** Handler for menu item clicks */
+  onMenuItemClick?: (item: DropdownItem) => void;
 }
 
 /**
@@ -31,10 +36,15 @@ export function BaseModal({
   isOpen, 
   onClose, 
   children, 
-  className = '',
-  title,
+  className = '', 
+  title, 
   showCloseButton = true,
-  inline = false
+  inline = false,
+  menuItems = [
+    { label: 'Delete', href: '/delete' },
+    { label: 'Change', href: '/change' }
+  ],
+  onMenuItemClick
 }: BaseModalProps) {
   if (!isOpen) return null;
 
@@ -45,20 +55,34 @@ export function BaseModal({
         {/* Optional Header */}
         {(title || showCloseButton) && (
           <header className="modal-header">
-            {showCloseButton && (
-              <button
-                onClick={onClose}
-                className="modal-back"
-                aria-label="Go back"
-              >
-                <ArrowLeft size={20} />
-              </button>
-            )}
-            {title && (
-              <div className="modal-title">
-                {typeof title === 'string' ? <h2>{title}</h2> : title}
+            <div className="modal-header-content">
+              {showCloseButton && (
+                <button
+                  onClick={onClose}
+                  className="modal-back"
+                  aria-label="Go back"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+              )}
+              {title && (
+                <div className="modal-title">
+                  {typeof title === 'string' ? <h2>{title}</h2> : title}
+                </div>
+              )}
+              <div className="modal-actions">
+                <Dropdown
+                  trigger={
+                    <button className="modal-menu" aria-label="More options">
+                      <MoreVertical size={20} />
+                    </button>
+                  }
+                  items={menuItems}
+                  align="right"
+                  onItemClick={onMenuItemClick}
+                />
               </div>
-            )}
+            </div>
           </header>
         )}
         
@@ -87,20 +111,34 @@ export function BaseModal({
           {/* Optional Header */}
           {(title || showCloseButton) && (
             <header className="modal-header">
-              {title && (
-                <div className="modal-title">
-                  {typeof title === 'string' ? <h2>{title}</h2> : title}
+              <div className="modal-header-content">
+                {title && (
+                  <div className="modal-title">
+                    {typeof title === 'string' ? <h2>{title}</h2> : title}
+                  </div>
+                )}
+                <div className="modal-actions">
+                  <Dropdown
+                    trigger={
+                      <button className="modal-menu" aria-label="More options">
+                        <MoreVertical size={20} />
+                      </button>
+                    }
+                    items={menuItems}
+                    align="right"
+                    onItemClick={onMenuItemClick}
+                  />
+                  {showCloseButton && (
+                    <button
+                      onClick={onClose}
+                      className="modal-close"
+                      aria-label="Close modal"
+                    >
+                      <X size={24} />
+                    </button>
+                  )}
                 </div>
-              )}
-              {showCloseButton && (
-                <button
-                  onClick={onClose}
-                  className="modal-close"
-                  aria-label="Close modal"
-                >
-                  <X size={24} />
-                </button>
-              )}
+              </div>
             </header>
           )}
           
