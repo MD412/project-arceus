@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { X, ArrowLeft, MoreVertical } from 'lucide-react';
+import { X, MoreVertical } from 'lucide-react';
 import { Dropdown, type DropdownItem } from './Dropdown';
 
 interface BaseModalProps {
@@ -51,36 +51,39 @@ export function BaseModal({
   // Inline panel mode - renders directly in place
   if (inline) {
     return (
-      <div className={`modal-panel ${className}`}>
+      <div className="modal-backdrop-inline" onClick={onClose}>
+        <div className={`modal-panel ${className}`} onClick={(e) => e.stopPropagation()}>
         {/* Optional Header */}
         {(title || showCloseButton) && (
           <header className="modal-header">
             <div className="modal-header-content">
-              {showCloseButton && (
-                <button
-                  onClick={onClose}
-                  className="modal-back"
-                  aria-label="Go back"
-                >
-                  <ArrowLeft size={20} />
-                </button>
-              )}
               {title && (
                 <div className="modal-title">
                   {typeof title === 'string' ? <h2>{title}</h2> : title}
                 </div>
               )}
               <div className="modal-actions">
-                <Dropdown
-                  trigger={
-                    <button className="modal-menu" aria-label="More options">
-                      <MoreVertical size={20} />
+                <div className="modal-actions-wrapper">
+                  <Dropdown
+                    trigger={
+                      <button className="modal-menu" aria-label="More options">
+                        <MoreVertical size={20} />
+                      </button>
+                    }
+                    items={menuItems}
+                    align="right"
+                    onItemClick={onMenuItemClick}
+                  />
+                  {showCloseButton && (
+                    <button
+                      onClick={onClose}
+                      className="modal-close"
+                      aria-label="Close modal"
+                    >
+                      <X size={20} />
                     </button>
-                  }
-                  items={menuItems}
-                  align="right"
-                  onItemClick={onMenuItemClick}
-                />
+                  )}
+                </div>
               </div>
             </div>
           </header>
@@ -88,6 +91,7 @@ export function BaseModal({
         
         {/* Content */}
         {children}
+        </div>
       </div>
     );
   }
@@ -107,7 +111,7 @@ export function BaseModal({
       
       {/* Modal Container */}
       <div className="modal-container">
-        <div className={`modal-content ${className}`}>
+        <div className={`modal-content ${className}`} onClick={(e) => e.stopPropagation()}>
           {/* Optional Header */}
           {(title || showCloseButton) && (
             <header className="modal-header">

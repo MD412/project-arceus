@@ -43,17 +43,33 @@
 
 /* ===== INLINE PANEL MODE ===== */
 
-/* Panel - fills parent container */
-.modal-panel {
+/* Backdrop for inline panels - provides spacing and backdrop */
+.modal-backdrop-inline {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+/* Panel - now centered within backdrop with spacing */
+.modal-panel {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   background: var(--circuit-dark-teal);
+  border-radius: var(--sds-size-radius-300);
   overflow: hidden;
-  z-index: 100;
+  box-shadow: var(--shadow-lg);
 }
 
 /* ===== SHARED STYLES ===== */
@@ -77,19 +93,24 @@
 .modal-actions {
   display: flex;
   align-items: center;
-  gap: var(--sds-size-space-200);
   margin-left: auto;
+}
+
+.modal-actions-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--sds-size-space-200);
 }
 
 /* Header for overlay mode */
 .modal-content .modal-header {
-  padding: 8px;
+  padding: 12px 16px;
   justify-content: space-between;
 }
 
 /* Header for inline panel mode */
 .modal-panel .modal-header {
-  padding: 8px;
+  padding: 12px 16px;
   gap: var(--sds-size-space-300);
 }
 
@@ -107,42 +128,8 @@
   color: var(--text-primary);
 }
 
-/* Close button (overlay mode - X icon) */
+/* Close button - matches modal-menu styling */
 .modal-close {
-  position: absolute;
-  top: var(--sds-size-space-400);
-  right: var(--sds-size-space-400);
-  z-index: 10;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-background);
-  border: 1px solid var(--border-default);
-  border-radius: var(--sds-size-radius-100);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
-  margin: 0;
-}
-
-.modal-close svg {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-  padding: 0;
-}
-
-.modal-close:hover {
-  background: var(--surface-subtle);
-  color: var(--text-primary);
-  border-color: var(--border-strong);
-}
-
-/* Back button (inline panel mode - arrow) */
-.modal-back {
   flex: none;
   width: 36px;
   height: 36px;
@@ -159,17 +146,18 @@
   margin: 0;
 }
 
-.modal-back svg {
+.modal-close svg {
   width: 20px;
   height: 20px;
   margin: 0;
   padding: 0;
 }
 
-.modal-back:hover {
+.modal-close:hover {
   background: rgba(74, 155, 148, 0.4);
   color: var(--text-primary);
 }
+
 
 /* Three-dot menu button - matches modal-back styling */
 .modal-menu {
