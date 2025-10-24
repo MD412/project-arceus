@@ -102,3 +102,15 @@ def get_supabase_client() -> Client:
 def is_gpt_fallback_enabled() -> bool:
     """Return True if GPT fallback is enabled (default). Set DISABLE_GPT_FALLBACK=1/true to disable."""
     return os.getenv("DISABLE_GPT_FALLBACK", "false").lower() not in ("1", "true", "yes") 
+
+# ------------------------------
+# Vision retrieval configuration
+# ------------------------------
+# Phase 1: backbone + TTA flags (future-proof for phases 3/4)
+VISION_MODEL = os.getenv("VISION_MODEL", "vit_l_14_336")
+TTA_VIEWS = int(os.getenv("TTA_VIEWS", "2"))
+FUSION_WEIGHTS = tuple(
+    float(x) for x in os.getenv("FUSION_WEIGHTS", "0.7,0.3").split(",")
+)
+UNKNOWN_THRESHOLD = float(os.getenv("UNKNOWN_THRESHOLD", "0.0"))
+USE_CUDA_IF_AVAILABLE = os.getenv("USE_CUDA_IF_AVAILABLE", "1") == "1"

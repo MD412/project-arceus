@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'worker'))
 
-import pytest
+# import pytest  # Optional for direct script execution
 from PIL import Image
 from clip_lookup import identify_card_from_crop, get_clip_identifier
 
@@ -89,10 +89,25 @@ class CLIPTestSuite:
             
             duration_ms = (time.time() - start_time) * 1000
             
-            success = result.get("success", False)
-            actual_name = result.get("name", "") if success else None
+            # Check if CLIP found any card
+            found_card = result.get("success", False)
+            actual_name = result.get("name", "") if found_card else None
             similarity = result.get("similarity", 0.0)
-            error = result.get("error") if not success else None
+            error = result.get("error") if not found_card else None
+            
+            # Check if the identified card matches the expected card
+            # Use fuzzy matching to handle slight naming differences
+            success = False
+            if found_card and actual_name:
+                # Simple name matching - could be improved with fuzzy matching
+                expected_lower = expected_name.lower().strip()
+                actual_lower = actual_name.lower().strip()
+                # Check if key words match (partial matching)
+                success = (
+                    expected_lower in actual_lower or 
+                    actual_lower in expected_lower or
+                    expected_lower.split()[0] in actual_lower  # First word match
+                )
             
             return CLIPTestResult(
                 image_name=img_path.name,
@@ -128,10 +143,17 @@ class CLIPTestSuite:
             result = self.run_single_test(img_path, expected_name, similarity_threshold)
             results.append(result)
             
-            status = "✅" if result.success else "❌"
+            # Show different status based on whether card was correctly identified
+            if result.success:
+                status = "✅ CORRECT"
+            elif result.actual_name:
+                status = "⚠️  WRONG"
+            else:
+                status = "❌ NO MATCH"
+                
             print(f"{status} {result.image_name}: {result.similarity:.3f} similarity")
-            if result.success and result.actual_name:
-                print(f"   Expected: {expected_name}")
+            print(f"   Expected: {expected_name}")
+            if result.actual_name:
                 print(f"   Got: {result.actual_name}")
         
         # Calculate metrics
