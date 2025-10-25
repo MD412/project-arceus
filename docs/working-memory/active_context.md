@@ -1,30 +1,30 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 25, 2025 @ 11:00 PM  
+**Last Updated:** October 26, 2025 @ 1:00 AM  
 **Branch:** `main`  
-**Status:** ✅ Phase 4 Complete — Threshold calibrated (0.80), v2 deployed
+**Status:** ✅ Retrieval v2 fixed — User's scan working; Phase 5 roadmap defined
 
 ---
 
 ## 🎯 Current Status
 
-**Session Focus:** Phase 4 threshold calibration complete; v2 live with 100% accuracy
+**Session Focus:** Retrieval v2 working with real scans; Phase 5 learning system designed
 
-### Latest Session (Oct 25, 11:00 PM)
-- ✅ Fixed domain gap (added clean scan templates)
-- ✅ Achieved 100% P/R on test fixtures
-- ✅ Set UNKNOWN_THRESHOLD=0.80 in production
-- ✅ Worker redeployed to Render
+### Latest Session (Oct 26, 1:00 AM)
+- ✅ Fixed worker to use retrieval v2 (was hardcoded to legacy)
+- ✅ Added user's actual Greavard scan as template
+- ✅ Achieved 0.9592 score on user's real scan
+- ✅ Defined simplified Phase 5 with single `training_feedback` table
 
-**In Progress:**
-- Worker deploying with calibrated threshold
+**Ready for:**
+- Phase 5a implementation (training feedback table)
 
 ---
 
 ## 📖 Quick Links
 
 ### Latest Handoff
-- **📋 [Session: Phase 4 Complete (Oct 25, 11:00 PM)](./handoffs/2025/10-october/context_handoff_20251025_evening.md)** ← **Current session**
+- **📋 [Session: Worker v2 Fixed, Phase 5 Defined (Oct 26, 1:00 AM)](./handoffs/2025/10-october/context_handoff_20251026_0100.md)** ← **Latest**
 
 ### Previous Handoffs
 - **📋 [Vision Phase 2 running; v2 live (Oct 25, 9:30 PM)](./handoffs/2025/10-october/context_handoff_20251025_2130.md)**
@@ -35,10 +35,10 @@
 
 ## 🔴 Top Priorities
 
-### 1. Phase 5 — Logging & Mining
-- Add `ident_logs` table; log top‑5 candidates + final decision
-- Mine confusion pairs; build automated template upsert from user corrections
-- Monitor production for false positives/negatives
+### 1. Phase 5a — Training Feedback Table
+- Create single `training_feedback` table as source of truth
+- Log every identification: crop, prediction, correction, status
+- Track quality issues (blur, glare, angle) for analysis
 
 ### 2. Template Bank Growth
 - Add more clean scan crops as templates (focus on problematic cards)
