@@ -12,8 +12,8 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import numpy as np
 from PIL import Image
 
-from worker.openclip_embedder import build_default_embedder
-from worker.config import (
+from openclip_embedder import build_default_embedder
+from config import (
     FUSION_WEIGHTS,
     TTA_VIEWS,
     UNKNOWN_THRESHOLD,

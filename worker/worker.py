@@ -22,8 +22,19 @@ import traceback
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 from ultralytics import YOLO
 from config import get_supabase_client
-from clip_lookup import CLIPCardIdentifier  # CLIP-only identification
+from clip_lookup import CLIPCardIdentifier  # Legacy CLIP identification
 import logging
+
+# Import retrieval v2 if enabled
+try:
+    from retrieval_v2 import identify_v2
+    from config import RETRIEVAL_IMPL, RETRIEVAL_TOPK
+    USE_RETRIEVAL_V2 = (RETRIEVAL_IMPL == "v2")
+    if USE_RETRIEVAL_V2:
+        logging.info(f"[OK] Retrieval v2 enabled (RETRIEVAL_IMPL={RETRIEVAL_IMPL})")
+except ImportError as e:
+    USE_RETRIEVAL_V2 = False
+    logging.warning(f"Retrieval v2 not available, using legacy CLIP: {e}")
 
 # ---------------- Logging Setup ----------------
 # Stage-by-stage logging with timestamps for observability
@@ -340,7 +351,7 @@ def download_image_with_retry(supabase_client, storage_path: str, max_retries: i
             else:
                 raise e
 
-def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identifier: CLIPCardIdentifier):
+def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identifier):
     job_id_for_logging = job.get('job_id')
     print(f"[INFO] Starting pipeline for job: {job_id_for_logging}")
 
@@ -463,9 +474,31 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 )
                 crop_paths.append(crop_path)
             
-            # Batch identify all cards at once
-            logging.info(f"[..] Identifying cards (CLIP): {len(card_crops)} cards in batch")
-            batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.6)
+            # Identify all cards
+            if USE_RETRIEVAL_V2:
+                logging.info(f"[..] Identifying cards (Retrieval v2): {len(card_crops)} cards")
+                batch_results = []
+                for crop in card_crops:
+                    result = identify_v2(crop, supabase_client, topk=RETRIEVAL_TOPK)
+                    # Convert v2 format to legacy format
+                    if result['card_id']:
+                        # Get card details from candidates
+                        top_candidate = result['candidates'][0] if result['candidates'] else {}
+                        batch_results.append({
+                            'success': True,
+                            'card_id': result['card_id'],
+                            'name': result['card_id'],  # Will be enriched later
+                            'confidence': result['best_score'],
+                            'similarity': result['best_score']
+                        })
+                    else:
+                        batch_results.append({
+                            'success': False,
+                            'error': 'No match found (below threshold)'
+                        })
+            else:
+                logging.info(f"[..] Identifying cards (Legacy CLIP): {len(card_crops)} cards in batch")
+                batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.6)
             logging.info(f"[OK] Identifications complete")
             
             # Process results
@@ -755,10 +788,14 @@ def main():
         supabase_client = get_supabase_client()
         logging.info("[OK] Supabase connected")
         
-        # Initialize CLIP-only identification system
-        logging.info("[..] Initializing CLIP identifier")
-        clip_identifier = CLIPCardIdentifier(supabase_client=supabase_client)
-        logging.info("[OK] CLIP identifier initialized")
+        # Initialize identification system
+        if USE_RETRIEVAL_V2:
+            logging.info(f"[..] Using Retrieval v2 (threshold={os.getenv('UNKNOWN_THRESHOLD', '0.0')})")
+            clip_identifier = None  # Not needed for v2
+        else:
+            logging.info("[..] Initializing legacy CLIP identifier")
+            clip_identifier = CLIPCardIdentifier(supabase_client=supabase_client)
+            logging.info("[OK] Legacy CLIP identifier initialized")
         
         logging.info("=" * 60)
         logging.info("[OK] Worker initialized successfully, starting main loop...")
