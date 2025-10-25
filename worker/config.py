@@ -114,3 +114,10 @@ FUSION_WEIGHTS = tuple(
 )
 UNKNOWN_THRESHOLD = float(os.getenv("UNKNOWN_THRESHOLD", "0.0"))
 USE_CUDA_IF_AVAILABLE = os.getenv("USE_CUDA_IF_AVAILABLE", "1") == "1"
+
+# ------------------------------
+# Vision retrieval implementation
+# ------------------------------
+RETRIEVAL_IMPL = os.getenv("RETRIEVAL_IMPL", "legacy").lower()
+RETRIEVAL_TOPK = int(os.getenv("RETRIEVAL_TOPK", "200"))
+SET_PREFILTER = os.getenv("SET_PREFILTER", "0").lower() in ("1", "true", "yes")

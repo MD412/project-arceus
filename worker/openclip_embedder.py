@@ -61,6 +61,8 @@ def strict_preprocess(pil: Image.Image, target_short: int = 336) -> Image.Image:
         pil = pil.convert("RGB")
     resized = _resize_short_side_keep_ar(pil, target_short)
     squared = _pad_to_square_center(resized)
+    if squared.size != (target_short, target_short):
+        squared = squared.resize((target_short, target_short), resample=Image.Resampling.BICUBIC)
     return squared
 
 

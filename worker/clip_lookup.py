@@ -9,7 +9,13 @@ from PIL import Image
 from typing import Dict, List, Optional, Tuple, Union
 import open_clip
 import torch
-from config import get_supabase_client
+from config import (
+    get_supabase_client,
+    RETRIEVAL_IMPL,
+    RETRIEVAL_TOPK,
+    SET_PREFILTER,
+    UNKNOWN_THRESHOLD,
+)
 import requests
 import time
 from pathlib import Path
@@ -40,6 +46,10 @@ class CLIPCardIdentifier:
             self.supabase_client = get_supabase_client()
             if not self.supabase_client:
                 raise ValueError("Failed to initialize Supabase client")
+        
+        self.retrieval_impl = (RETRIEVAL_IMPL or "legacy").lower()
+        self.retrieval_topk = RETRIEVAL_TOPK
+        self.set_prefilter_enabled = SET_PREFILTER
         
         # Cache for API-resolved names to avoid duplicate API calls
         self._name_cache = {}
@@ -102,6 +112,24 @@ class CLIPCardIdentifier:
         fallback = f"Card {api_id}"
         self._name_cache[api_id] = fallback
         return fallback
+
+    def _fetch_card_metadata(self, card_ids: List[str]) -> Dict[str, Dict]:
+        """Fetch card metadata from card_embeddings to populate response fields."""
+        if not card_ids:
+            return {}
+        try:
+            response = (
+                self.supabase_client
+                .from_("card_embeddings")
+                .select("card_id,name,set_code,card_number,image_url,rarity")
+                .in_("card_id", card_ids)
+                .execute()
+            )
+            rows = response.data or []
+            return {row["card_id"]: row for row in rows if row.get("card_id")}
+        except Exception as exc:
+            print(f"[WARN] Failed to fetch card metadata for retrieval_v2: {exc}")
+            return {}
 
     def encode_image(self, image: Image.Image) -> np.ndarray:
         """Encode a PIL Image to CLIP embedding vector (512-D)"""
@@ -200,6 +228,105 @@ class CLIPCardIdentifier:
         
         return results
 
+    def _identify_with_retrieval_v2(
+        self,
+        image: Image.Image,
+        set_hint: Optional[str] = None,
+    ) -> Dict:
+        """Run retrieval_v2 and adapt the response to legacy format."""
+        from worker import retrieval_v2
+
+        hint = set_hint if (set_hint and self.set_prefilter_enabled) else None
+        result = retrieval_v2.identify_v2(
+            image,
+            self.supabase_client,
+            topk=self.retrieval_topk,
+            set_hint=hint,
+        )
+
+        candidates = result.get("candidates", [])
+        if not candidates:
+            return {
+                "success": False,
+                "method": "clip_retrieval_v2",
+                "error": "No gallery templates returned.",
+                "similarity_threshold": UNKNOWN_THRESHOLD,
+                "all_matches": [],
+                "estimated_value": None,
+            }
+
+        best_card_id = result.get("card_id")
+        metadata = self._fetch_card_metadata([cand["card_id"] for cand in candidates])
+
+        def _split_card_id(card_id: str) -> Tuple[str, str]:
+            parts = card_id.split("-", 1)
+            set_code = parts[0] if parts else ""
+            number = parts[1] if len(parts) > 1 else ""
+            return set_code, number
+
+        candidate_payload: List[Dict] = []
+        best_name = ""
+        best_set_code = ""
+        best_number = ""
+        best_image_url = None
+        best_rarity = None
+
+        for cand in candidates:
+            cid = cand["card_id"]
+            meta = metadata.get(cid, {})
+            set_code, number = _split_card_id(cid)
+            name = meta.get("name") or self._name_cache.get(cid)
+            if not name:
+                name = self._get_name_from_api_id(cid)
+
+            cand_entry = {
+                "card_id": cid,
+                "name": name,
+                "set_code": meta.get("set_code") or set_code,
+                "card_number": meta.get("card_number") or number,
+                "template_score": cand.get("template_score"),
+                "proto_score": cand.get("proto_score"),
+                "fused": cand.get("fused"),
+                "template_id": cand.get("template_id"),
+                "set_id": cand.get("set_id"),
+            }
+            candidate_payload.append(cand_entry)
+
+            if cid == best_card_id:
+                best_name = name
+                best_set_code = cand_entry["set_code"]
+                best_number = cand_entry["card_number"]
+                best_image_url = meta.get("image_url")
+                best_rarity = meta.get("rarity")
+
+        if result.get("thresholded", False) or not best_card_id:
+            return {
+                "success": False,
+                "method": "clip_retrieval_v2",
+                "error": f"No candidates above unknown threshold {UNKNOWN_THRESHOLD:.3f}",
+                "similarity_threshold": UNKNOWN_THRESHOLD,
+                "best_score": result.get("best_score", 0.0),
+                "all_matches": candidate_payload,
+                "estimated_value": None,
+            }
+
+        return {
+            "success": True,
+            "method": "clip_retrieval_v2",
+            "name": best_name,
+            "set_code": best_set_code,
+            "number": best_number,
+            "image_url": best_image_url,
+            "rarity": best_rarity,
+            "confidence": result.get("best_score", 0.0),
+            "similarity": result.get("best_score", 0.0),
+            "card_id": best_card_id,
+            "all_matches": candidate_payload,
+            "estimated_value": None,
+            "template_score": result.get("best_template_score"),
+            "proto_score": result.get("best_proto_score"),
+        }
+
     def find_similar_cards(self, query_embedding: np.ndarray, 
                           similarity_threshold: float = 0.85,
                           max_results: int = 5) -> List[Dict]:
@@ -265,14 +392,19 @@ class CLIPCardIdentifier:
             print(f"[ERROR] Error searching similar cards: {e}")
             return []
 
-    def identify_card_from_crop(self, image_path_or_pil: Union[str, Image.Image], 
-                               similarity_threshold: float = 0.85) -> Dict:
+    def identify_card_from_crop(
+        self,
+        image_path_or_pil: Union[str, Image.Image],
+        similarity_threshold: float = 0.85,
+        set_hint: Optional[str] = None,
+    ) -> Dict:
         """
         Main card identification function - replaces OCR-based approach
         
         Args:
             image_path_or_pil: File path to image or PIL Image object
             similarity_threshold: Minimum similarity for match
+            set_hint: Optional set identifier used for retrieval v2 prefilter
             
         Returns:
             Dict with identification results, compatible with existing pipeline
@@ -284,6 +416,9 @@ class CLIPCardIdentifier:
             else:
                 image = image_path_or_pil.convert('RGB')
             
+            if self.retrieval_impl == "v2":
+                return self._identify_with_retrieval_v2(image, set_hint=set_hint)
+
             print(f"[CLIP] Identifying card using CLIP similarity search...")
             
             # Encode the crop image
@@ -403,10 +538,13 @@ def get_clip_identifier(supabase_client=None) -> CLIPCardIdentifier:
         _clip_identifier = CLIPCardIdentifier(supabase_client=supabase_client)
     return _clip_identifier
 
-def identify_card_from_crop(image_path_or_pil: Union[str, Image.Image], 
-                           use_clip: bool = True, 
-                           similarity_threshold: float = 0.85,
-                           supabase_client=None) -> Dict:
+def identify_card_from_crop(
+    image_path_or_pil: Union[str, Image.Image],
+    use_clip: bool = True,
+    similarity_threshold: float = 0.85,
+    supabase_client=None,
+    set_hint: Optional[str] = None,
+) -> Dict:
     """
     Main card identification function - drop-in replacement for OCR version
     
@@ -415,13 +553,18 @@ def identify_card_from_crop(image_path_or_pil: Union[str, Image.Image],
         use_clip: Whether to use CLIP (True) or fall back to OCR (False)  
         similarity_threshold: Minimum similarity for CLIP matching
         supabase_client: Optional Supabase client to reuse
+        set_hint: Optional set identifier forwarded to retrieval v2
         
     Returns:
         Identification result dict
     """
     if use_clip:
         identifier = get_clip_identifier(supabase_client=supabase_client)
-        return identifier.identify_card_from_crop(image_path_or_pil, similarity_threshold)
+        return identifier.identify_card_from_crop(
+            image_path_or_pil,
+            similarity_threshold,
+            set_hint=set_hint,
+        )
     else:
         # Fallback to original OCR method
         from pokemon_tcg_api import identify_card_from_crop as ocr_identify
