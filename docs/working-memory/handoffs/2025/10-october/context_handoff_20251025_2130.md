@@ -26,6 +26,13 @@ Status: Phase 2 in progress (gallery growing on GPU); Phase 3 enabled (v2 retrie
 
 ---
 
+## Progress Snapshot (today)
+- Gallery population reached ≈ 15,500 cards (≈ 46,500 templates) before a transient 57014 statement timeout; reruns resume cleanly.
+- Prototypes built successfully for current templates (card_prototypes populated ≈ cards).
+- v2 dry-run returns candidates with smaller TopK and/or set prefilter; default TopK=200 can time out on large scans.
+
+---
+
 ## Files Modified / Added (high-level)
 - worker/openclip_embedder.py, worker/__init__.py
 - worker/retrieval_v2.py
@@ -40,7 +47,7 @@ Status: Phase 2 in progress (gallery growing on GPU); Phase 3 enabled (v2 retrie
 
 ## Known Issues / Notes
 - Large first-run model/image download times expected.
-- Gallery population is long-running; safe to Ctrl+C and resume later.
+- 57014 statement timeouts can occur on RPC for large TopK; mitigations: smaller TopK (25–50), set prefilter, per-query timeout/probes.
 - Local Python environment fixed to resolve NumPy ABI mismatch (NumPy 1.26.4 path validated and smoke-tested with GPU).
 
 ---
@@ -55,7 +62,10 @@ Status: Phase 2 in progress (gallery growing on GPU); Phase 3 enabled (v2 retrie
    - Add/run eval harness over real crops; sweep `UNKNOWN_THRESHOLD` to hit ≥99% precision.
    - Set production `UNKNOWN_THRESHOLD` accordingly and redeploy.
 
-3) Phase 5 — Logging & Hard-Negative Mining
+3) Phase 3/Infra Tuning
+   - Update RPC to `set local statement_timeout`, cap K server-side, and set `ivfflat.probes`; prefer HNSW index for large gallery.
+
+4) Phase 5 — Logging & Hard-Negative Mining
    - Add `ident_logs`, log top‑5 candidates + final labels, mine confusions, and upsert user‑correction templates.
 
 ---
