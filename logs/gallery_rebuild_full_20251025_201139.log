@@ -1,0 +1,132 @@
+C:\Users\mdand\AppData\Local\Programs\Python\Python312\Lib\site-packages\timm\models\layers\__init__.py:48: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+C:\Users\mdand\AppData\Local\Programs\Python\Python312\Lib\site-packages\torch\nn\functional.py:5504: UserWarning: 1Torch was not compiled with flash attention. (Triggered internally at ..\aten\src\ATen\native\transformers\cuda\sdp_utils.cpp:455.)
+  attn_output = scaled_dot_product_attention(q, k, v, attn_mask, dropout_p, is_causal)
+[INFO] Initializing Supabase client...
+[OK] Loading environment from: C:\Users\mdand\Projects\project-arceus\.env.local
+[DEBUG] Supabase URL (sanitized): https://dipwodpxxjwkwflimgsf.supabase.co
+[DEBUG] Service key length: 41, starts with: sb_secret_cVEv81X0od...
+Initializing Supabase client...
+[OK] Supabase client initialized successfully.
+[TEST] Testing client with a simple query...
+[OK] Test query successful - client is working!
+[INFO] Loading OpenCLIP ViT-L/14-336 embedder...
+[OK] Embedder ready on device=cuda, dim=768
+
+[INFO] Fetching cards from database...
+[OK] Found 1000 cards to process
+[INFO] Progress: 10/1000 cards (20 templates) | 2.9 cards/s | ETA: 5.7min
+[INFO] Progress: 20/1000 cards (40 templates) | 2.1 cards/s | ETA: 7.7min
+[INFO] Progress: 30/1000 cards (60 templates) | 2.1 cards/s | ETA: 7.6min
+[INFO] Progress: 40/1000 cards (80 templates) | 2.2 cards/s | ETA: 7.2min
+[INFO] Progress: 50/1000 cards (100 templates) | 2.2 cards/s | ETA: 7.1min
+[INFO] Progress: 60/1000 cards (120 templates) | 2.3 cards/s | ETA: 6.9min
+[INFO] Progress: 70/1000 cards (140 templates) | 2.3 cards/s | ETA: 6.7min
+[INFO] Progress: 80/1000 cards (160 templates) | 2.3 cards/s | ETA: 6.6min
+[INFO] Progress: 90/1000 cards (180 templates) | 2.4 cards/s | ETA: 6.4min
+[INFO] Progress: 100/1000 cards (200 templates) | 2.4 cards/s | ETA: 6.2min
+[INFO] Progress: 110/1000 cards (220 templates) | 2.5 cards/s | ETA: 6.0min
+[INFO] Progress: 120/1000 cards (240 templates) | 2.5 cards/s | ETA: 5.9min
+[INFO] Progress: 130/1000 cards (260 templates) | 2.5 cards/s | ETA: 5.8min
+[INFO] Progress: 140/1000 cards (280 templates) | 2.5 cards/s | ETA: 5.6min
+[INFO] Progress: 150/1000 cards (300 templates) | 2.6 cards/s | ETA: 5.5min
+[INFO] Progress: 160/1000 cards (320 templates) | 2.6 cards/s | ETA: 5.4min
+[INFO] Progress: 170/1000 cards (340 templates) | 2.6 cards/s | ETA: 5.3min
+[INFO] Progress: 180/1000 cards (360 templates) | 2.6 cards/s | ETA: 5.2min
+[INFO] Progress: 190/1000 cards (380 templates) | 2.6 cards/s | ETA: 5.1min
+[INFO] Progress: 200/1000 cards (400 templates) | 2.6 cards/s | ETA: 5.0min
+[INFO] Progress: 210/1000 cards (420 templates) | 2.7 cards/s | ETA: 4.9min
+[INFO] Progress: 220/1000 cards (440 templates) | 2.7 cards/s | ETA: 4.9min
+[INFO] Progress: 230/1000 cards (460 templates) | 2.7 cards/s | ETA: 4.8min
+[INFO] Progress: 240/1000 cards (480 templates) | 2.7 cards/s | ETA: 4.7min
+[INFO] Progress: 250/1000 cards (500 templates) | 2.7 cards/s | ETA: 4.6min
+[INFO] Progress: 260/1000 cards (520 templates) | 2.7 cards/s | ETA: 4.5min
+[INFO] Progress: 270/1000 cards (540 templates) | 2.7 cards/s | ETA: 4.5min
+[INFO] Progress: 280/1000 cards (560 templates) | 2.7 cards/s | ETA: 4.4min
+[INFO] Progress: 290/1000 cards (580 templates) | 2.8 cards/s | ETA: 4.3min
+[INFO] Progress: 300/1000 cards (600 templates) | 2.8 cards/s | ETA: 4.2min
+[INFO] Progress: 310/1000 cards (620 templates) | 2.8 cards/s | ETA: 4.1min
+[INFO] Progress: 320/1000 cards (640 templates) | 2.8 cards/s | ETA: 4.1min
+[INFO] Progress: 330/1000 cards (660 templates) | 2.8 cards/s | ETA: 4.0min
+[INFO] Progress: 340/1000 cards (680 templates) | 2.8 cards/s | ETA: 3.9min
+[INFO] Progress: 350/1000 cards (700 templates) | 2.8 cards/s | ETA: 3.9min
+[INFO] Progress: 360/1000 cards (720 templates) | 2.8 cards/s | ETA: 3.8min
+[INFO] Progress: 370/1000 cards (740 templates) | 2.8 cards/s | ETA: 3.8min
+[INFO] Progress: 380/1000 cards (760 templates) | 2.8 cards/s | ETA: 3.7min
+[INFO] Progress: 390/1000 cards (780 templates) | 2.8 cards/s | ETA: 3.7min
+[INFO] Progress: 400/1000 cards (800 templates) | 2.8 cards/s | ETA: 3.6min
+[INFO] Progress: 410/1000 cards (820 templates) | 2.8 cards/s | ETA: 3.5min
+[INFO] Progress: 420/1000 cards (840 templates) | 2.8 cards/s | ETA: 3.5min
+[INFO] Progress: 430/1000 cards (860 templates) | 2.8 cards/s | ETA: 3.4min
+[INFO] Progress: 440/1000 cards (880 templates) | 2.8 cards/s | ETA: 3.3min
+[INFO] Progress: 450/1000 cards (900 templates) | 2.8 cards/s | ETA: 3.3min
+[INFO] Progress: 460/1000 cards (920 templates) | 2.8 cards/s | ETA: 3.2min
+[INFO] Progress: 470/1000 cards (940 templates) | 2.8 cards/s | ETA: 3.1min
+[INFO] Progress: 480/1000 cards (960 templates) | 2.8 cards/s | ETA: 3.1min
+[INFO] Progress: 490/1000 cards (980 templates) | 2.8 cards/s | ETA: 3.0min
+[INFO] Progress: 500/1000 cards (1000 templates) | 2.8 cards/s | ETA: 2.9min
+[INFO] Progress: 510/1000 cards (1020 templates) | 2.8 cards/s | ETA: 2.9min
+[INFO] Progress: 520/1000 cards (1040 templates) | 2.8 cards/s | ETA: 2.8min
+[INFO] Progress: 530/1000 cards (1060 templates) | 2.8 cards/s | ETA: 2.8min
+[INFO] Progress: 540/1000 cards (1080 templates) | 2.8 cards/s | ETA: 2.7min
+[INFO] Progress: 550/1000 cards (1100 templates) | 2.9 cards/s | ETA: 2.6min
+[INFO] Progress: 560/1000 cards (1120 templates) | 2.9 cards/s | ETA: 2.6min
+[INFO] Progress: 570/1000 cards (1140 templates) | 2.9 cards/s | ETA: 2.5min
+[INFO] Progress: 580/1000 cards (1160 templates) | 2.9 cards/s | ETA: 2.5min
+[INFO] Progress: 590/1000 cards (1180 templates) | 2.9 cards/s | ETA: 2.4min
+[INFO] Progress: 600/1000 cards (1200 templates) | 2.9 cards/s | ETA: 2.3min
+[INFO] Progress: 610/1000 cards (1220 templates) | 2.9 cards/s | ETA: 2.3min
+[INFO] Progress: 620/1000 cards (1240 templates) | 2.9 cards/s | ETA: 2.2min
+[INFO] Progress: 630/1000 cards (1260 templates) | 2.9 cards/s | ETA: 2.1min
+[INFO] Progress: 640/1000 cards (1280 templates) | 2.9 cards/s | ETA: 2.1min
+[INFO] Progress: 650/1000 cards (1300 templates) | 2.9 cards/s | ETA: 2.0min
+[INFO] Progress: 660/1000 cards (1320 templates) | 2.9 cards/s | ETA: 2.0min
+[INFO] Progress: 670/1000 cards (1340 templates) | 2.9 cards/s | ETA: 1.9min
+[INFO] Progress: 680/1000 cards (1360 templates) | 2.9 cards/s | ETA: 1.9min
+[INFO] Progress: 690/1000 cards (1380 templates) | 2.8 cards/s | ETA: 1.9min
+[INFO] Progress: 700/1000 cards (1400 templates) | 2.8 cards/s | ETA: 1.8min
+[INFO] Progress: 710/1000 cards (1420 templates) | 2.8 cards/s | ETA: 1.8min
+[INFO] Progress: 720/1000 cards (1440 templates) | 2.8 cards/s | ETA: 1.7min
+[INFO] Progress: 730/1000 cards (1460 templates) | 2.8 cards/s | ETA: 1.6min
+[INFO] Progress: 740/1000 cards (1480 templates) | 2.8 cards/s | ETA: 1.6min
+[INFO] Progress: 750/1000 cards (1500 templates) | 2.8 cards/s | ETA: 1.5min
+[INFO] Progress: 760/1000 cards (1520 templates) | 2.8 cards/s | ETA: 1.5min
+[INFO] Progress: 770/1000 cards (1540 templates) | 2.7 cards/s | ETA: 1.4min
+[INFO] Progress: 780/1000 cards (1560 templates) | 2.7 cards/s | ETA: 1.3min
+[INFO] Progress: 790/1000 cards (1580 templates) | 2.7 cards/s | ETA: 1.3min
+[INFO] Progress: 800/1000 cards (1600 templates) | 2.7 cards/s | ETA: 1.2min
+[INFO] Progress: 810/1000 cards (1620 templates) | 2.7 cards/s | ETA: 1.2min
+[INFO] Progress: 820/1000 cards (1640 templates) | 2.8 cards/s | ETA: 1.1min
+[INFO] Progress: 830/1000 cards (1660 templates) | 2.8 cards/s | ETA: 1.0min
+[INFO] Progress: 840/1000 cards (1680 templates) | 2.8 cards/s | ETA: 1.0min
+[INFO] Progress: 850/1000 cards (1700 templates) | 2.8 cards/s | ETA: 0.9min
+[INFO] Progress: 860/1000 cards (1720 templates) | 2.8 cards/s | ETA: 0.9min
+[INFO] Progress: 870/1000 cards (1740 templates) | 2.8 cards/s | ETA: 0.8min
+[INFO] Progress: 880/1000 cards (1760 templates) | 2.8 cards/s | ETA: 0.7min
+[INFO] Progress: 890/1000 cards (1780 templates) | 2.8 cards/s | ETA: 0.7min
+[INFO] Progress: 900/1000 cards (1800 templates) | 2.8 cards/s | ETA: 0.6min
+[INFO] Progress: 910/1000 cards (1820 templates) | 2.8 cards/s | ETA: 0.5min
+[INFO] Progress: 920/1000 cards (1840 templates) | 2.7 cards/s | ETA: 0.5min
+[INFO] Progress: 930/1000 cards (1860 templates) | 2.7 cards/s | ETA: 0.4min
+[INFO] Progress: 940/1000 cards (1880 templates) | 2.7 cards/s | ETA: 0.4min
+[INFO] Progress: 950/1000 cards (1900 templates) | 2.7 cards/s | ETA: 0.3min
+[INFO] Progress: 960/1000 cards (1920 templates) | 2.6 cards/s | ETA: 0.3min
+[INFO] Progress: 970/1000 cards (1940 templates) | 2.6 cards/s | ETA: 0.2min
+[INFO] Progress: 980/1000 cards (1960 templates) | 2.6 cards/s | ETA: 0.1min
+[INFO] Progress: 990/1000 cards (1980 templates) | 2.6 cards/s | ETA: 0.1min
+[INFO] Progress: 1000/1000 cards (2000 templates) | 2.6 cards/s | ETA: 0.0min
+
+[DONE] Gallery rebuild complete!
+  - Processed: 1000 cards
+  - Skipped: 0 cards
+  - Templates: 2000
+  - Time: 6.4 minutes
+  - Rate: 2.6 cards/s
+
+[INFO] Rebuilding card_prototypes...
+[INFO] Fetching templates...
+[INFO] Computing prototypes for 355 cards...
+[INFO] Upserting 355 prototypes...
+[OK] Rebuilt 355 prototypes
+
+[OK] All done! Run CLIP test suite to verify accuracy improvement.

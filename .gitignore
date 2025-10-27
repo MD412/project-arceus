@@ -24,6 +24,7 @@
 .DS_Store
 *.pem
 .cursor/
+cursor.mcp.json
 
 # debug
 npm-debug.log*
@@ -74,3 +75,5 @@ supabase/functions/_temp
 # OS
 .DS_Store
 Thumbs.db
+cursor.mcp.json
+.cursor/mcp.json

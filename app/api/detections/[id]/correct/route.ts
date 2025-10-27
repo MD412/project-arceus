@@ -141,6 +141,25 @@ export async function PATCH(
       return NextResponse.json({ error: updErr.message }, { status: 400 });
     }
 
+    // Update training_feedback with correction (Phase 5a)
+    try {
+      const { error: feedbackErr } = await supabase
+        .from('training_feedback')
+        .update({
+          corrected_card_id: replacement.id,
+          corrected_by: user.id,
+          corrected_at: new Date().toISOString(),
+        })
+        .eq('detection_id', id);
+      
+      if (feedbackErr) {
+        console.warn('Failed to update training_feedback:', feedbackErr);
+        // Don't fail the request on feedback logging error
+      }
+    } catch (feedbackError) {
+      console.warn('Error updating training_feedback:', feedbackError);
+    }
+
     return NextResponse.json({ detection: updated });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Internal error' }, { status: 500 });

@@ -271,6 +271,33 @@ def compute_bbox_hash(scan_id: str, bbox: List[int]) -> str:
     return hashlib.md5(base.encode("utf-8")).hexdigest()
 
 
+def log_training_feedback(
+    supabase_client,
+    *,
+    scan_id: str,
+    detection_id: str,
+    crop_storage_path: str,
+    predicted_card_id: str,
+    prediction_score: float,
+    prediction_method: str,
+) -> None:
+    """Log identification results into the training_feedback table."""
+    try:
+        supabase_client.from_("training_feedback").insert(
+            {
+                "scan_id": scan_id,
+                "detection_id": detection_id,
+                "crop_storage_path": crop_storage_path,
+                "predicted_card_id": predicted_card_id,
+                "prediction_score": float(prediction_score),
+                "prediction_method": prediction_method or "unknown",
+                "training_status": "pending",
+            }
+        ).execute()
+    except Exception as exc:
+        logging.error(f"Failed to log training feedback for detection {detection_id}: {exc}")
+
+
 def _clean_visibility_update_payload(base_update: Optional[Dict]) -> Dict:
     """Return a copy of the update payload without visibility-specific keys."""
     cleaned = dict(base_update or {})
@@ -489,12 +516,14 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                             'card_id': result['card_id'],
                             'name': result['card_id'],  # Will be enriched later
                             'confidence': result['best_score'],
-                            'similarity': result['best_score']
+                            'similarity': result['best_score'],
+                            'method': result.get('method', 'retrieval_v2')
                         })
                     else:
                         batch_results.append({
                             'success': False,
-                            'error': 'No match found (below threshold)'
+                            'error': 'No match found (below threshold)',
+                            'method': result.get('method', 'retrieval_v2')
                         })
             else:
                 logging.info(f"[..] Identifying cards (Legacy CLIP): {len(card_crops)} cards in batch")
@@ -572,6 +601,39 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                     raise ValueError("Failed to insert detection record")
                 detection_id = detection_response.data[0]["id"]
                 detection_records.append(detection_id)
+
+                # Log identification in training feedback table
+                predicted_card_id = card_id or "UNKNOWN"
+                prediction_method = (
+                    clip_result.get("method")
+                    or ("retrieval_v2" if USE_RETRIEVAL_V2 else "clip_embedding")
+                )
+                prediction_score = float(confidence or 0.0)
+                log_training_feedback(
+                    supabase_client,
+                    scan_id=scan_id,
+                    detection_id=detection_id,
+                    crop_storage_path=crop_path,
+                    predicted_card_id=predicted_card_id,
+                    prediction_score=prediction_score,
+                    prediction_method=prediction_method,
+                )
+                
+                # Log to training_feedback (Phase 5a)
+                try:
+                    feedback_data = {
+                        "scan_id": scan_id,
+                        "detection_id": detection_id,
+                        "crop_storage_path": crop_path,
+                        "predicted_card_id": card_id if card_id else "UNKNOWN",
+                        "prediction_score": confidence,
+                        "prediction_method": "retrieval_v2" if USE_RETRIEVAL_V2 else "clip_legacy",
+                        "training_status": "pending"
+                    }
+                    supabase_client.from_("training_feedback").insert(feedback_data).execute()
+                except Exception as feedback_error:
+                    logging.warning(f"Failed to log training feedback: {feedback_error}")
+                    # Don't fail the job on logging error
                 
                 # Only create user_cards when we have a valid UUID for the card
                 if resolved_uuid:  # Use the resolved UUID, not the external card_id

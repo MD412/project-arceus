@@ -1,5 +1,8 @@
 -- Add distance to match_card_templates RPC for debugging
-CREATE OR REPLACE FUNCTION public.match_card_templates(
+-- Drop first to avoid return type conflicts
+DROP FUNCTION IF EXISTS public.match_card_templates(vector(768), int, text);
+
+CREATE FUNCTION public.match_card_templates(
   qvec vector(768),
   match_count int,
   set_hint text DEFAULT NULL

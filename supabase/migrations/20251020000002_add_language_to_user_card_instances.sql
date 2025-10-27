@@ -8,10 +8,19 @@ ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'en';
 CREATE INDEX IF NOT EXISTS idx_user_card_instances_language 
 ON user_card_instances(language);
 
--- Add check constraint to ensure valid language codes
-ALTER TABLE user_card_instances
-ADD CONSTRAINT check_language_code 
-CHECK (language IN ('en', 'jp', 'kr', 'zh-tw', 'zh-cn', 'fr', 'de', 'it', 'es', 'pt'));
+-- Add check constraint to ensure valid language codes (idempotent)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'check_language_code' 
+    AND conrelid = 'user_card_instances'::regclass
+  ) THEN
+    ALTER TABLE user_card_instances
+    ADD CONSTRAINT check_language_code 
+    CHECK (language IN ('en', 'jp', 'kr', 'zh-tw', 'zh-cn', 'fr', 'de', 'it', 'es', 'pt'));
+  END IF;
+END $$;
 
 -- Verify the change
 SELECT 
