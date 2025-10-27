@@ -619,22 +619,6 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                     prediction_method=prediction_method,
                 )
                 
-                # Log to training_feedback (Phase 5a)
-                try:
-                    feedback_data = {
-                        "scan_id": scan_id,
-                        "detection_id": detection_id,
-                        "crop_storage_path": crop_path,
-                        "predicted_card_id": card_id if card_id else "UNKNOWN",
-                        "prediction_score": confidence,
-                        "prediction_method": "retrieval_v2" if USE_RETRIEVAL_V2 else "clip_legacy",
-                        "training_status": "pending"
-                    }
-                    supabase_client.from_("training_feedback").insert(feedback_data).execute()
-                except Exception as feedback_error:
-                    logging.warning(f"Failed to log training feedback: {feedback_error}")
-                    # Don't fail the job on logging error
-                
                 # Only create user_cards when we have a valid UUID for the card
                 if resolved_uuid:  # Use the resolved UUID, not the external card_id
                     user_card_data = {
