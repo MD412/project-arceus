@@ -1,31 +1,32 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 28, 2025 @ 2:00 AM  
+**Last Updated:** October 28, 2025 @ 6:00 PM  
 **Branch:** `main`  
-**Status:** ✅ Phase 5a deployed & tested — Duplicate scan bug fixed, awaiting production validation
+**Status:** 🔄 Worker fix deployed to Render, awaiting fresh scan test
 
 ---
 
 ## 🎯 Current Status
 
-**Session Focus:** Phase 5a deployed to production; duplicate upload bug discovered and fixed
+**Session Focus:** Fixed detection display + worker issues; cleaned legacy database tables
 
-### Latest Session (Oct 28, 2:00 AM)
-- ✅ Deployed Phase 5a (migration + worker logging + correction API)
-- ✅ Fixed duplicate logging bug in worker
-- ✅ Discovered & fixed duplicate scan upload vulnerability
-- ✅ Added unique constraint on storage_path + idempotent RPC
-- ✅ Prevented frontend double-submission
+### Latest Session (Oct 28, 6:00 PM)
+- ✅ Fixed Git Guardian security alert (.cursor/ token leak)
+- ✅ Fixed scan titles (UUIDs) and card count display (RLS bypass)
+- ✅ Discovered root cause: Phase 5a migration cascaded October detections
+- ✅ Cleaned legacy tables (scan_images, scan_batches, user_card_instances)
+- ✅ Fixed worker duplicate constraint error (upsert fix)
+- 🔄 Render deployment in progress
 
 **Ready for:**
-- Production testing (upload scan to verify training_feedback logs)
+- Fresh scan upload test after Render deployment completes
 
 ---
 
 ## 📖 Quick Links
 
 ### Latest Handoff
-- **📋 [Session: Phase 5a Deployed, Duplicate Bug Fixed (Oct 28, 2:00 AM)](./handoffs/2025/10-october/context_handoff_20251028_0200.md)** ← **Latest**
+- **📋 [Session: Worker Fix & Database Cleanup (Oct 28, 6:00 PM)](./handoffs/2025/10-october/context_handoff_20251028_1800.md)** ← **Latest**
 
 ### Previous Handoffs
 - **📋 [Phase 5a Implementation Complete (Oct 27, 5:00 PM)](./handoffs/2025/10-october/context_handoff_20251027_1700.md)**
@@ -38,10 +39,11 @@
 
 ## 🔴 Top Priorities
 
-### 1. Validate Phase 5a in Production
-- Upload test scan → Verify training_feedback rows created
-- Correct a card → Verify corrected_card_id updated
-- Test duplicate prevention (same file upload should reject)
+### 1. Test Worker Fix (IMMEDIATE)
+- Wait for Render deployment to complete
+- Upload fresh scan → verify detections created
+- Check `card_detections` and `training_feedback` tables
+- Confirm frontend displays cards correctly
 
 ### 2. Phase 5b — Auto-Learning (Next Feature)
 - Background job to process pending corrections
@@ -65,9 +67,11 @@
 - Gallery: 15,504 cards, 46,512+ templates (incl. clean scans)
 - Test accuracy: 100% on fixture set (clear score separation)
 - Domain gap fixed: clean scan templates provide exact matches (1.0 similarity)
-- **Phase 5a deployed:** `training_feedback` table + worker logging + correction API + duplicate prevention
+- **Phase 5a deployed:** `training_feedback` table + worker logging + correction API
+- **Database cleaned:** Legacy tables removed, active system uses `scans` + `card_detections` only
+- **Worker fix deployed:** Upsert instead of INSERT (fixes duplicate constraint issue)
 
 ---
 
 ## 📊 Latest Session Summary
-- See `./handoffs/2025/10-october/context_handoff_20251028_0200.md`
+- See `./handoffs/2025/10-october/context_handoff_20251028_1800.md`
