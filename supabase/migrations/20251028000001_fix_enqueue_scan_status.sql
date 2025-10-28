@@ -1,27 +1,7 @@
--- Fix duplicate scan uploads
--- Add unique constraint on storage_path to prevent duplicate processing
+-- Hotfix: Fix enqueue_scan_job status constraint violation
+-- The function was using 'queued' status which isn't in the allowed values
+-- Allowed statuses: 'processing', 'ready', 'completed', 'error'
 
--- First, clean up existing duplicates (keep older scan, delete newer)
-WITH duplicates AS (
-  SELECT 
-    id,
-    storage_path,
-    created_at,
-    ROW_NUMBER() OVER (PARTITION BY storage_path ORDER BY created_at) as rn
-  FROM scans
-  WHERE storage_path IS NOT NULL
-)
-DELETE FROM scans
-WHERE id IN (
-  SELECT id FROM duplicates WHERE rn > 1
-);
-
--- Add unique constraint to prevent future duplicates
-CREATE UNIQUE INDEX idx_scans_storage_path_unique 
-ON scans(storage_path) 
-WHERE storage_path IS NOT NULL;
-
--- Update enqueue_scan_job to be idempotent
 DROP FUNCTION IF EXISTS public.enqueue_scan_job(uuid, uuid, text);
 
 CREATE FUNCTION public.enqueue_scan_job(
@@ -40,7 +20,7 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Insert the scan record (use 'processing' status, not 'queued')
+    -- Insert the scan record with 'processing' status (valid constraint value)
     INSERT INTO public.scans(id, user_id, storage_path, title, status)
     VALUES (p_scan_id, p_user_id, p_storage_path, 'Untitled Scan', 'processing');
 
@@ -50,5 +30,5 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION public.enqueue_scan_job IS 'Idempotent: Prevents duplicate scans for the same storage_path';
+COMMENT ON FUNCTION public.enqueue_scan_job IS 'Idempotent: Prevents duplicate scans. Uses processing status to match scan constraint.';
 
