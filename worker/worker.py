@@ -409,10 +409,15 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
         print(f"[INFO] Attempting to insert into scans table. (job: {job_id_for_logging})")
         
         try:
-            scan_response = supabase_client.from_("scans").insert({
-                "user_id": user_id, "title": scan_title, "storage_path": storage_path,
-                "status": "processing", "progress": 10.0
-            }).execute()
+            # Use upsert to handle case where frontend already created the scan
+            scan_response = supabase_client.from_("scans").upsert({
+                "id": upload_id,  # Use the upload_id as scan_id
+                "user_id": user_id,
+                "title": scan_title,
+                "storage_path": storage_path,
+                "status": "processing",
+                "progress": 10.0
+            }, on_conflict="storage_path").execute()
             
             if scan_response.data:
                 scan_id = scan_response.data[0]["id"]
