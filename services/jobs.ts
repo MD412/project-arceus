@@ -7,8 +7,9 @@ const supabase = getSupabaseClient();
  * RLS policies on the 'jobs' table ensure that users can only see their own jobs.
  */
 export const getJobs = async () => {
+  // Use scan_uploads view which already computes detection counts
   const { data, error } = await supabase
-    .from('scans')
+    .from('scan_uploads')
     .select('*')
     .order('created_at', { ascending: false });
 
@@ -21,50 +22,19 @@ export const getJobs = async () => {
     return [];
   }
 
-  // Get scan IDs to fetch detection counts
-  const scanIds = data.map(scan => scan.id);
-
-  // Fetch detection counts for all scans
-  const { data: detections, error: detError } = await supabase
-    .from('card_detections')
-    .select('id, scan_id')
-    .in('scan_id', scanIds);
-
-  if (detError) {
-    console.error('Error fetching detections:', detError);
-  }
-
-  // Count detections per scan
-  const countByScan = new Map<string, number>();
-  for (const det of detections || []) {
-    const key = det.scan_id as string;
-    countByScan.set(key, (countByScan.get(key) || 0) + 1);
-  }
-
-  // Generate sequential scan titles
-  const generateScanTitle = (scan: any, index: number) => {
-    if (scan.title && scan.title.trim() !== '') return scan.title;
-    
-    const scanNumber = String(data.length - index).padStart(4, '0');
-    const date = new Date(scan.created_at);
-    const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '');
-    return `Scan ${scanNumber} - ${dateStr}`;
+  // Generate scan titles: show UUID if untitled
+  const generateScanTitle = (scan: any) => {
+    if (scan.scan_title && scan.scan_title.trim() !== '' && scan.scan_title !== 'Untitled Scan') {
+      return scan.scan_title;
+    }
+    // Show UUID for untitled scans
+    return scan.id;
   };
 
-  // Map scans table columns to match scan_uploads expected format
-  return data.map((scan, index) => ({
-    id: scan.id,
-    user_id: scan.user_id,
-    scan_title: generateScanTitle(scan, index),
-    processing_status: scan.status,
-    storage_path: scan.storage_path,
-    results: {
-      summary_image_path: scan.summary_image_path,
-      total_cards_detected: countByScan.get(scan.id) || 0
-    },
-    error_message: scan.error_message,
-    created_at: scan.created_at,
-    updated_at: scan.updated_at
+  // Map to expected format with corrected titles
+  return data.map((scan) => ({
+    ...scan,
+    scan_title: generateScanTitle(scan)
   })) || [];
 }
 
