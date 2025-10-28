@@ -104,6 +104,11 @@ export default function ScanUploadForm({ close }: ScanUploadFormProps) {
 
   // After validation, handleSubmit provides the transformed output data
   const onSubmit = (data: ScanFormValues) => {
+    // Prevent double submission
+    if (mutation.isPending) {
+      return;
+    }
+    
     // data.file is a FileList, no need to get it from the DOM
     if (data.file && data.file.length > 0) {
       // Debug logging
