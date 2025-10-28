@@ -83,7 +83,7 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
       <div className="processing-queue-card__header" data-scan-id={upload.id}>
         <div className="processing-queue-card__title-section">
           <Link href={`/scans/${upload.id}`} className="processing-queue-card__title">
-            {upload.scan_title || 'Untitled Scan'}
+            {upload.id}
           </Link>
           <span className="processing-queue-card__timestamp">
             {formatDate(upload.created_at)}
