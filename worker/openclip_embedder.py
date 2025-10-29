@@ -90,7 +90,13 @@ class OpenClipEmbedder:
         self.device = device
         self.target_short = target_short
 
-        model, _, _ = open_clip.create_model_and_transforms(model_name, pretrained=pretrained)
+        # Set persistent cache directory for model weights
+        cache_dir = os.getenv("OPENCLIP_CACHE_DIR", "/tmp/open_clip")
+        os.makedirs(cache_dir, exist_ok=True)
+
+        model, _, _ = open_clip.create_model_and_transforms(
+            model_name, pretrained=pretrained, cache_dir=cache_dir
+        )
         self.model = model.eval().to(device)
         with torch.no_grad():
             self._embed_dim = (
@@ -122,6 +128,13 @@ class OpenClipEmbedder:
         e_mean = torch.mean(torch.cat(embs, dim=0), dim=0, keepdim=True)
         e_out = self._l2(e_mean).squeeze(0)
         return e_out.cpu().numpy().astype("float32")
+    
+    @torch.no_grad()
+    def embed_image_bytes(self, image_bytes: bytes, tta_views: int = 2) -> np.ndarray:
+        """Embed image from raw bytes (for processing downloaded crops)."""
+        from io import BytesIO
+        pil = Image.open(BytesIO(image_bytes))
+        return self.embed(pil, tta_views=tta_views)
 
     @property
     def embed_dim(self) -> int:
@@ -141,6 +154,10 @@ def build_default_embedder() -> OpenClipEmbedder:
         use_cuda_if_available=use_cuda,
         deterministic_seed=1337,
     )
+
+
+# Alias for consistency with other parts of codebase
+OpenCLIPEmbedder = OpenClipEmbedder
 
 
 
