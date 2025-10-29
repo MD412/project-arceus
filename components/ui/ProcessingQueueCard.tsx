@@ -82,9 +82,9 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
     <div className="processing-queue-card">
       <div className="processing-queue-card__header" data-scan-id={upload.id}>
         <div className="processing-queue-card__title-section">
-          <Link href={`/scans/${upload.id}`} className="processing-queue-card__title">
+          <div className="processing-queue-card__title">
             {upload.id}
-          </Link>
+          </div>
           <span className="processing-queue-card__timestamp">
             {formatDate(upload.created_at)}
           </span>
@@ -184,12 +184,7 @@ export function ProcessingQueueCard({ upload, onRetry, onRename, onDelete }: Pro
         .processing-queue-card__title {
           font-weight: 600;
           color: var(--text-primary);
-          text-decoration: none;
-          font-size: var(--font-size-200);
-        }
-        
-        .processing-queue-card__title:hover {
-          color: var(--interactive-primary);
+          font-size: var(--font-size-100);
         }
         
         .processing-queue-card__timestamp {

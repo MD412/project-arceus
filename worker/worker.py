@@ -417,7 +417,7 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 "storage_path": storage_path,
                 "status": "processing",
                 "progress": 10.0
-            }, on_conflict="storage_path").execute()
+            }, on_conflict="id").execute()
             
             if scan_response.data:
                 scan_id = scan_response.data[0]["id"]
@@ -664,12 +664,12 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
             }).eq("id", scan_id).execute()
             logging.info("[OK] Results uploaded")
             
-            # Update scan_uploads status so it shows in scan history
+            # Update scans status so it shows in scan history
             try:
-                supabase_client.from_("scan_uploads").update({
-                    "processing_status": "review_pending"
+                supabase_client.from_("scans").update({
+                    "status": "ready"
                 }).eq("id", job["scan_upload_id"]).execute()
-                logging.info(f"   Updated scan_uploads status to review_pending")
+                logging.info(f"   Updated scan status to ready")
             except Exception as status_err:
                 logging.warning(f"Failed to update scan_uploads status: {status_err}")
 
@@ -741,8 +741,8 @@ def requeue_stale_jobs(supabase_client):
                 
                 # Update scan status
                 if scan_upload_id:
-                    supabase_client.from_("scan_uploads").update({
-                        "processing_status": "failed",
+                    supabase_client.from_("scans").update({
+                        "status": "error",
                         "error_message": "Processing failed after multiple retries"
                     }).eq("id", scan_upload_id).execute()
             else:
@@ -759,8 +759,8 @@ def requeue_stale_jobs(supabase_client):
                 
                 # Reset scan status
                 if scan_upload_id:
-                    supabase_client.from_("scan_uploads").update({
-                        "processing_status": "queued",
+                    supabase_client.from_("scans").update({
+                        "status": "processing",
                         "error_message": None
                     }).eq("id", scan_upload_id).execute()
                     
@@ -803,20 +803,19 @@ def update_job_status(supabase_client, job_id, upload_id, status, error_message=
             supabase_client.from_("job_queue").update(job_update_data).eq("id", job_id).execute()
         
         # Avoid setting a status that may propagate to scans.status illegally
-        upload_processing_status = status
+        upload_status = status
         if status == 'review_pending':
             # scan is effectively ready for review; map to 'ready' for base table compatibility
-            upload_processing_status = 'ready'
+            upload_status = 'ready'
 
-        upload_update_data = {"processing_status": upload_processing_status}
+        upload_update_data = {"status": upload_status}
         if error_message:
             upload_update_data["error_message"] = error_message
-        # Avoid writing to non-updatable view column `results`
         # Carry over summary image if available
         if results and results.get("summary_image_path"):
             upload_update_data["summary_image_path"] = results["summary_image_path"]
 
-        supabase_client.from_("scan_uploads").update(upload_update_data).eq("id", upload_id).execute()
+        supabase_client.from_("scans").update(upload_update_data).eq("id", upload_id).execute()
         print(f"[UPDATE] Status for job {job_id} updated to {status}.")
     except Exception as e:
         print(f"[ERROR] Failed to update job/upload status for job {job_id}: {e}")
