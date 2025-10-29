@@ -56,10 +56,10 @@ os.makedirs(cache_dir, exist_ok=True)
 print("[BUILD] Downloading CLIP models to cache...")
 
 # Model 1: ViT-B-32-quickgelu (used by clip_lookup.py)
-print("[BUILD] Downloading ViT-B-32-quickgelu (LAION)...")
+print("[BUILD] Downloading ViT-B-32-quickgelu (laion400m_e32)...")
 model1, _, _ = open_clip.create_model_and_transforms(
     "ViT-B-32-quickgelu", 
-    pretrained="laion2b_s34b_b79k",  # LAION checkpoint (NOT openai)
+    pretrained="laion400m_e32",  # Available LAION checkpoint for this model
     cache_dir=cache_dir
 )
 print("[BUILD] ViT-B-32-quickgelu cached successfully")
