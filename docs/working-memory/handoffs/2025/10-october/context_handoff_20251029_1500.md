@@ -254,9 +254,17 @@ SELECT * FROM card_confusion ORDER BY confusion_count DESC LIMIT 10;
 
 1. `1e261319` - fix: worker upsert conflict and view update errors
 2. `670609b2` - fix: pre-download CLIP model in Docker build (SUPERSEDED)
-3. `f346cfa0` - fix: use LAION checkpoint for ViT-B-32-quickgelu model (FINAL)
+3. `f346cfa0` - fix: use LAION checkpoint for ViT-B-32-quickgelu model
+4. `8cad0039` - perf: optimize Docker layer caching for ML model
+5. `22ac80e8` - fix: CLIP checkpoint (parallel session)
+6. `dc8ed09c` - session: Phase 5b complete + delete fix merged (FINAL)
 
 Plus Phase 5b migrations deployed via MCP Supabase tool.
+
+**Parallel Session Merged:**
+- Scan delete fix (`deleted_at` column added)
+- API routes fixed (update scans not scan_uploads)
+- See: `parallel_session_delete_fix_20251029.md`
 
 ---
 
