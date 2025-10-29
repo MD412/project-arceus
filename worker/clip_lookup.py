@@ -26,7 +26,7 @@ POKEMONTCG_API_KEY = os.getenv("POKEMONTCG_API_KEY")
 
 
 class CLIPCardIdentifier:
-    def __init__(self, model_name: str = "ViT-B-32-quickgelu", pretrained: str = "laion2b_s34b_b79k", supabase_client=None):
+    def __init__(self, model_name: str = "ViT-B-32-quickgelu", pretrained: str = "laion400m_e32", supabase_client=None):
         """Initialize CLIP model for card identification"""
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         
@@ -38,7 +38,7 @@ class CLIPCardIdentifier:
         print(f"[CLIP] Cache directory: {cache_dir}")
         
         # Use QuickGELU-enabled model with LAION checkpoint (not OpenAI)
-        # Valid LAION checkpoints: laion2b_s34b_b79k, laion400m_e32, laion400m_e16
+        # Valid LAION checkpoints for ViT-B-32-quickgelu: laion400m_e32, laion400m_e31
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(
             model_name, pretrained=pretrained, cache_dir=cache_dir, device=self.device
         )

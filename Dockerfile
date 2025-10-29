@@ -59,7 +59,7 @@ print("[BUILD] Downloading CLIP model to cache...")
 # Download the exact model+checkpoint used at runtime
 model, _, _ = open_clip.create_model_and_transforms(
     "ViT-B-32-quickgelu", 
-    pretrained="laion2b_s34b_b79k",  # LAION checkpoint (NOT openai)
+    pretrained="laion400m_e32",  # LAION checkpoint (NOT openai)
     cache_dir=cache_dir
 )
 print("[BUILD] CLIP model cached successfully")
