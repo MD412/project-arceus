@@ -40,17 +40,15 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Set working directory
 WORKDIR /app
 
-# Copy worker code
-COPY worker/worker.py worker/clip_lookup.py worker/config.py worker/openclip_embedder.py worker/retrieval_v2.py ./
-COPY worker/__init__.py ./
-
 # Set cache directory for CLIP model weights
 ENV XDG_CACHE_HOME=/cache \
     OPENCLIP_CACHE_DIR=/cache/open_clip
 
+# ⚡ CRITICAL: Download model BEFORE copying code files
+# This layer gets cached and won't re-download on code changes
 # Pre-download CLIP model during build (prevents runtime download failures)
 # Uses LAION checkpoint (not OpenAI) for ViT-B-32-quickgelu model
-# This downloads ~1.6GB model into the image cache
+# This downloads ~934MB model into the image cache
 RUN mkdir -p /cache/open_clip && python - <<'PY'
 import os, open_clip
 cache_dir = os.getenv("OPENCLIP_CACHE_DIR", "/cache/open_clip")
@@ -59,11 +57,16 @@ print("[BUILD] Downloading CLIP model to cache...")
 # Download the exact model+checkpoint used at runtime
 model, _, _ = open_clip.create_model_and_transforms(
     "ViT-B-32-quickgelu", 
-    pretrained="laion400m_e32",  # LAION checkpoint (NOT openai)
+    pretrained="laion2b_s34b_b79k",  # LAION checkpoint (NOT openai)
     cache_dir=cache_dir
 )
 print("[BUILD] CLIP model cached successfully")
 PY
+
+# Copy worker code AFTER model download
+# Code changes won't invalidate the model cache layer above
+COPY worker/worker.py worker/clip_lookup.py worker/config.py worker/openclip_embedder.py worker/retrieval_v2.py ./
+COPY worker/__init__.py ./
 
 # Create output directory for logs
 RUN mkdir -p /app/output
