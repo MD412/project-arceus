@@ -41,10 +41,12 @@ ENV PATH="/opt/venv/bin:$PATH"
 WORKDIR /app
 
 # Copy worker code
-COPY worker/worker.py worker/clip_lookup.py worker/config.py ./
+COPY worker/worker.py worker/clip_lookup.py worker/config.py worker/openclip_embedder.py ./
 COPY worker/__init__.py ./
 
-# Remove local model COPY; we download from Hugging Face at runtime via worker.py
+# Pre-download CLIP model during build (prevents runtime download failures)
+# This downloads ~1.6GB model into the image cache
+RUN python -c "import open_clip; print('Downloading CLIP model...'); model, _, _ = open_clip.create_model_and_transforms('ViT-B-32-quickgelu', pretrained='openai'); print('CLIP model cached successfully')"
 
 # Create output directory for logs
 RUN mkdir -p /app/output
