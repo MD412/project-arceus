@@ -53,14 +53,26 @@ RUN mkdir -p /cache/open_clip && python - <<'PY'
 import os, open_clip
 cache_dir = os.getenv("OPENCLIP_CACHE_DIR", "/cache/open_clip")
 os.makedirs(cache_dir, exist_ok=True)
-print("[BUILD] Downloading CLIP model to cache...")
-# Download the exact model+checkpoint used at runtime
-model, _, _ = open_clip.create_model_and_transforms(
+print("[BUILD] Downloading CLIP models to cache...")
+
+# Model 1: ViT-B-32-quickgelu (used by clip_lookup.py)
+print("[BUILD] Downloading ViT-B-32-quickgelu (LAION)...")
+model1, _, _ = open_clip.create_model_and_transforms(
     "ViT-B-32-quickgelu", 
     pretrained="laion2b_s34b_b79k",  # LAION checkpoint (NOT openai)
     cache_dir=cache_dir
 )
-print("[BUILD] CLIP model cached successfully")
+print("[BUILD] ViT-B-32-quickgelu cached successfully")
+
+# Model 2: ViT-L-14-336 (used by openclip_embedder.py)
+print("[BUILD] Downloading ViT-L-14-336 (OpenAI)...")
+model2, _, _ = open_clip.create_model_and_transforms(
+    "ViT-L-14-336",
+    pretrained="openai",  # OpenAI checkpoint (this one exists!)
+    cache_dir=cache_dir
+)
+print("[BUILD] ViT-L-14-336 cached successfully")
+print("[BUILD] All CLIP models cached successfully")
 PY
 
 # Copy worker code AFTER model download

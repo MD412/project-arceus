@@ -149,7 +149,7 @@ def build_default_embedder() -> OpenClipEmbedder:
     use_cuda = os.getenv("USE_CUDA_IF_AVAILABLE", "1") == "1"
     return OpenClipEmbedder(
         model_name="ViT-L-14-336",
-        pretrained="openai",
+        pretrained="openai",  # ViT-L-14-336 DOES exist on OpenAI
         target_short=336,
         use_cuda_if_available=use_cuda,
         deterministic_seed=1337,
