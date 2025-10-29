@@ -804,9 +804,15 @@ def update_job_status(supabase_client, job_id, upload_id, status, error_message=
         
         # Avoid setting a status that may propagate to scans.status illegally
         upload_status = status
+        # Map worker/job statuses to valid scans.status values
         if status == 'review_pending':
-            # scan is effectively ready for review; map to 'ready' for base table compatibility
             upload_status = 'ready'
+        elif status in ('completed',):
+            upload_status = 'ready'
+        elif status in ('failed', 'cancelled', 'timeout'):
+            upload_status = 'error'
+        elif status in ('queued', 'pending'):
+            upload_status = 'processing'
 
         upload_update_data = {"status": upload_status}
         if error_message:
