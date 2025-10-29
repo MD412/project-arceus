@@ -42,8 +42,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Soft delete by updating the base table (scans), not the view
     const { error: updateError } = await adminClient
-      .from('scan_uploads')
+      .from('scans')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', scanId)
       .eq('user_id', user.id);

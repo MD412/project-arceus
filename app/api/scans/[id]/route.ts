@@ -202,8 +202,9 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Soft delete the scan (update base table, not view)
     const { error: softErr } = await supabase
-      .from('scan_uploads')
+      .from('scans')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id);
 
