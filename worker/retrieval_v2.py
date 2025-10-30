@@ -86,6 +86,9 @@ def identify_v2(
         "match_count": int(topk),
         "set_hint": set_hint,
     }
+    
+    # Clear the original PIL image reference now that we have embedding
+    del pil_image
 
     try:
         response = supabase_client.rpc("match_card_templates", payload).execute()
@@ -189,18 +192,41 @@ def identify_v2(
         )
 
     candidates.sort(key=lambda x: x["fused"], reverse=True)
-    top_candidates = candidates[:5]
+    top_candidates = candidates[:5]  # Keep only top 5 for response
 
     best = top_candidates[0]
     best_fused = best["fused"]
     thresholded = best_fused < UNKNOWN_THRESHOLD
-
-    return {
+    
+    # Build lightweight result dict first (JSONable primitives only - no tensors, no PIL)
+    result = {
         "card_id": None if thresholded else best["card_id"],
-        "best_score": best_fused,
-        "best_template_score": best["template_score"],
-        "best_proto_score": best.get("proto_score"),
-        "candidates": top_candidates,
-        "thresholded": thresholded,
-        "raw_template_matches": len(template_rows),
+        "best_score": float(best_fused),  # Explicit float conversion
+        "best_template_score": float(best["template_score"]),
+        "best_proto_score": float(best.get("proto_score")) if best.get("proto_score") is not None else None,
+        "candidates": [
+            {
+                "card_id": str(c["card_id"]),
+                "template_id": str(c["template_id"]) if c.get("template_id") else None,
+                "set_id": str(c["set_id"]) if c.get("set_id") else None,
+                "template_score": float(c["template_score"]),
+                "proto_score": float(c["proto_score"]) if c.get("proto_score") is not None else None,
+                "fused": float(c["fused"]),
+            }
+            for c in top_candidates
+        ],
+        "thresholded": bool(thresholded),
+        "raw_template_matches": int(len(template_rows)),
     }
+    
+    # NOW safe to clear all intermediate heavy objects (tensors, arrays, large dicts)
+    del query_vec
+    del grouped
+    del prototype_map
+    del candidates
+    del top_candidates
+    del template_rows
+    import gc
+    gc.collect()  # Only after we've dropped all references
+    
+    return result

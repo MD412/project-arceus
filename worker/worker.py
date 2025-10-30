@@ -471,7 +471,9 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
             font = ImageFont.load_default()
             print(f"[INFO] Processing {len(final_detections)} detections...")
             
-            # First, prepare all crops and save them
+            # First, prepare all crops and save them to storage
+            # TODO: Future optimization - stream crops (create → identify → delete) instead of batching
+            # This would reduce peak memory from "15 crops + 15 inferences" to "1 crop + 1 inference"
             card_crops = []
             crop_paths = []
             for i, det in enumerate(final_detections):
@@ -481,7 +483,7 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 card_crop = image.crop(box)
                 card_crops.append(card_crop)
                 
-                # Save crop for storage
+                # Save crop for storage (PIL image still held in card_crops list until identification)
                 card_buffer = io.BytesIO()
                 card_crop.save(card_buffer, format='JPEG', quality=95)
                 card_buffer.seek(0)
@@ -492,32 +494,43 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                 )
                 crop_paths.append(crop_path)
             
-            # Identify all cards
+            # Identify all cards - process one at a time, keep only minimal summaries
             if USE_RETRIEVAL_V2:
                 logging.info(f"[..] Identifying cards (Retrieval v2): {len(card_crops)} cards")
                 batch_results = []
-                for crop in card_crops:
+                import gc
+                for i, crop in enumerate(card_crops):
+                    # Run identification (this handles its own cleanup internally)
                     result = identify_v2(crop, supabase_client, topk=RETRIEVAL_TOPK)
-                    # Convert v2 format to legacy format
-                    if result['card_id']:
-                        # Get card details from candidates
-                        top_candidate = result['candidates'][0] if result['candidates'] else {}
+                    
+                    # Extract ONLY the minimal data we need for downstream DB insertion
+                    # Don't keep the full result dict around
+                    if result.get('card_id'):
                         batch_results.append({
                             'success': True,
                             'card_id': result['card_id'],
                             'name': result['card_id'],  # Will be enriched later
                             'confidence': result['best_score'],
                             'similarity': result['best_score'],
-                            'method': result.get('method', 'retrieval_v2')
+                            'method': 'retrieval_v2'  # Don't get from result, just set directly
                         })
                     else:
                         batch_results.append({
                             'success': False,
                             'error': 'No match found (below threshold)',
-                            'method': result.get('method', 'retrieval_v2')
+                            'method': 'retrieval_v2'
                         })
-                # Force garbage collection after retrieval_v2 batch processing
-                import gc
+                    
+                    # Explicit cleanup: del crop and result immediately after extracting what we need
+                    del crop
+                    del result
+                    
+                    # Only gc.collect() periodically (not every card) - Python will free most refs automatically
+                    if (i + 1) % 5 == 0:  # Every 5 cards
+                        gc.collect()
+                
+                # After all identifications: clear the crop list and final cleanup
+                del card_crops
                 gc.collect()
             else:
                 logging.info(f"[..] Identifying cards (Legacy CLIP): {len(card_crops)} cards in batch")
