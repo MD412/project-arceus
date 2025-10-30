@@ -26,7 +26,12 @@ POKEMONTCG_API_KEY = os.getenv("POKEMONTCG_API_KEY")
 
 
 class CLIPCardIdentifier:
-    def __init__(self, model_name: str = "ViT-B-32-quickgelu", pretrained: str = "laion400m_e32", supabase_client=None):
+    def __init__(
+        self,
+        model_name: str = "ViT-B-32-quickgelu",
+        pretrained: str = "laion400m_e32",
+        supabase_client=None,
+    ):
         """Initialize CLIP model for card identification"""
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         
@@ -40,9 +45,16 @@ class CLIPCardIdentifier:
         # Use QuickGELU-enabled model with LAION checkpoint (not OpenAI)
         # Valid LAION checkpoints for ViT-B-32-quickgelu: laion400m_e32, laion400m_e31
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(
-            model_name, pretrained=pretrained, cache_dir=cache_dir, device=self.device
+            model_name,
+            pretrained=pretrained,
+            cache_dir=cache_dir,
+            device=self.device,
         )
         self.model.eval()
+
+        if self.device == "cpu":
+            self._optimize_for_cpu_model()
+
         print("[OK] CLIP model loaded successfully")
         
         # Use provided client or create new one
@@ -60,6 +72,28 @@ class CLIPCardIdentifier:
         
         # Cache for API-resolved names to avoid duplicate API calls
         self._name_cache = {}
+
+    def _optimize_for_cpu_model(self) -> None:
+        """Apply memory optimizations for CPU-only deployments."""
+        try:
+            removed_attrs = []
+            for attr in (
+                "transformer",
+                "token_embedding",
+                "positional_embedding",
+                "ln_final",
+                "text_projection",
+            ):
+                if hasattr(self.model, attr):
+                    setattr(self.model, attr, None)
+                    removed_attrs.append(attr)
+            if removed_attrs:
+                print(
+                    "[CLIP] Removed unused text encoder components: "
+                    + ", ".join(removed_attrs)
+                )
+        except Exception as exc:  # pragma: no cover - defensive logging
+            print(f"[WARN] Failed to trim CLIP text branch: {exc}")
 
     def _get_name_from_api_id(self, api_id: str) -> str:
         """Resolve card name from Pokemon TCG API ID (cached) with retries."""
@@ -152,6 +186,10 @@ class CLIPCardIdentifier:
             
             # Convert to numpy and remove batch dimension
             embedding = image_features.cpu().numpy().squeeze()
+            # Explicit cleanup
+            del image_tensor, image_features
+            if self.device == "cuda":
+                torch.cuda.empty_cache()
             return embedding
             
         except Exception as e:
@@ -176,8 +214,14 @@ class CLIPCardIdentifier:
                 # Normalize for cosine similarity
                 image_features = image_features / image_features.norm(dim=-1, keepdim=True)
             
-            # Convert to numpy arrays
+            # Convert to numpy arrays immediately and move off GPU/clear cache
             embeddings = image_features.cpu().numpy()
+            del batch_tensor, image_features  # Explicit cleanup
+            if self.device == "cuda":
+                torch.cuda.empty_cache()
+            import gc
+            gc.collect()
+            
             return [embeddings[i] for i in range(len(images))]
             
         except Exception as e:
@@ -343,6 +387,9 @@ class CLIPCardIdentifier:
             embedding_list = query_embedding.tolist()
             
             # Use the RPC function for similarity search with JOIN to cards table
+            # Debug: Check embedding stats
+            print(f"[DEBUG] Query embedding shape: {len(embedding_list)}, norm: {np.linalg.norm(query_embedding):.4f}")
+            
             response = self.supabase_client.rpc(
                 'search_similar_cards',
                 {
@@ -354,6 +401,12 @@ class CLIPCardIdentifier:
             
             if not response.data:
                 print(f"[WARN] No similar cards found above threshold {similarity_threshold}")
+                # Debug: Check if there are ANY embeddings in DB
+                try:
+                    count_res = self.supabase_client.from_("card_embeddings").select("card_id", count="exact").limit(1).execute()
+                    print(f"[DEBUG] Total embeddings in DB: {count_res.count if hasattr(count_res, 'count') else 'unknown'}")
+                except Exception as e:
+                    print(f"[DEBUG] Could not check DB count: {e}")
                 return []
             
             results = []

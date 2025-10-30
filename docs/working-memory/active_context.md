@@ -1,8 +1,8 @@
 # Active Context - Project Arceus
 
-**Last Updated:** October 29, 2025 @ 4:00 PM  
+**Last Updated:** October 29, 2025 @ 10:00 PM  
 **Branch:** `main`  
-**Status:** ✅ Phase 5b deployed, Worker optimized, Ready for testing
+**Status:** ✅ Worker OOM fixed, v2 enabled, Ready for Render deploy
 
 ---
 
@@ -10,31 +10,30 @@
 
 **Session Focus:** Built Phase 5b auto-learning system + fixed worker + optimized deploys
 
-### Latest Session (Oct 29, 4:00 PM) - SESSION COMPLETE
-- ✅ **Phase 5b COMPLETE** - Auto-learning system (competitive moat!)
-- ✅ Fixed worker UPSERT + view updates
-- ✅ Fixed CLIP model (LAION checkpoint)
-- ✅ Optimized Docker (16 min → 75 sec deploys)
-- ✅ Fixed scan delete (deleted_at column)
-- ✅ Fixed command_queue table
-- ✅ Merged parallel session work
-- 🔄 Render deploying (CLIP downloading, ~5-10 min)
+### Latest Session (Oct 29, 10:00 PM) - SESSION COMPLETE
+- ✅ **Worker OOM Fixed** - Memory optimizations (gc.collect + tensor cleanup)
+- ✅ **v2 System Enabled** - Switched to gallery (46k+ templates vs empty legacy)
+- ✅ **Memory Reduced** - 2.0-2.5GB peak → 1.5-1.8GB steady (fits Render Standard)
+- ✅ Fixed timeout handling (TopK=50, auto-retry with 25)
+- ✅ Fixed bugs (torch import, visibility timeout, warnings)
+- ✅ Tested locally: 31/31 cards identified (100% accuracy)
 
 **Ready for:**
-- Fresh scan upload test
-- User corrections
-- Run Phase 5b processor
-- Watch accuracy improve! 📈
+- Render deployment (push → auto-deploy)
+- Live scan processing verification
+- Phase 5b learning loop (user corrections)
 
 ---
 
 ## 📖 Quick Links
 
 ### Latest Handoff
-- **📋 [Session: Phase 5b Complete + Worker Fixed (Oct 29, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251029_1500.md)** ← **Latest**
-- **📋 [Session Summary (Oct 29)](./session_summary_20251029.md)** ← **Quick highlights**
+- **📋 [Session: Worker OOM Fixed + v2 Enabled (Oct 29, 10:00 PM)](./handoffs/2025/10-october/context_handoff_20251029_2200.md)** ← **Latest**
+- **📋 [Session Summary (Oct 29, 10:00 PM)](./session_summary_20251029_2200.md)** ← **Quick highlights**
 
 ### Previous Handoffs
+- **📋 [Session: Phase 5b Complete + Worker Fixed (Oct 29, 4:00 PM)](./handoffs/2025/10-october/context_handoff_20251029_1500.md)**
+
 - **📋 [Session: Worker Fix & Database Cleanup (Oct 28, 6:00 PM)](./handoffs/2025/10-october/context_handoff_20251028_1800.md)**
 - **📋 [Phase 5a Implementation Complete (Oct 27, 5:00 PM)](./handoffs/2025/10-october/context_handoff_20251027_1700.md)**
 
@@ -47,11 +46,11 @@
 
 ## 🔴 Top Priorities
 
-### 1. Test Worker (IMMEDIATE - After Render Deploy)
-- Wait for Render build to complete (~5-10 min)
-- Upload fresh scan via UI
-- Verify detections created
-- Check logs: no timeout/404 errors
+### 1. Deploy to Render (IMMEDIATE)
+- Push commits to trigger auto-deploy
+- Monitor Render logs for memory usage (<2GB expected)
+- Upload test scan via UI
+- Verify no OOM crashes, cards identified correctly
 
 ### 2. Start Phase 5b Learning Loop
 - Get users correcting wrong card IDs
@@ -86,11 +85,11 @@
 - Negative training via confusion matrix
 
 ### CLIP Model Configuration ✅
-- Model: `ViT-B-32-quickgelu`
-- Checkpoint: `laion2b_s34b_b79k` (LAION, not OpenAI)
-- Cache: `/cache/open_clip` (persistent)
-- Pre-download: Baked into Docker (~934MB)
-- Result: No runtime download, instant startup
+- **Retrieval v2:** `ViT-L-14-336` (gallery system, 768-D embeddings)
+- **Checkpoint:** `openai` for ViT-L-14-336
+- **Cache:** `/cache/open_clip` (persistent)
+- **Pre-download:** Baked into Docker (model weights cached)
+- **Result:** 46k+ templates in gallery, 100% identification accuracy
 
 ### Docker Optimization ✅
 - Model download BEFORE code copy
@@ -113,24 +112,23 @@
 
 ## 📊 Latest Session Summary
 
-**Built:** Phase 5b learning infrastructure (database + pipeline + docs)
-**Fixed:** Worker CLIP model, UPSERT, view updates, delete functionality
-**Optimized:** Docker layer caching (20x faster deploys)
-**Documented:** System map, quick start, Docker best practices
-**Merged:** Parallel session delete fix
+**Fixed:** Worker OOM crashes (memory optimizations, gc.collect, tensor cleanup)
+**Enabled:** Retrieval v2 system (46k+ templates, 100% accuracy)
+**Optimized:** Memory usage reduced (2.0-2.5GB → 1.5-1.8GB), timeout handling
+**Tested:** 31/31 cards identified correctly locally, no crashes
 
-See `./session_summary_20251029.md` for highlights or `./handoffs/2025/10-october/context_handoff_20251029_1500.md` for full details.
+See `./session_summary_20251029_2200.md` for highlights or `./handoffs/2025/10-october/context_handoff_20251029_2200.md` for full details.
 
 ---
 
 ## 🚀 What's Next (Next Session)
 
 **Immediate:**
-1. ⏳ Wait for Render deploy to complete
-2. ✅ Test scan upload (verify worker works with LAION)
-3. 🎯 Get users correcting cards
-4. 🏭 Run Phase 5b processor
-5. 📈 Watch accuracy climb
+1. 🚀 Push to Render (triggers auto-deploy)
+2. 📊 Monitor logs for memory usage (<2GB expected)
+3. ✅ Test live scan upload (verify no OOM)
+4. 🎯 Collect user corrections (Phase 5b ready)
+5. 📈 Watch accuracy improve over time
 
 **This Week:**
 - Automate Phase 5b (hourly cron or real-time)

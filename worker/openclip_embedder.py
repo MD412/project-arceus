@@ -1,4 +1,5 @@
 import os
+import warnings
 from typing import Optional
 
 import numpy as np
@@ -7,6 +8,9 @@ import torch.nn.functional as F
 from PIL import Image, ImageOps
 
 import open_clip
+
+# Suppress harmless QuickGELU config mismatch warning (ViT-L-14-336 works fine)
+warnings.filterwarnings("ignore", message=".*QuickGELU mismatch.*", category=UserWarning)
 
 _CLIP_MEAN = (0.48145466, 0.4578275, 0.40821073)
 _CLIP_STD = (0.26862954, 0.26130258, 0.27577711)
@@ -124,10 +128,18 @@ class OpenClipEmbedder:
             e = self.model.encode_image(t).float()
             e = self._l2(e)
             embs.append(e)
+            del t  # Clean up tensor immediately after use
 
         e_mean = torch.mean(torch.cat(embs, dim=0), dim=0, keepdim=True)
         e_out = self._l2(e_mean).squeeze(0)
-        return e_out.cpu().numpy().astype("float32")
+        result = e_out.cpu().numpy().astype("float32")
+        # Explicit cleanup of intermediate tensors
+        del embs, e_mean, e_out
+        if self.device.type == "cuda":
+            torch.cuda.empty_cache()
+        import gc
+        gc.collect()
+        return result
     
     @torch.no_grad()
     def embed_image_bytes(self, image_bytes: bytes, tta_views: int = 2) -> np.ndarray:

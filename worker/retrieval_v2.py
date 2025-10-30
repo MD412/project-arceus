@@ -91,16 +91,37 @@ def identify_v2(
         response = supabase_client.rpc("match_card_templates", payload).execute()
         template_rows = response.data or []
     except Exception as exc:  # pragma: no cover - defensive
-        print(f"[retrieval_v2] RPC match_card_templates failed: {exc}")
-        return {
-            "card_id": None,
-            "best_score": 0.0,
-            "best_template_score": 0.0,
-            "best_proto_score": None,
-            "candidates": [],
-            "thresholded": True,
-            "raw_template_matches": 0,
-        }
+        error_msg = str(exc)
+        # Retry with smaller TopK if timeout (57014)
+        if "57014" in error_msg or "statement timeout" in error_msg.lower():
+            print(f"[retrieval_v2] RPC timeout, retrying with TopK=25...")
+            payload["match_count"] = 25
+            try:
+                response = supabase_client.rpc("match_card_templates", payload).execute()
+                template_rows = response.data or []
+                print(f"[retrieval_v2] Retry successful with TopK=25")
+            except Exception as retry_exc:
+                print(f"[retrieval_v2] RPC match_card_templates failed after retry: {retry_exc}")
+                return {
+                    "card_id": None,
+                    "best_score": 0.0,
+                    "best_template_score": 0.0,
+                    "best_proto_score": None,
+                    "candidates": [],
+                    "thresholded": True,
+                    "raw_template_matches": 0,
+                }
+        else:
+            print(f"[retrieval_v2] RPC match_card_templates failed: {exc}")
+            return {
+                "card_id": None,
+                "best_score": 0.0,
+                "best_template_score": 0.0,
+                "best_proto_score": None,
+                "candidates": [],
+                "thresholded": True,
+                "raw_template_matches": 0,
+            }
 
     grouped: Dict[str, Dict] = {}
     for row in template_rows:

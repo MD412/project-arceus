@@ -77,7 +77,7 @@ CONFIDENCE_THRESHOLD = 0.25
 MAX_IMAGE_SIZE = 2048
 MAX_REASONABLE_CARDS = 18
 STORAGE_BUCKET = "scans"
-VISIBILITY_TIMEOUT_COLUMNS = ("visibility_timeout_at", "visibility_timeout")
+VISIBILITY_TIMEOUT_COLUMNS = ("visibility_timeout_at", None)  # Fallback removed - column is always visibility_timeout_at
 
 def get_yolo_model(model_path=str(Path(__file__).parent / 'pokemon_cards_trained.pt')):
     """Load YOLO model for card detection.
@@ -317,22 +317,15 @@ def update_job_visibility_timeout(
     Returns True when the update succeeds and False otherwise.
     """
     cleaned_update = _clean_visibility_update_payload(base_update)
-    primary_column, fallback_column = VISIBILITY_TIMEOUT_COLUMNS
+    primary_column, _ = VISIBILITY_TIMEOUT_COLUMNS
     try:
         payload = dict(cleaned_update)
         payload[primary_column] = visibility_value
         supabase_client.from_("job_queue").update(payload).eq("id", job_id).execute()
         return True
     except Exception as primary_error:
-        try:
-            payload = dict(cleaned_update)
-            payload[fallback_column] = visibility_value
-            supabase_client.from_("job_queue").update(payload).eq("id", job_id).execute()
-            print(f"[INFO] Retried visibility timeout update on job {job_id} using '{fallback_column}' column after error: {primary_error}")
-            return True
-        except Exception as fallback_error:
-            print(f"[WARN] Failed to update visibility timeout for job {job_id}: {fallback_error}")
-            return False
+        print(f"[WARN] Failed to update visibility timeout for job {job_id}: {primary_error}")
+        return False
 
 
 def fetch_jobs_with_expired_visibility(supabase_client, statuses: List[str], cutoff_iso: str) -> List[Dict]:
@@ -351,20 +344,13 @@ def fetch_jobs_with_expired_visibility(supabase_client, statuses: List[str], cut
         )
         return response.data or []
     except Exception as primary_error:
-        try:
-            print(f"[INFO] Retrying visibility timeout query with '{fallback_column}' after error: {primary_error}")
-            response = (
-                supabase_client
-                .from_("job_queue")
-                .select("id, retry_count, scan_upload_id")
-                .in_("status", statuses)
-                .lte(fallback_column, cutoff_iso)
-                .execute()
-            )
-            return response.data or []
-        except Exception as fallback_error:
-            print(f"[WARN] Failed to query visibility timeout columns: {fallback_error}")
-            return []
+        error_str = str(primary_error)
+        # Network errors are transient - don't spam logs
+        if "10054" in error_str or "connection" in error_str.lower():
+            logging.debug(f"[DEBUG] Transient network error querying visibility timeout (non-fatal): {primary_error}")
+        else:
+            print(f"[WARN] Failed to query visibility timeout: {primary_error}")
+        return []
 
 def download_image_with_retry(supabase_client, storage_path: str, max_retries: int = 3) -> bytes:
     for attempt in range(max_retries):
@@ -530,9 +516,15 @@ def run_normalized_pipeline(supabase_client, job: dict, model: YOLO, clip_identi
                             'error': 'No match found (below threshold)',
                             'method': result.get('method', 'retrieval_v2')
                         })
+                # Force garbage collection after retrieval_v2 batch processing
+                import gc
+                gc.collect()
             else:
                 logging.info(f"[..] Identifying cards (Legacy CLIP): {len(card_crops)} cards in batch")
                 batch_results = clip_identifier.identify_cards_batch(card_crops, similarity_threshold=0.6)
+                # Force garbage collection after CLIP batch to free tensor memory immediately
+                import gc
+                gc.collect()
             logging.info(f"[OK] Identifications complete")
             
             # Process results
@@ -706,8 +698,16 @@ def requeue_stale_jobs(supabase_client):
     try:
         now_iso = datetime.now(timezone.utc).isoformat()
         
-        # Find jobs stuck by timeout
-        stale_by_timeout = fetch_jobs_with_expired_visibility(supabase_client, ["processing"], now_iso)
+        # Find jobs stuck by timeout (with connection retry)
+        try:
+            stale_by_timeout = fetch_jobs_with_expired_visibility(supabase_client, ["processing"], now_iso)
+        except Exception as timeout_err:
+            # Network errors are non-fatal - just log and continue
+            if "10054" in str(timeout_err) or "connection" in str(timeout_err).lower():
+                logging.debug(f"[DEBUG] Transient network error checking visibility timeout (non-fatal): {timeout_err}")
+                stale_by_timeout = []
+            else:
+                raise
         
         # Find jobs stuck by time (15+ minutes)
         fifteen_mins_ago = (datetime.now(timezone.utc) - timedelta(minutes=15)).isoformat()

@@ -118,6 +118,6 @@ USE_CUDA_IF_AVAILABLE = os.getenv("USE_CUDA_IF_AVAILABLE", "1") == "1"
 # ------------------------------
 # Vision retrieval implementation
 # ------------------------------
-RETRIEVAL_IMPL = os.getenv("RETRIEVAL_IMPL", "legacy").lower()
-RETRIEVAL_TOPK = int(os.getenv("RETRIEVAL_TOPK", "100"))  # Must be ≥100 to avoid query planner timeout
+RETRIEVAL_IMPL = os.getenv("RETRIEVAL_IMPL", "v2").lower()  # Default to v2 (gallery system populated)
+RETRIEVAL_TOPK = int(os.getenv("RETRIEVAL_TOPK", "50"))  # Reduced from 100 to avoid statement timeout on large gallery
 SET_PREFILTER = os.getenv("SET_PREFILTER", "0").lower() in ("1", "true", "yes")

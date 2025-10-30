@@ -59,7 +59,7 @@ print("[BUILD] Downloading CLIP models to cache...")
 print("[BUILD] Downloading ViT-B-32-quickgelu (laion400m_e32)...")
 model1, _, _ = open_clip.create_model_and_transforms(
     "ViT-B-32-quickgelu", 
-    pretrained="laion400m_e32",  # Available LAION checkpoint for this model
+    pretrained="laion400m_e32",  # LAION checkpoint compatible with quickgelu variant
     cache_dir=cache_dir
 )
 print("[BUILD] ViT-B-32-quickgelu cached successfully")
