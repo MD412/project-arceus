@@ -12,13 +12,13 @@ services:
     dockerContext: .
     
     # Resource allocation
-    plan: starter  # $7/month - Can upgrade to standard ($25) for better performance
+    plan: standard  # $25/month - 2 GB RAM required for ML worker (memory optimized to 1.5-1.8GB)
     
     # Region
     region: oregon  # Change to your preferred region
     
     # Auto-deploy configuration
-    autoDeploy: true  # Auto-deploy on git push to main
+    autoDeploy: true  # Auto-deploy on git push to main (triggered by spending limit fix)
     
     # Environment variables (set these in Render Dashboard)
     envVars:
